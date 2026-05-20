@@ -1,0 +1,29 @@
+# env
+.env
+.env.local
+.env.*.local
+
+# frontend
+apps/web/node_modules
+apps/web/.next
+apps/web/out
+apps/web/dist
+
+# backend
+apps/api/__pycache__
+apps/api/.venv
+apps/api/venv
+apps/api/.pytest_cache
+apps/api/.mypy_cache
+
+# python
+*.pyc
+__pycache__/
+
+# system
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

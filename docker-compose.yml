@@ -1,0 +1,3 @@
+# Docker Compose placeholder for Team Request Hub.
+# Services are intentionally not configured yet.
+# Add frontend, backend, database, or supporting services here when Docker setup is defined.
