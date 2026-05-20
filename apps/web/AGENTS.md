@@ -1,31 +1,30 @@
 # AGENTS.md
 
-## Current State
-- Repo root is now the Next.js frontend app for Team Request Hub.
-- There is no active generated app worktree. Do app work in the repo root unless the user explicitly asks for a separate worktree.
-- This repository is FE-only. The FastAPI backend is expected to live in a separate repository.
+## Scope
+- This file is scoped to `apps/web`; the repository root `AGENTS.md` has the cross-app instructions.
+- Run frontend commands from `apps/web`, not from the repository root.
+- Before planning or coding frontend work, read `../../docs/frontend-ui-framework.md`.
+- For phase work, also read `../../docs/superpowers/plans/2026-05-20-team-request-hub-product-roadmap.md` and the phase-specific plan if one exists.
 
-## Source Of Truth
-- `FE_SETUP_TEAM_REQUEST_HUB.md` is the current user-provided setup brief for Team Request Hub.
-- `tasks.md` is the earlier setup brief and is superseded where it conflicts with `FE_SETUP_TEAM_REQUEST_HUB.md`.
-- `docs/superpowers/specs/2026-05-19-team-request-hub-alignment-design.md` and `docs/superpowers/plans/2026-05-19-team-request-hub-alignment.md` describe the current Team Request Hub alignment scope.
-- Trust executable files in the repo root over prose if they disagree.
+## Commands
+- Package manager is npm; this app has `package-lock.json` and no pnpm/yarn/bun lockfile.
+- Verified scripts: `npm run dev`, `npm run build`, `npm run start`, `npm run lint`.
 
 ## App Stack
 - Current app stack: Next.js 15 App Router, TypeScript, Tailwind CSS, Supabase, TanStack Query v5, shadcn/ui with Slate theme.
 - Route groups are `src/app/(auth)` for login and `src/app/(dashboard)` for protected pages.
 - Supabase clients live under `src/lib/supabase/`; FE uses Supabase only for Auth/session handling and Realtime listeners.
-- FE calls the separate FastAPI backend through `src/lib/api/client.ts` using `NEXT_PUBLIC_API_URL`.
+- FE calls the FastAPI backend in `../api` through `src/lib/api/client.ts` using `NEXT_PUBLIC_API_URL`.
 
-## Commands
-- Run app commands from the repo root.
-- Verified scripts: `npm run dev`, `npm run build`, `npm run start`, `npm run lint`.
-- Package manager is npm; the repo has `package-lock.json` and no pnpm/yarn/bun lockfile.
+## UI Framework
+- `../../ui-frameware/` is visual reference only: screenshots and static HTML for design intent.
+- Do not copy `ui-frameware` HTML, Tailwind CDN config, Material Symbols, inline scripts, external images, hard-coded demo data, or decorative background effects into `apps/web`.
+- Rebuild screens as React components using Tailwind v4, shadcn/ui, lucide icons, TanStack Query hooks, and `src/lib/api/client.ts`.
+- Follow `../../docs/frontend-ui-framework.md` for route mapping, component boundaries, design tokens, role-based actions, loading/error/empty states, and API module names.
 
 ## Gotchas
-- Do not create `src/app/api/` or Next.js Route Handlers; business logic belongs in the separate FastAPI backend.
+- Do not create `src/app/api/` or Next.js Route Handlers; business logic belongs in `apps/api`.
 - Do not query Supabase DB directly from the FE. FE uses Supabase for Auth/session handling and Realtime only.
-- Do not create `src/lib/supabase/server.ts` in this FE setup.
-- Do not create notification provider adapters or provider secrets in FE; real notifications belong in the FastAPI backend.
+- Do not create notification provider adapters or provider secrets in FE; real notifications belong in `apps/api`.
 - `.env.local` is for local values and should stay uncommitted; `.env.example` documents required public keys.
-- The generated README may reference generic Next.js starter instructions; this project uses `src/app/page.tsx` and route groups under `src/app/`.
+- Trust `package.json`, `src/app`, `README.md`, the root `AGENTS.md`, and `../../docs/frontend-ui-framework.md` for repo-specific guidance.

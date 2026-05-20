@@ -1,0 +1,60 @@
+from fastapi import HTTPException, status
+
+from app.db.supabase import get_supabase_admin
+
+
+def get_user_or_404(user_id: str) -> dict:
+    result = (
+        get_supabase_admin()
+        .table("users")
+        .select("id,email,name,avatar_url,role,is_active,created_at")
+        .eq("id", user_id)
+        .limit(1)
+        .execute()
+    )
+
+    if not result.data:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+
+    return result.data[0]
+
+
+def ensure_active_user(user_id: str) -> None:
+    user = get_user_or_404(user_id)
+    if user.get("is_active") is False:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User is inactive",
+        )
+
+
+def list_users() -> list[dict]:
+    result = (
+        get_supabase_admin()
+        .table("users")
+        .select("id,email,name,avatar_url,role,created_at")
+        .order("name")
+        .execute()
+    )
+    return result.data or []
+
+
+def update_user_role(user_id: str, role: str) -> dict:
+    result = (
+        get_supabase_admin()
+        .table("users")
+        .update({"role": role})
+        .eq("id", user_id)
+        .execute()
+    )
+
+    if not result.data:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+
+    return result.data[0]

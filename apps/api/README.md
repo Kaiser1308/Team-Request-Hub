@@ -5,9 +5,8 @@ FastAPI backend for Team Request Hub.
 ## Setup
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+uv --cache-dir .uv-cache venv
+uv --cache-dir .uv-cache pip install -r requirements.txt
 cp .env.example .env
 ```
 
@@ -16,7 +15,13 @@ Fill `.env` with Supabase backend credentials. Keep `SUPABASE_SERVICE_ROLE_KEY` 
 ## Run
 
 ```bash
-uvicorn app.main:app --reload --port 8000
+uv --cache-dir .uv-cache run uvicorn app.main:app --reload --port 8000
+```
+
+Run backend tests:
+
+```bash
+uv --cache-dir .uv-cache run python -m unittest discover tests
 ```
 
 Health check:

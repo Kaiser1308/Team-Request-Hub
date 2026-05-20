@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Request Detail - Team Request Hub</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-alt": "#f5f5f7",
+                        "success": "#28a745",
+                        "primary-fixed": "#e2e2e2",
+                        "error-container": "#ffdad6",
+                        "primary": "#000000",
+                        "on-primary-fixed": "#1b1b1b",
+                        "text-primary": "#1d1d1f",
+                        "inverse-surface": "#303030",
+                        "link": "#0066cc",
+                        "secondary-container": "#0372e4",
+                        "tertiary-fixed": "#e2e2e2",
+                        "on-secondary-container": "#fefcff",
+                        "surface-container-low": "#f3f3f3",
+                        "outline-variant": "#cfc4c5",
+                        "secondary-fixed-dim": "#abc7ff",
+                        "on-tertiary-container": "#848484",
+                        "surface-container-high": "#e8e8e8",
+                        "text-secondary": "#86868b",
+                        "on-secondary-fixed-variant": "#00458f",
+                        "on-primary-container": "#848484",
+                        "background": "#f9f9f9",
+                        "primary-fixed-dim": "#c6c6c6",
+                        "on-surface": "#1b1b1b",
+                        "on-tertiary-fixed": "#1b1b1b",
+                        "on-surface-variant": "#4c4546",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed": "#d7e2ff",
+                        "surface-variant": "#e2e2e2",
+                        "inverse-on-surface": "#f1f1f1",
+                        "surface-dim": "#dadada",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary": "#005ab7",
+                        "on-background": "#1b1b1b",
+                        "on-primary": "#ffffff",
+                        "outline": "#7e7576",
+                        "surface-container-highest": "#e2e2e2",
+                        "tertiary-fixed-dim": "#c6c6c6",
+                        "tertiary": "#000000",
+                        "surface": "#f9f9f9",
+                        "on-secondary": "#ffffff",
+                        "tertiary-container": "#1b1b1b",
+                        "warning": "#ff9f0a",
+                        "on-error-container": "#93000a",
+                        "surface-tint": "#5e5e5e",
+                        "on-tertiary-fixed-variant": "#474747",
+                        "error": "#ff3b30",
+                        "inverse-primary": "#c6c6c6",
+                        "on-primary-fixed-variant": "#474747",
+                        "surface-container": "#eeeeee",
+                        "on-secondary-fixed": "#001b3f",
+                        "on-error": "#ffffff",
+                        "surface-bright": "#f9f9f9",
+                        "primary-container": "#1b1b1b"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-desktop": "40px",
+                        "container-max": "1200px",
+                        "margin-mobile": "16px",
+                        "gutter": "24px",
+                        "unit": "8px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "caption-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["17px", {"lineHeight": "1.47", "letterSpacing": "-0.022em", "fontWeight": "400"}],
+                        "display-lg": ["56px", {"lineHeight": "1.07", "letterSpacing": "-0.005em", "fontWeight": "600"}],
+                        "caption-sm": ["14px", {"lineHeight": "1.2", "letterSpacing": "0", "fontWeight": "400"}],
+                        "headline-md": ["21px", {"lineHeight": "1.19", "letterSpacing": "0", "fontWeight": "400"}],
+                        "label-sm": ["14px", {"lineHeight": "1.2", "letterSpacing": "0", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+            line-height: 1;
+        }
+        body {
+            background-color: #f9f9f9;
+            color: #1d1d1f;
+            -webkit-font-smoothing: antialiased;
+        }
+        .cinematic-shadow {
+            box-shadow: rgba(0, 0, 0, 0.12) 0px 4px 20px 0px;
+        }
+        .signature-blur-shadow {
+            box-shadow: rgba(0, 0, 0, 0.22) 3px 5px 30px 0px;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cfc4c5;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="font-body-md overflow-x-hidden">
+<!-- Top Navigation Shell -->
+<nav class="sticky top-0 z-50 flex justify-between items-center w-full px-margin-desktop py-3 h-16 bg-black/80 backdrop-blur-xl shadow-sm">
+<div class="flex items-center gap-8">
+<span class="text-headline-md font-bold tracking-tight text-on-primary">Team Request Hub</span>
+<div class="hidden md:flex gap-6">
+<a class="text-on-primary/60 font-medium hover:text-on-primary transition-opacity duration-200 text-label-sm font-label-sm" href="#">Dashboard</a>
+<a class="text-on-primary font-bold border-b-2 border-secondary text-label-sm font-label-sm" href="#">All Requests</a>
+<a class="text-on-primary/60 font-medium hover:text-on-primary transition-opacity duration-200 text-label-sm font-label-sm" href="#">Pool</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-primary/50 text-[20px]">search</span>
+<input class="bg-white/10 border-none rounded-full py-1.5 pl-10 pr-4 text-on-primary text-label-sm focus:ring-2 focus:ring-secondary w-64" placeholder="Search requests..." type="text"/>
+</div>
+<button class="text-on-primary/80 hover:text-on-primary"><span class="material-symbols-outlined">notifications</span></button>
+<button class="text-on-primary/80 hover:text-on-primary"><span class="material-symbols-outlined">apps</span></button>
+<div class="w-8 h-8 rounded-full bg-secondary-fixed flex items-center justify-center overflow-hidden">
+<img alt="User profile with role badge" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7Zalmyb6g5m4Nk5FDMr__bSg1-Gu8YOkkSPXqq0kEBl4KxNST92MCpWZGAIBRlbSBqSgCTHfSbrNbgFlnMZ8dCLs3kwBgGY2_-EIA0ejcfjMwggHPlmyooTyzPSVm3D5k8N3iactQ6lRDi_Zg7pCSJpFKUIEOOaKmhCuwQOVwIze31LMeIFqQzEf1Jv1FLcrFavzsZQ7oUWu_KT-LxZ4QkO5NjCVnyMt8Ta_oFWwUjbg65IRq2VSEKFHHrKSKPEXs2DlILiBkAkM"/>
+</div>
+</div>
+</nav>
+<div class="flex min-h-[calc(100vh-64px)]">
+<!-- Sidebar Shell -->
+<aside class="hidden lg:flex flex-col h-auto py-8 px-4 gap-y-2 border-r border-outline-variant/30 bg-surface-container-lowest w-64 shrink-0">
+<div class="px-3 mb-6">
+<h3 class="text-label-sm font-bold text-primary uppercase tracking-wider opacity-40">Navigation</h3>
+</div>
+<nav class="space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 text-text-secondary hover:bg-surface-container transition-colors duration-200 rounded-xl" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="text-label-sm font-label-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-text-secondary hover:bg-surface-container transition-colors duration-200 rounded-xl" href="#">
+<span class="material-symbols-outlined text-[20px]">assignment_ind</span>
+<span class="text-label-sm font-label-sm">Assigned to me</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-text-secondary hover:bg-surface-container transition-colors duration-200 rounded-xl" href="#">
+<span class="material-symbols-outlined text-[20px]">person_add</span>
+<span class="text-label-sm font-label-sm">Created by me</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-secondary font-bold bg-secondary/5 rounded-xl" href="#">
+<span class="material-symbols-outlined text-[20px]">reorder</span>
+<span class="text-label-sm font-label-sm">Pool</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-text-secondary hover:bg-surface-container transition-colors duration-200 rounded-xl" href="#">
+<span class="material-symbols-outlined text-[20px]">check_circle</span>
+<span class="text-label-sm font-label-sm">Done</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-text-secondary hover:bg-surface-container transition-colors duration-200 rounded-xl" href="#">
+<span class="material-symbols-outlined text-[20px]">group</span>
+<span class="text-label-sm font-label-sm">All Requests</span>
+</a>
+</nav>
+</aside>
+<!-- Main Canvas -->
+<main class="flex-1 overflow-y-auto px-4 md:px-margin-desktop py-10 max-w-container-max mx-auto w-full">
+<!-- Action Bar -->
+<div class="flex flex-wrap items-center justify-between gap-4 mb-10 pb-6 border-b border-outline-variant/20">
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-surface-container rounded-full transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div>
+<span class="text-caption-sm text-text-secondary font-medium">REQ-7429</span>
+<h2 class="text-headline-md font-bold text-primary">Technical Documentation Audit</h2>
+</div>
+</div>
+<div class="flex flex-wrap gap-2">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full border border-outline-variant text-label-sm font-label-sm hover:border-secondary transition-all active:scale-95" onclick="this.classList.toggle('bg-secondary'); this.classList.toggle('text-white')">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+                        Acknowledge
+                    </button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full border border-outline-variant text-label-sm font-label-sm hover:border-secondary transition-all active:scale-95">
+<span class="material-symbols-outlined text-[18px]">play_arrow</span>
+                        Start
+                    </button>
+<button class="flex items-center gap-2 px-5 py-2 rounded-full bg-secondary text-white text-label-sm font-label-sm hover:opacity-80 transition-all active:scale-95">
+<span class="material-symbols-outlined text-[18px]">done_all</span>
+                        Done
+                    </button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full border border-outline-variant text-label-sm font-label-sm hover:border-secondary transition-all active:scale-95">
+<span class="material-symbols-outlined text-[18px]">person_search</span>
+                        Reassign
+                    </button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-error border border-error/20 hover:bg-error/5 text-label-sm font-label-sm transition-all active:scale-95">
+<span class="material-symbols-outlined text-[18px]">close</span>
+                        Cancel
+                    </button>
+</div>
+</div>
+<!-- Content Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter items-start">
+<!-- Left Column (Request Body) -->
+<div class="lg:col-span-2 space-y-10">
+<!-- Detail Section -->
+<section class="bg-surface-container-lowest p-8 rounded-xl signature-blur-shadow border border-white/40">
+<div class="flex items-center gap-3 mb-6">
+<span class="px-3 py-1 bg-warning/10 text-warning text-label-sm font-bold rounded-full border border-warning/20">High Priority</span>
+<span class="px-3 py-1 bg-secondary/10 text-secondary text-label-sm font-bold rounded-full border border-secondary/20">In Progress</span>
+</div>
+<div class="prose max-w-none text-text-primary mb-8">
+<p class="text-body-md mb-4 leading-relaxed">
+                                We need a comprehensive audit of the current API documentation for the "Neon Horizon" project. The current docs are fragmented across three legacy systems and do not reflect the v4.2 breaking changes introduced last quarter.
+                            </p>
+<p class="text-body-md mb-4 leading-relaxed">
+                                Please focus on the Authentication and Webhook sections specifically. We've had 12 support tickets this week alone regarding signature validation failures.
+                            </p>
+</div>
+<div class="flex flex-wrap gap-2 mb-8">
+<span class="flex items-center gap-1.5 px-3 py-1 bg-surface-container-high rounded-lg text-caption-sm text-text-secondary font-medium">#documentation</span>
+<span class="flex items-center gap-1.5 px-3 py-1 bg-surface-container-high rounded-lg text-caption-sm text-text-secondary font-medium">#api-v4</span>
+<span class="flex items-center gap-1.5 px-3 py-1 bg-surface-container-high rounded-lg text-caption-sm text-text-secondary font-medium">#high-priority</span>
+</div>
+<div class="space-y-4">
+<h4 class="text-label-sm font-bold text-text-secondary uppercase tracking-tight">Reference Links</h4>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+<a class="flex items-center gap-3 p-3 border border-outline-variant/30 rounded-lg hover:border-secondary hover:bg-surface-alt transition-colors group" href="#">
+<span class="material-symbols-outlined text-secondary">description</span>
+<div class="overflow-hidden">
+<p class="text-label-sm font-bold truncate">Legacy_Auth_Specs_v3.pdf</p>
+<p class="text-caption-sm text-text-secondary">Technical Specification</p>
+</div>
+<span class="material-symbols-outlined ml-auto text-text-secondary group-hover:text-secondary">open_in_new</span>
+</a>
+<a class="flex items-center gap-3 p-3 border border-outline-variant/30 rounded-lg hover:border-secondary hover:bg-surface-alt transition-colors group" href="#">
+<span class="material-symbols-outlined text-secondary">link</span>
+<div class="overflow-hidden">
+<p class="text-label-sm font-bold truncate">Project Repository</p>
+<p class="text-caption-sm text-text-secondary">GitHub / neon-docs</p>
+</div>
+<span class="material-symbols-outlined ml-auto text-text-secondary group-hover:text-secondary">open_in_new</span>
+</a>
+</div>
+</div>
+</section>
+<!-- Reply Section -->
+<section class="bg-surface-container-lowest p-8 rounded-xl border border-outline-variant/20">
+<h3 class="text-headline-md font-bold text-primary mb-6">Complete Request</h3>
+<div class="relative group">
+<textarea class="w-full min-h-[200px] bg-surface-container border-none focus:ring-2 focus:ring-secondary rounded-xl p-4 text-body-md placeholder:text-text-secondary/50 resize-none transition-shadow" placeholder="Write your final response or upload results..."></textarea>
+<div class="absolute bottom-4 right-4 flex gap-2">
+<button class="p-2 text-text-secondary hover:bg-white rounded-lg transition-colors">
+<span class="material-symbols-outlined">attach_file</span>
+</button>
+<button class="p-2 text-text-secondary hover:bg-white rounded-lg transition-colors">
+<span class="material-symbols-outlined">image</span>
+</button>
+<button class="px-6 py-2 bg-primary text-on-primary font-bold rounded-lg hover:bg-primary/90 transition-all">
+                                    Submit Final
+                                </button>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column (Meta & Timeline) -->
+<div class="space-y-gutter">
+<!-- Info Card -->
+<div class="bg-white p-6 rounded-xl cinematic-shadow border border-outline-variant/10">
+<h4 class="text-label-sm font-bold text-text-secondary uppercase tracking-wider mb-6">Meta Information</h4>
+<div class="space-y-6">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-container">
+<img alt="Created by user profile avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBP3JBf1cigmhtidV8hFkQzVhiB42EMaK8zrifK1842gv6odlpSwFHhp7Syln_PT_Sr1qFaiRx1P6t93DSgOW11pwKJeePxic9wobgyVfdvLx8FgHyEGzOSynPWrn1dyhO1DEUeAmuIV8CbUPUem4mWxGBxJisBYHdosAyptKNIS2U0gURtQpqxZHL2ziivqf-T1nzyaGBgNxrTOYEhPBhtP9jgRKdJaDanZykeiPvsjQIoyY-Vq5cMP77mOimz2Vc4SQdyYSh9V-c"/>
+</div>
+<div>
+<p class="text-caption-sm text-text-secondary">Created By</p>
+<p class="text-label-sm font-bold">Sarah Jenkins</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-secondary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary">person</span>
+</div>
+<div>
+<p class="text-caption-sm text-text-secondary">Assigned To</p>
+<p class="text-label-sm font-bold">Marcus Thorne</p>
+</div>
+</div>
+<div class="pt-4 border-t border-outline-variant/10 space-y-4">
+<div class="flex justify-between items-center">
+<span class="text-caption-sm text-text-secondary">Created</span>
+<span class="text-label-sm font-medium">Oct 12, 09:42 AM</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-caption-sm text-text-secondary">Deadline</span>
+<span class="text-label-sm font-medium text-error">Oct 15, 05:00 PM</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Timeline Section -->
+<div class="bg-surface-alt p-6 rounded-xl border border-outline-variant/10">
+<h4 class="text-label-sm font-bold text-text-secondary uppercase tracking-wider mb-6">Activity Timeline</h4>
+<div class="relative space-y-8 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-outline-variant/30">
+<!-- Timeline Event 1 -->
+<div class="relative pl-8">
+<div class="absolute left-0 top-1 w-[24px] h-[24px] bg-success rounded-full flex items-center justify-center ring-4 ring-surface-alt">
+<span class="material-symbols-outlined text-[14px] text-white">check</span>
+</div>
+<div>
+<p class="text-label-sm font-bold">Started Investigation</p>
+<p class="text-caption-sm text-text-secondary">Marcus Thorne • 2 hours ago</p>
+</div>
+</div>
+<!-- Timeline Event 2 -->
+<div class="relative pl-8">
+<div class="absolute left-0 top-1 w-[24px] h-[24px] bg-secondary rounded-full flex items-center justify-center ring-4 ring-surface-alt">
+<span class="material-symbols-outlined text-[14px] text-white">visibility</span>
+</div>
+<div>
+<p class="text-label-sm font-bold">Request Acknowledged</p>
+<p class="text-caption-sm text-text-secondary">Marcus Thorne • 4 hours ago</p>
+</div>
+</div>
+<!-- Timeline Event 3 -->
+<div class="relative pl-8">
+<div class="absolute left-0 top-1 w-[24px] h-[24px] bg-surface-container-high rounded-full flex items-center justify-center ring-4 ring-surface-alt">
+<span class="material-symbols-outlined text-[14px] text-text-primary">add</span>
+</div>
+<div>
+<p class="text-label-sm font-bold">Request Created</p>
+<p class="text-caption-sm text-text-secondary">Sarah Jenkins • Oct 12, 09:42 AM</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Promo/Status Area -->
+<div class="relative rounded-xl overflow-hidden aspect-video group cursor-pointer">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="A sophisticated close-up of a high-tech server room with glowing blue and white data streams reflected on dark polished glass surfaces. The lighting is cinematic with deep contrast, conveying a sense of premium technical infrastructure and secure data management. Soft bokeh highlights the intricate circuitry and modern hardware components." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDiYK8L6qwwCeOyT6igkZrdcR6xSRXDUvQScsCKyJlnLBjEFOk6uaCVXBzXSf0pCZCPYY6g8xpjm4kyvuiXvWQGrO48jYp4pALbzo1Z3y-T2gCNtNktTwdpoJNGe7XCckCGSQPkStkQPRLqfEFEfjggTtatNbGW6_u60aJjykajXSy2bpm0hvX2EUZf0vEh2q0hRazyjUqvyV_rYoiFndXVlaVIlBiyiNlqadnKLh5hXcDvMtvNPJ03HF0xXgP6RIanVHbH1jYLn88"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-6">
+<span class="text-white/60 text-[10px] uppercase font-bold tracking-[0.2em] mb-1">System Health</span>
+<p class="text-white font-bold text-label-sm">Neon Horizon Infrastructure</p>
+<p class="text-success text-caption-sm flex items-center gap-1 mt-1">
+<span class="w-2 h-2 rounded-full bg-success animate-pulse"></span>
+                                Fully Operational
+                            </p>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<script>
+        // Micro-interaction for feedback
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('click', function(e) {
+                if (!this.classList.contains('scale-95')) {
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 150);
+                }
+            });
+        });
+    </script>
+</body></html>

@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Assigned to Me - Team Request Hub</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-alt": "#f5f5f7",
+                        "success": "#28a745",
+                        "primary-fixed": "#e2e2e2",
+                        "error-container": "#ffdad6",
+                        "primary": "#000000",
+                        "on-primary-fixed": "#1b1b1b",
+                        "text-primary": "#1d1d1f",
+                        "inverse-surface": "#303030",
+                        "link": "#0066cc",
+                        "secondary-container": "#0372e4",
+                        "tertiary-fixed": "#e2e2e2",
+                        "on-secondary-container": "#fefcff",
+                        "surface-container-low": "#f3f3f3",
+                        "outline-variant": "#cfc4c5",
+                        "secondary-fixed-dim": "#abc7ff",
+                        "on-tertiary-container": "#848484",
+                        "surface-container-high": "#e8e8e8",
+                        "text-secondary": "#86868b",
+                        "on-secondary-fixed-variant": "#00458f",
+                        "on-primary-container": "#848484",
+                        "background": "#f9f9f9",
+                        "primary-fixed-dim": "#c6c6c6",
+                        "on-surface": "#1b1b1b",
+                        "on-tertiary-fixed": "#1b1b1b",
+                        "on-surface-variant": "#4c4546",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed": "#d7e2ff",
+                        "surface-variant": "#e2e2e2",
+                        "inverse-on-surface": "#f1f1f1",
+                        "surface-dim": "#dadada",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary": "#005ab7",
+                        "on-background": "#1b1b1b",
+                        "on-primary": "#ffffff",
+                        "outline": "#7e7576",
+                        "surface-container-highest": "#e2e2e2",
+                        "tertiary-fixed-dim": "#c6c6c6",
+                        "tertiary": "#000000",
+                        "surface": "#f9f9f9",
+                        "on-secondary": "#ffffff",
+                        "tertiary-container": "#1b1b1b",
+                        "warning": "#ff9f0a",
+                        "on-error-container": "#93000a",
+                        "surface-tint": "#5e5e5e",
+                        "on-tertiary-fixed-variant": "#474747",
+                        "error": "#ff3b30",
+                        "inverse-primary": "#c6c6c6",
+                        "on-primary-fixed-variant": "#474747",
+                        "surface-container": "#eeeeee",
+                        "on-secondary-fixed": "#001b3f",
+                        "on-error": "#ffffff",
+                        "surface-bright": "#f9f9f9",
+                        "primary-container": "#1b1b1b"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-desktop": "40px",
+                        "container-max": "1200px",
+                        "margin-mobile": "16px",
+                        "gutter": "24px",
+                        "unit": "8px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "caption-sm": ["Inter"],
+                        "display-lg-mobile": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["17px", {"lineHeight": "1.47", "letterSpacing": "-0.022em", "fontWeight": "400"}],
+                        "display-lg": ["56px", {"lineHeight": "1.07", "letterSpacing": "-0.005em", "fontWeight": "600"}],
+                        "caption-sm": ["14px", {"lineHeight": "1.2", "letterSpacing": "0", "fontWeight": "400"}],
+                        "display-lg-mobile": ["32px", {"lineHeight": "1.1", "letterSpacing": "-0.005em", "fontWeight": "600"}],
+                        "headline-md": ["21px", {"lineHeight": "1.19", "letterSpacing": "0", "fontWeight": "400"}],
+                        "label-sm": ["14px", {"lineHeight": "1.2", "letterSpacing": "0", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .signature-shadow {
+            box-shadow: rgba(0, 0, 0, 0.22) 3px 5px 30px 0px;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d1d1d6;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background text-text-primary font-body-md min-h-screen flex overflow-hidden">
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col h-screen w-64 border-r border-outline-variant/30 bg-surface-container-lowest py-8 px-4 gap-y-2 z-50">
+<div class="px-2 mb-8">
+<h1 class="text-headline-md font-bold text-primary tracking-tight">Navigation</h1>
+<p class="text-label-sm font-label-sm text-text-secondary">Technical Tool</p>
+</div>
+<nav class="flex flex-col gap-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-text-secondary hover:bg-surface-container transition-colors duration-200 rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="text-label-sm font-label-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary font-bold bg-secondary/5 rounded-xl transition-opacity opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="assignment_ind">assignment_ind</span>
+<span class="text-label-sm font-label-sm">Assigned to me</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-text-secondary hover:bg-surface-container transition-colors duration-200 rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="person_add">person_add</span>
+<span class="text-label-sm font-label-sm">Created by me</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-text-secondary hover:bg-surface-container transition-colors duration-200 rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="reorder">reorder</span>
+<span class="text-label-sm font-label-sm">Pool</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-text-secondary hover:bg-surface-container transition-colors duration-200 rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>
+<span class="text-label-sm font-label-sm">Done</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-text-secondary hover:bg-surface-container transition-colors duration-200 rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="text-label-sm font-label-sm">All Requests</span>
+</a>
+</nav>
+<div class="mt-auto px-2">
+<div class="flex items-center gap-3 p-2 rounded-xl bg-surface-alt">
+<img alt="User profile" class="w-8 h-8 rounded-full border border-outline-variant/30" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqXovknUAf4TCVdLLEOMMaNXHUh6rBA4UbXWNB8kKHHDXPmH65R1RSp6hLHhEgDbA64Si_sfVi_4JbOSJo1kCvSDN3hVr_NxpbHaiC7bNyECR5g03r_1CCyuOIwUmyjzv6iNqolUTpSDvZfa3SgA5Pvt9fsLWvlcMeJv_g4BCHTZR81RBoAYjczVkTv-SQs9dMo2rCkiSI2dOeIG1a0781Ie9ufZP4Y3aau121sxo9kbh4-TwUMoxzCcJAZi4XkUaGqpz313ni03Q"/>
+<div class="overflow-hidden">
+<p class="text-label-sm font-bold truncate">Alex Chen</p>
+<p class="text-caption-sm text-text-secondary truncate">Senior Architect</p>
+</div>
+</div>
+</div>
+</aside>
+<div class="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+<!-- TopNavBar -->
+<header class="sticky top-0 z-50 flex justify-between items-center w-full px-margin-desktop py-3 h-16 bg-primary/80 backdrop-blur-xl bg-black/80 shadow-sm">
+<div class="flex items-center gap-6">
+<span class="text-headline-md font-bold tracking-tight text-on-primary">Team Request Hub</span>
+<div class="hidden lg:flex items-center bg-white/10 rounded-full px-4 py-1.5 gap-2 w-80">
+<span class="material-symbols-outlined text-on-primary/60 text-[18px]" data-icon="search">search</span>
+<input class="bg-transparent border-none text-on-primary text-label-sm focus:ring-0 w-full placeholder:text-on-primary/40" placeholder="Search requests..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-on-primary/80 hover:text-on-primary transition-opacity" data-icon="notifications">notifications</button>
+<button class="material-symbols-outlined text-on-primary/80 hover:text-on-primary transition-opacity" data-icon="apps">apps</button>
+<img alt="User profile with role badge" class="w-8 h-8 rounded-full border border-on-primary/20" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3-OyXayHCO2UBY0YBFv4VQEBvruxl2BcWqXkEkqCOtLxUyyLyDtyTF9Kk3Y4J1XxDan42hwA2i_e2boD93TSswcDUVbNIQdq6naHfkkB3rLaTLnKCyT0_FD8MiXNF3r1XpdrVb-Y5MFujaz-HPBhs479l5kbjv1IpWoebPHRNSTKhKO9smFfaRMffBavQQrRv4XnJgSvNKTnaCEEcuajhfRT2cdOdMP0POXGVtFaGNY1QCh85C0gkbWhhqrWCsjWazzI5Wz479oc"/>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 overflow-y-auto bg-surface-alt p-6 md:p-10 space-y-8">
+<!-- Header Section -->
+<section class="max-w-container-max mx-auto">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<h2 class="text-display-lg-mobile md:text-display-lg font-display-lg text-text-primary tracking-tight">Assigned to me</h2>
+<p class="text-body-md text-text-secondary mt-2">Manage your current technical tasks and requests from the team.</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-full font-label-sm hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined text-[18px]" data-icon="add">add</span>
+                            New Request
+                        </button>
+</div>
+</div>
+</section>
+<!-- Filter Bar Section -->
+<section class="max-w-container-max mx-auto">
+<div class="bg-surface-container-lowest rounded-xl p-4 flex flex-wrap items-center gap-4 border border-outline-variant/20">
+<div class="flex items-center gap-2">
+<span class="text-label-sm font-label-sm text-text-secondary uppercase tracking-widest px-2">Status</span>
+<div class="flex gap-1.5">
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-high text-text-primary text-label-sm font-medium hover:bg-surface-container-highest transition-colors">All</button>
+<button class="px-3 py-1.5 rounded-lg text-text-secondary text-label-sm font-medium hover:bg-surface-container-high transition-colors">Pending</button>
+<button class="px-3 py-1.5 rounded-lg text-text-secondary text-label-sm font-medium hover:bg-surface-container-high transition-colors">Acknowledged</button>
+<button class="px-3 py-1.5 rounded-lg text-text-secondary text-label-sm font-medium hover:bg-surface-container-high transition-colors">In Progress</button>
+</div>
+</div>
+<div class="h-6 w-px bg-outline-variant/30 hidden sm:block"></div>
+<div class="flex items-center gap-2">
+<span class="text-label-sm font-label-sm text-text-secondary uppercase tracking-widest px-2">Priority</span>
+<select class="bg-transparent border-none text-label-sm font-medium focus:ring-0 cursor-pointer">
+<option>All Priorities</option>
+<option>High</option>
+<option>Medium</option>
+<option>Low</option>
+</select>
+</div>
+<div class="ml-auto">
+<span class="text-caption-sm text-text-secondary">Showing 4 results</span>
+</div>
+</div>
+</section>
+<!-- Request List Section -->
+<section class="max-w-container-max mx-auto pb-20">
+<div class="grid grid-cols-1 gap-4">
+<!-- Request Card 1: Pending -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant/20 overflow-hidden hover:signature-shadow transition-all duration-300 group">
+<div class="flex flex-col md:flex-row">
+<!-- Status Color Strip -->
+<div class="w-1.5 bg-warning h-full"></div>
+<div class="flex-1 p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+<div class="space-y-3">
+<div class="flex flex-wrap items-center gap-3">
+<span class="px-2.5 py-1 rounded bg-warning/10 text-warning text-[11px] font-bold uppercase tracking-wider">Pending</span>
+<span class="px-2.5 py-1 rounded bg-error/10 text-error text-[11px] font-bold uppercase tracking-wider">High Priority</span>
+<div class="flex gap-2">
+<span class="text-caption-sm bg-surface-alt px-2 py-0.5 rounded text-text-secondary border border-outline-variant/10">frontend</span>
+<span class="text-caption-sm bg-surface-alt px-2 py-0.5 rounded text-text-secondary border border-outline-variant/10">ui-ux</span>
+</div>
+</div>
+<h3 class="text-headline-md font-bold text-text-primary group-hover:text-secondary transition-colors cursor-pointer">Refactor Dashboard Bento Grid Components</h3>
+<div class="flex items-center gap-4 text-caption-sm text-text-secondary">
+<div class="flex items-center gap-1.5">
+<img alt="Creator" class="w-5 h-5 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpKN-I-D5WXzA_JJeCvAu5R9rh0hnhrNXMIhH3cbenkozHPOxDZUCSj9MvB6zhM-sWEqIpVh8g0oUNMPMoPLIbsrrJ7ouWEIrNtdYFg1uRsHsjJO0wAxv-hExH28no8_3taSRLtRWFOtxdzyKhT1mx4a2gND_j4lI7F1Usd9yLH3yo6x2uz_a4XfNKD32Mpv3rFYMLKmK9Q_LJXWfwNK4BLv4MuTn_cq_NdYmEc0r9uPn9ysPLhixfRNiSHEerzYc9P-HmW8LkD_4"/>
+<span>Requested by <strong>Jane Doe</strong></span>
+</div>
+<span>•</span>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="calendar_today">calendar_today</span>
+<span>Oct 24, 2023</span>
+</div>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-2">
+<button class="px-5 py-2.5 bg-secondary text-on-primary rounded-lg text-label-sm font-bold shadow-sm hover:opacity-90 transition-all active:scale-95">Acknowledge</button>
+<button class="px-5 py-2.5 border border-outline-variant/50 text-text-secondary rounded-lg text-label-sm font-bold hover:bg-surface-alt transition-all">Reassign</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Request Card 2: Acknowledged -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant/20 overflow-hidden hover:signature-shadow transition-all duration-300 group">
+<div class="flex flex-col md:flex-row">
+<div class="w-1.5 bg-link h-full"></div>
+<div class="flex-1 p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+<div class="space-y-3">
+<div class="flex flex-wrap items-center gap-3">
+<span class="px-2.5 py-1 rounded bg-link/10 text-link text-[11px] font-bold uppercase tracking-wider">Acknowledged</span>
+<span class="px-2.5 py-1 rounded bg-secondary/10 text-secondary text-[11px] font-bold uppercase tracking-wider">Medium Priority</span>
+<div class="flex gap-2">
+<span class="text-caption-sm bg-surface-alt px-2 py-0.5 rounded text-text-secondary border border-outline-variant/10">api</span>
+<span class="text-caption-sm bg-surface-alt px-2 py-0.5 rounded text-text-secondary border border-outline-variant/10">backend</span>
+</div>
+</div>
+<h3 class="text-headline-md font-bold text-text-primary group-hover:text-secondary transition-colors cursor-pointer">Implement Webhook for External System Sync</h3>
+<div class="flex items-center gap-4 text-caption-sm text-text-secondary">
+<div class="flex items-center gap-1.5">
+<img alt="Creator" class="w-5 h-5 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPA9aTYXz6C36HCGVu-dy9_t3xcHh1TMW11hLG5HUjU-DMfmDiMbq-Ghrg2g-9ZeReNFd00AggmxgH7Aw9E7nsgDnhh_-Rdz46_qdOoT4z4vW9awNpDwnht4TL2_AYh-7g9_SlxOuX-YS4yDU9fMHqsadxT8Ac77RY-di7ILp7jCKKEaXVd8dARqmoBW7FAnLJGLUc7LIJ6eFVpq1TYat9K6vevUYT_v7EOrzb-Ys47X7q2Vsyxe_fCbybl8dztfMbYP20o7miAPQ"/>
+<span>Requested by <strong>Mike Taylor</strong></span>
+</div>
+<span>•</span>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="calendar_today">calendar_today</span>
+<span>Oct 22, 2023</span>
+</div>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-2">
+<button class="px-5 py-2.5 bg-secondary text-on-primary rounded-lg text-label-sm font-bold shadow-sm hover:opacity-90 transition-all active:scale-95">Start Work</button>
+<button class="px-5 py-2.5 border border-outline-variant/50 text-text-secondary rounded-lg text-label-sm font-bold hover:bg-surface-alt transition-all">Reassign</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Request Card 3: In Progress -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant/20 overflow-hidden hover:signature-shadow transition-all duration-300 group">
+<div class="flex flex-col md:flex-row">
+<div class="w-1.5 bg-secondary-container h-full"></div>
+<div class="flex-1 p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+<div class="space-y-3">
+<div class="flex flex-wrap items-center gap-3">
+<span class="px-2.5 py-1 rounded bg-secondary-container/10 text-secondary-container text-[11px] font-bold uppercase tracking-wider flex items-center gap-1">
+<span class="w-1.5 h-1.5 bg-secondary-container rounded-full animate-pulse"></span>
+                                            In Progress
+                                        </span>
+<span class="px-2.5 py-1 rounded bg-error/10 text-error text-[11px] font-bold uppercase tracking-wider">Critical Priority</span>
+<div class="flex gap-2">
+<span class="text-caption-sm bg-surface-alt px-2 py-0.5 rounded text-text-secondary border border-outline-variant/10">security</span>
+<span class="text-caption-sm bg-surface-alt px-2 py-0.5 rounded text-text-secondary border border-outline-variant/10">auth</span>
+</div>
+</div>
+<h3 class="text-headline-md font-bold text-text-primary group-hover:text-secondary transition-colors cursor-pointer">Patch SSL Vulnerability in Auth Service</h3>
+<div class="flex items-center gap-4 text-caption-sm text-text-secondary">
+<div class="flex items-center gap-1.5">
+<img alt="Creator" class="w-5 h-5 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKiFz2LOoihf1JDopCWzRgwMziqHNsPejFqtGmEynOZXHYUyurZK3SESwkwQwXZ66jTz3nuI8SN0OlC0ZMSOxciHC2E6CJBKPIPjSXj6UvnQat_MgZ2Unq_vTajBS4YJpWigfOSVIPD68Etlv_0skzFiqUOqvcHS1MbQ2kMIEo1QOUzvdq4sIqZQXPmR1wyfUoJvCB-G17oYhfRKrwrhJKVBDAvhyyNIB6q8zQLLcfaeYBMhmY9RC1vzt1HliKdH0wS8CMjacm0fQ"/>
+<span>Requested by <strong>Sarah Lee</strong></span>
+</div>
+<span>•</span>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="calendar_today">calendar_today</span>
+<span>Oct 25, 2023</span>
+</div>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-2">
+<button class="px-5 py-2.5 bg-success text-on-primary rounded-lg text-label-sm font-bold shadow-sm hover:opacity-90 transition-all active:scale-95">Mark as Done</button>
+<button class="px-5 py-2.5 border border-outline-variant/50 text-text-secondary rounded-lg text-label-sm font-bold hover:bg-surface-alt transition-all">Pause</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Request Card 4: In Progress -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant/20 overflow-hidden hover:signature-shadow transition-all duration-300 group">
+<div class="flex flex-col md:flex-row">
+<div class="w-1.5 bg-secondary-container h-full"></div>
+<div class="flex-1 p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+<div class="space-y-3">
+<div class="flex flex-wrap items-center gap-3">
+<span class="px-2.5 py-1 rounded bg-secondary-container/10 text-secondary-container text-[11px] font-bold uppercase tracking-wider flex items-center gap-1">
+<span class="w-1.5 h-1.5 bg-secondary-container rounded-full animate-pulse"></span>
+                                            In Progress
+                                        </span>
+<span class="px-2.5 py-1 rounded bg-outline/10 text-outline text-[11px] font-bold uppercase tracking-wider">Low Priority</span>
+<div class="flex gap-2">
+<span class="text-caption-sm bg-surface-alt px-2 py-0.5 rounded text-text-secondary border border-outline-variant/10">docs</span>
+</div>
+</div>
+<h3 class="text-headline-md font-bold text-text-primary group-hover:text-secondary transition-colors cursor-pointer">Update API Documentation for V2 Release</h3>
+<div class="flex items-center gap-4 text-caption-sm text-text-secondary">
+<div class="flex items-center gap-1.5">
+<img alt="Creator" class="w-5 h-5 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWprKOX9C_ggCG0lURe_Gxx1zcfr6S_GTb2Y7liwqoXnYi5wQqz2f5xNnmEZpkNWVu4teuOwFCJb79cmODSyWEOF19CEI3idl4gdiQiA9X6vQLH1m8OfPDoMUM03f8J2K6a6yZ4RcAOAC4ni52G9wfO9h9Iyaz7egGG9Vumjt_ASKSpJIQk4gsuu9eU3UXYiErIjcMSHw9YerQM1xvk-MNTuCq9tD2hwEoNITftwN7XKIb2v9xW_tcL1xuUaelikhKI6PecoG6muc"/>
+<span>Requested by <strong>Jane Doe</strong></span>
+</div>
+<span>•</span>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="calendar_today">calendar_today</span>
+<span>Oct 20, 2023</span>
+</div>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-2">
+<button class="px-5 py-2.5 bg-success text-on-primary rounded-lg text-label-sm font-bold shadow-sm hover:opacity-90 transition-all active:scale-95">Mark as Done</button>
+<button class="px-5 py-2.5 border border-outline-variant/50 text-text-secondary rounded-lg text-label-sm font-bold hover:bg-surface-alt transition-all">Pause</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+</div>
+<!-- Quick Action FAB (Suppressed on this transactional page as per instructions, but available for Dashboard if needed) -->
+<!-- Suppressed -->
+<script>
+        // Simple filter interactions
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if(this.classList.contains('text-text-secondary')) {
+                    const parent = this.parentElement;
+                    parent.querySelectorAll('button').forEach(b => {
+                        b.classList.remove('bg-surface-container-high', 'text-text-primary');
+                        b.classList.add('text-text-secondary');
+                    });
+                    this.classList.add('bg-surface-container-high', 'text-text-primary');
+                    this.classList.remove('text-text-secondary');
+                }
+            });
+        });
+
+        // Hover atmosphere
+        const cards = document.querySelectorAll('.bg-surface-container-lowest');
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-2px)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0px)';
+            });
+        });
+    </script>
+</body></html>

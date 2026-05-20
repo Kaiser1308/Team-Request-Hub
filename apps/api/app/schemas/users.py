@@ -3,6 +3,10 @@ from pydantic import BaseModel, EmailStr
 from app.schemas.common import Role
 
 
+class UserRoleUpdate(BaseModel):
+    role: Role
+
+
 class CurrentUser(BaseModel):
     id: str
     email: EmailStr | None = None

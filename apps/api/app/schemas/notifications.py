@@ -22,3 +22,7 @@ class NotificationOut(BaseModel):
     message: str
     is_read: bool
     created_at: str
+
+
+class NotificationsReadAllOut(BaseModel):
+    updated: int

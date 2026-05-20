@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Request Pool | Team Request Hub</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-alt": "#f5f5f7",
+                        "success": "#28a745",
+                        "primary-fixed": "#e2e2e2",
+                        "error-container": "#ffdad6",
+                        "primary": "#000000",
+                        "on-primary-fixed": "#1b1b1b",
+                        "text-primary": "#1d1d1f",
+                        "inverse-surface": "#303030",
+                        "link": "#0066cc",
+                        "secondary-container": "#0372e4",
+                        "tertiary-fixed": "#e2e2e2",
+                        "on-secondary-container": "#fefcff",
+                        "surface-container-low": "#f3f3f3",
+                        "outline-variant": "#cfc4c5",
+                        "secondary-fixed-dim": "#abc7ff",
+                        "on-tertiary-container": "#848484",
+                        "surface-container-high": "#e8e8e8",
+                        "text-secondary": "#86868b",
+                        "on-secondary-fixed-variant": "#00458f",
+                        "on-primary-container": "#848484",
+                        "background": "#f9f9f9",
+                        "primary-fixed-dim": "#c6c6c6",
+                        "on-surface": "#1b1b1b",
+                        "on-tertiary-fixed": "#1b1b1b",
+                        "on-surface-variant": "#4c4546",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed": "#d7e2ff",
+                        "surface-variant": "#e2e2e2",
+                        "inverse-on-surface": "#f1f1f1",
+                        "surface-dim": "#dadada",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary": "#005ab7",
+                        "on-background": "#1b1b1b",
+                        "on-primary": "#ffffff",
+                        "outline": "#7e7576",
+                        "surface-container-highest": "#e2e2e2",
+                        "tertiary-fixed-dim": "#c6c6c6",
+                        "tertiary": "#000000",
+                        "surface": "#f9f9f9",
+                        "on-secondary": "#ffffff",
+                        "tertiary-container": "#1b1b1b",
+                        "warning": "#ff9f0a",
+                        "on-error-container": "#93000a",
+                        "surface-tint": "#5e5e5e",
+                        "on-tertiary-fixed-variant": "#474747",
+                        "error": "#ff3b30",
+                        "inverse-primary": "#c6c6c6",
+                        "on-primary-fixed-variant": "#474747",
+                        "surface-container": "#eeeeee",
+                        "on-secondary-fixed": "#001b3f",
+                        "on-error": "#ffffff",
+                        "surface-bright": "#f9f9f9",
+                        "primary-container": "#1b1b1b"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-desktop": "40px",
+                        "container-max": "1200px",
+                        "margin-mobile": "16px",
+                        "gutter": "24px",
+                        "unit": "8px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "caption-sm": ["Inter"],
+                        "display-lg-mobile": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["17px", {"lineHeight": "1.47", "letterSpacing": "-0.022em", "fontWeight": "400"}],
+                        "display-lg": ["56px", {"lineHeight": "1.07", "letterSpacing": "-0.005em", "fontWeight": "600"}],
+                        "caption-sm": ["14px", {"lineHeight": "1.2", "letterSpacing": "0", "fontWeight": "400"}],
+                        "display-lg-mobile": ["32px", {"lineHeight": "1.1", "letterSpacing": "-0.005em", "fontWeight": "600"}],
+                        "headline-md": ["21px", {"lineHeight": "1.19", "letterSpacing": "0", "fontWeight": "400"}],
+                        "label-sm": ["14px", {"lineHeight": "1.2", "letterSpacing": "0", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9f9f9;
+        }
+        .cinematic-shadow {
+            box-shadow: rgba(0, 0, 0, 0.22) 3px 5px 30px 0px;
+        }
+        .glass-nav {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+<body class="text-text-primary antialiased">
+<!-- TopNavBar (Shared Component) -->
+<header class="sticky top-0 z-50 flex justify-between items-center w-full px-margin-desktop py-3 h-16 bg-primary/80 dark:bg-primary/90 backdrop-blur-xl bg-black/80 shadow-sm">
+<div class="flex items-center gap-8">
+<span class="text-headline-md font-bold tracking-tight text-on-primary">Team Request Hub</span>
+<div class="hidden md:flex gap-6 items-center">
+<a class="text-on-primary/60 font-medium hover:text-on-primary transition-opacity duration-200 text-label-sm font-label-sm" href="#">Dashboard</a>
+<a class="text-on-primary font-bold border-b-2 border-secondary hover:text-on-primary transition-opacity duration-200 text-label-sm font-label-sm" href="#">Pool</a>
+<a class="text-on-primary/60 font-medium hover:text-on-primary transition-opacity duration-200 text-label-sm font-label-sm" href="#">My Tasks</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden lg:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-primary/40">search</span>
+<input class="bg-white/10 border-none rounded-full pl-10 pr-4 py-1.5 text-sm text-on-primary placeholder:text-on-primary/40 focus:ring-2 focus:ring-secondary w-64" placeholder="Search requests..." type="text"/>
+</div>
+<span class="material-symbols-outlined text-on-primary cursor-pointer hover:opacity-70 transition-opacity">notifications</span>
+<span class="material-symbols-outlined text-on-primary cursor-pointer hover:opacity-70 transition-opacity">apps</span>
+<img alt="User profile" class="w-8 h-8 rounded-full border border-on-primary/20" data-alt="A professional headshot of a woman in a modern tech office environment. She is smiling confidently, wearing a dark blazer over a neutral top. The lighting is bright and clean, typical of a high-end corporate lifestyle photograph. The background is slightly out of focus, showing glass partitions and warm wood accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZQMjx4MedqaZYAnVwHstsQ1Z6qOQ6SZYTIF8pnh2JpWKMgtJtQCQsDU-Iwr6g4n1JpOLKSRDLvpMNLGyTIMxmMa3pPd_u-cj_YKVKK04_zuS28mnXvl427o6JPpYuS9veffOcc4_KuWQgcpcA3f_c8kol7wCb5I8Kq4KQWApXcNpNlqWlTYIAz-3Ew6pcuvQLG-XS073h4IULP1gsD7jk3e24Ivx_grDixY86NnDl0dYqHAlE9O0sWxV81gWl5LoMeNRphxZEKWg"/>
+</div>
+</header>
+<div class="flex h-[calc(100vh-64px)]">
+<!-- SideNavBar (Shared Component) -->
+<aside class="hidden md:flex flex-col h-full py-8 px-4 gap-y-2 border-r border-outline-variant/30 bg-surface-container-lowest dark:bg-surface-dim w-64">
+<div class="mb-8 px-2">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary" style="font-variation-settings: 'FILL' 1;">hub</span>
+</div>
+<div>
+<h2 class="text-label-sm font-bold text-primary">Navigation</h2>
+<p class="text-[10px] uppercase tracking-widest text-text-secondary">Technical Tool</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-text-secondary hover:text-text-primary hover:bg-surface-container transition-colors duration-200 rounded-xl group" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-label-sm font-label-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-text-secondary hover:text-text-primary hover:bg-surface-container transition-colors duration-200 rounded-xl group" href="#">
+<span class="material-symbols-outlined">assignment_ind</span>
+<span class="text-label-sm font-label-sm">Assigned to me</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-text-secondary hover:text-text-primary hover:bg-surface-container transition-colors duration-200 rounded-xl group" href="#">
+<span class="material-symbols-outlined">person_add</span>
+<span class="text-label-sm font-label-sm">Created by me</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-secondary font-bold bg-secondary/5 rounded-xl group" href="#">
+<span class="material-symbols-outlined">reorder</span>
+<span class="text-label-sm font-label-sm">Pool</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-text-secondary hover:text-text-primary hover:bg-surface-container transition-colors duration-200 rounded-xl group" href="#">
+<span class="material-symbols-outlined">check_circle</span>
+<span class="text-label-sm font-label-sm">Done</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-text-secondary hover:text-text-primary hover:bg-surface-container transition-colors duration-200 rounded-xl group" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-label-sm font-label-sm">All Requests</span>
+</a>
+</nav>
+<div class="mt-auto p-4 bg-surface-alt rounded-2xl">
+<p class="text-[11px] font-bold text-text-secondary mb-2 uppercase tracking-tight">System Status</p>
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-success"></div>
+<span class="text-caption-sm font-caption-sm">Cloud Sync Active</span>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 overflow-y-auto bg-background p-margin-desktop">
+<div class="max-w-container-max mx-auto">
+<!-- Header Section -->
+<div class="mb-12 flex justify-between items-end">
+<div>
+<h1 class="text-display-lg font-display-lg text-primary tracking-tight">Request Pool</h1>
+<p class="text-body-md font-body-md text-text-secondary mt-2">Available requests for the team</p>
+</div>
+<div class="flex gap-4">
+<div class="flex bg-surface-container p-1 rounded-full">
+<button class="px-4 py-1.5 bg-surface-container-lowest rounded-full text-label-sm font-bold shadow-sm">All</button>
+<button class="px-4 py-1.5 text-label-sm text-text-secondary hover:text-text-primary transition-colors">Urgent</button>
+<button class="px-4 py-1.5 text-label-sm text-text-secondary hover:text-text-primary transition-colors">New</button>
+</div>
+</div>
+</div>
+<!-- Bento Style Request List -->
+<div class="grid grid-cols-1 gap-gutter">
+<!-- Request Item 1 -->
+<div class="group relative bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 hover:cinematic-shadow transition-all duration-300 transform hover:-translate-y-1">
+<div class="flex flex-col md:flex-row md:items-start gap-6">
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-3">
+<span class="px-2 py-0.5 bg-error/10 text-error text-[10px] font-bold uppercase tracking-wider rounded">Priority: High</span>
+<span class="text-caption-sm text-text-secondary">• 2h ago</span>
+</div>
+<h3 class="text-headline-md font-bold text-primary mb-2 group-hover:text-secondary transition-colors">Cloud Migration: Legacy CRM Database</h3>
+<p class="text-body-md font-body-md text-text-secondary line-clamp-2 max-w-3xl">
+                                    Final stage of the legacy CRM transition requires a script validation and manual verification of the customer ID mapping table. No owner assigned yet.
+                                </p>
+<div class="mt-4 flex flex-wrap gap-2">
+<span class="px-3 py-1 bg-surface-alt rounded-full text-label-sm text-text-secondary">#database</span>
+<span class="px-3 py-1 bg-surface-alt rounded-full text-label-sm text-text-secondary">#migration</span>
+<span class="px-3 py-1 bg-surface-alt rounded-full text-label-sm text-text-secondary">#critical</span>
+</div>
+</div>
+<div class="flex flex-col items-end justify-between min-w-[200px] border-l border-outline-variant/30 pl-6 h-full">
+<div class="text-right mb-6 md:mb-0">
+<div class="flex items-center gap-2 justify-end mb-1">
+<span class="text-label-sm font-bold">Alex Rivera</span>
+<div class="w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center text-[10px]">AR</div>
+</div>
+<p class="text-caption-sm text-text-secondary">Platform Engineering</p>
+</div>
+<button class="w-full md:w-auto mt-4 px-6 py-2.5 bg-secondary text-on-secondary rounded-full text-label-sm font-bold hover:opacity-80 transition-all transform active:scale-95 flex items-center justify-center gap-2">
+                                    Self-assign
+                                    <span class="material-symbols-outlined text-sm">person_add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Request Item 2 -->
+<div class="group relative bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 hover:cinematic-shadow transition-all duration-300 transform hover:-translate-y-1">
+<div class="flex flex-col md:flex-row md:items-start gap-6">
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-3">
+<span class="px-2 py-0.5 bg-warning/10 text-warning text-[10px] font-bold uppercase tracking-wider rounded">Priority: Medium</span>
+<span class="text-caption-sm text-text-secondary">• 5h ago</span>
+</div>
+<h3 class="text-headline-md font-bold text-primary mb-2 group-hover:text-secondary transition-colors">UI Refresh: Login Component</h3>
+<p class="text-body-md font-body-md text-text-secondary line-clamp-2 max-w-3xl">
+                                    Updating the login component to support WebAuthn and passkeys. Design assets are ready in Figma. Implementation needed for frontend and backend API endpoints.
+                                </p>
+<div class="mt-4 flex flex-wrap gap-2">
+<span class="px-3 py-1 bg-surface-alt rounded-full text-label-sm text-text-secondary">#frontend</span>
+<span class="px-3 py-1 bg-surface-alt rounded-full text-label-sm text-text-secondary">#security</span>
+</div>
+</div>
+<div class="flex flex-col items-end justify-between min-w-[200px] border-l border-outline-variant/30 pl-6 h-full">
+<div class="text-right mb-6 md:mb-0">
+<div class="flex items-center gap-2 justify-end mb-1">
+<span class="text-label-sm font-bold">Sarah Chen</span>
+<div class="w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center text-[10px]">SC</div>
+</div>
+<p class="text-caption-sm text-text-secondary">Product Design</p>
+</div>
+<button class="w-full md:w-auto mt-4 px-6 py-2.5 bg-secondary text-on-secondary rounded-full text-label-sm font-bold hover:opacity-80 transition-all transform active:scale-95 flex items-center justify-center gap-2">
+                                    Self-assign
+                                    <span class="material-symbols-outlined text-sm">person_add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Request Item 3 -->
+<div class="group relative bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 hover:cinematic-shadow transition-all duration-300 transform hover:-translate-y-1">
+<div class="flex flex-col md:flex-row md:items-start gap-6">
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-3">
+<span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] font-bold uppercase tracking-wider rounded">Priority: Low</span>
+<span class="text-caption-sm text-text-secondary">• Yesterday</span>
+</div>
+<h3 class="text-headline-md font-bold text-primary mb-2 group-hover:text-secondary transition-colors">Documentation Audit: Q3 Releases</h3>
+<p class="text-body-md font-body-md text-text-secondary line-clamp-2 max-w-3xl">
+                                    Reviewing the internal Wiki for the last three releases. Ensure all API changes are documented and architectural diagrams are updated to reflect the new microservices.
+                                </p>
+<div class="mt-4 flex flex-wrap gap-2">
+<span class="px-3 py-1 bg-surface-alt rounded-full text-label-sm text-text-secondary">#documentation</span>
+<span class="px-3 py-1 bg-surface-alt rounded-full text-label-sm text-text-secondary">#audit</span>
+</div>
+</div>
+<div class="flex flex-col items-end justify-between min-w-[200px] border-l border-outline-variant/30 pl-6 h-full">
+<div class="text-right mb-6 md:mb-0">
+<div class="flex items-center gap-2 justify-end mb-1">
+<span class="text-label-sm font-bold">Marcus Thorne</span>
+<div class="w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center text-[10px]">MT</div>
+</div>
+<p class="text-caption-sm text-text-secondary">Technical Writing</p>
+</div>
+<button class="w-full md:w-auto mt-4 px-6 py-2.5 bg-secondary text-on-secondary rounded-full text-label-sm font-bold hover:opacity-80 transition-all transform active:scale-95 flex items-center justify-center gap-2">
+                                    Self-assign
+                                    <span class="material-symbols-outlined text-sm">person_add</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Empty State Placeholder (Visual interest) -->
+<div class="mt-16 p-12 border-2 border-dashed border-outline-variant/30 rounded-3xl flex flex-col items-center justify-center text-center opacity-40">
+<span class="material-symbols-outlined text-4xl mb-4">work_outline</span>
+<p class="text-body-md font-bold">End of Queue</p>
+<p class="text-caption-sm">Refresh to see new incoming requests from the triage team.</p>
+</div>
+</div>
+</main>
+</div>
+<!-- Floating Action Button (FAB) - Suppressed as per instructions for "Pool" page as it's a specific task focus -->
+<script>
+        // Simple micro-interactions
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('click', function(e) {
+                if(this.textContent.includes('Self-assign')) {
+                    const originalText = this.innerHTML;
+                    this.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span> Assigning...';
+                    this.classList.add('bg-success');
+                    this.classList.remove('bg-secondary');
+                    
+                    setTimeout(() => {
+                        this.closest('.group').style.opacity = '0';
+                        this.closest('.group').style.transform = 'translateX(20px)';
+                        setTimeout(() => {
+                            this.closest('.group').remove();
+                        }, 300);
+                    }, 1000);
+                }
+            });
+        });
+    </script>
+</body></html>

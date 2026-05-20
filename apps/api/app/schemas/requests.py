@@ -64,3 +64,23 @@ class InternalRequestOut(BaseModel):
     cancelled_at: str | None = None
     created_at: str
     updated_at: str
+
+
+class AssignmentHistoryOut(BaseModel):
+    id: str
+    request_id: str
+    from_user_id: str | None = None
+    to_user_id: str
+    assigned_by: str
+    reason: str | None = None
+    created_at: str
+
+
+class RequestStatusLogOut(BaseModel):
+    id: str
+    request_id: str
+    from_status: RequestStatus | None = None
+    to_status: RequestStatus
+    changed_by: str
+    reason: str | None = None
+    created_at: str

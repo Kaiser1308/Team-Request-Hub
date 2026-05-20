@@ -18,6 +18,23 @@ team-request-hub/
 ├── docs/      # Architecture, API, database, and permissions notes
 ```
 
+## Agent Handoff Docs
+
+Read these before assigning or executing phase work:
+
+```text
+docs/architecture.md
+docs/api-contract.md
+docs/database-schema.md
+docs/permissions.md
+docs/frontend-ui-framework.md
+docs/superpowers/plans/2026-05-20-team-request-hub-product-roadmap.md
+docs/superpowers/plans/2026-05-20-team-request-hub-mvp-phased-build.md
+```
+
+For frontend work, treat `ui-frameware/` as a visual reference only. Rebuild the
+screens using the rules in `docs/frontend-ui-framework.md`.
+
 ## Running The Frontend
 
 ```bash
@@ -30,10 +47,9 @@ npm run dev
 
 ```bash
 cd apps/api
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-uvicorn main:app --reload
+uv --cache-dir .uv-cache venv
+uv --cache-dir .uv-cache pip install -r requirements.txt
+uv --cache-dir .uv-cache run uvicorn app.main:app --reload --port 8000
 ```
 
 ## Environment Variables

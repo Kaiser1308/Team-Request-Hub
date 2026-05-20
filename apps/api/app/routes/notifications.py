@@ -1,11 +1,11 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 
 from app.core.auth import get_current_user
-from app.db.supabase import get_supabase_admin
-from app.schemas.notifications import NotificationOut
+from app.schemas.notifications import NotificationOut, NotificationsReadAllOut
 from app.schemas.users import CurrentUser
+from app.services import notifications
 
 router = APIRouter()
 
@@ -13,18 +13,16 @@ router = APIRouter()
 @router.get("", response_model=list[NotificationOut])
 async def list_notifications(
     current_user: Annotated[CurrentUser, Depends(get_current_user)],
+    unread_only: bool = False,
 ):
-    supabase = get_supabase_admin()
+    return notifications.list_notifications(current_user.id, unread_only)
 
-    result = (
-        supabase.table("notifications")
-        .select("*")
-        .eq("user_id", current_user.id)
-        .order("created_at", desc=True)
-        .execute()
-    )
 
-    return result.data or []
+@router.post("/read-all", response_model=NotificationsReadAllOut)
+async def mark_all_notifications_read(
+    current_user: Annotated[CurrentUser, Depends(get_current_user)],
+):
+    return notifications.mark_all_notifications_read(current_user.id)
 
 
 @router.post("/{notification_id}/read", response_model=NotificationOut)
@@ -32,20 +30,4 @@ async def mark_notification_read(
     notification_id: str,
     current_user: Annotated[CurrentUser, Depends(get_current_user)],
 ):
-    supabase = get_supabase_admin()
-
-    result = (
-        supabase.table("notifications")
-        .update({"is_read": True})
-        .eq("id", notification_id)
-        .eq("user_id", current_user.id)
-        .execute()
-    )
-
-    if not result.data:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Notification not found",
-        )
-
-    return result.data[0]
+    return notifications.mark_notification_read(notification_id, current_user.id)

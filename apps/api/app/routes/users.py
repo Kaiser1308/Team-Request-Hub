@@ -3,8 +3,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from app.core.auth import get_current_user
-from app.db.supabase import get_supabase_admin
-from app.schemas.users import CurrentUser, UserOut
+from app.schemas.users import CurrentUser, UserOut, UserRoleUpdate
+from app.services import users
 
 router = APIRouter()
 
@@ -20,13 +20,13 @@ async def get_me(
 async def list_users(
     current_user: Annotated[CurrentUser, Depends(get_current_user)],
 ):
-    supabase = get_supabase_admin()
+    return users.list_users()
 
-    result = (
-        supabase.table("users")
-        .select("id,email,name,avatar_url,role,created_at")
-        .order("name")
-        .execute()
-    )
 
-    return result.data or []
+@router.patch("/{user_id}/role", response_model=UserOut)
+async def update_user_role(
+    user_id: str,
+    payload: UserRoleUpdate,
+    current_user: Annotated[CurrentUser, Depends(get_current_user)],
+):
+    return users.update_user_role(user_id, payload, current_user)

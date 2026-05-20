@@ -1,36 +1,102 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Team Request Hub Web
 
-## Getting Started
+Next.js frontend for Team Request Hub.
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```txt
+Next.js 15 App Router
+React 19
+TypeScript strict mode
+Tailwind CSS v4
+shadcn/ui
+TanStack Query v5
+Supabase SSR/browser clients
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Commands
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Run from `apps/web`:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm install
+npm run dev
+npm run lint
+npm run build
+npm run start
+```
 
-## Learn More
+## Environment
 
-To learn more about Next.js, take a look at the following resources:
+Required public env keys are documented in `.env.example`:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+NEXT_PUBLIC_API_URL=
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Frontend Architecture
 
-## Deploy on Vercel
+```txt
+src/app/
+  (auth)/login/          login route placeholder
+  (dashboard)/           protected app routes
+  page.tsx               redirects to /dashboard
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+src/lib/
+  api/client.ts          FastAPI client with Supabase Bearer JWT
+  supabase/client.ts     browser Supabase client
+  supabase/middleware.ts session refresh and route protection
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+src/providers/
+  query-provider.tsx     TanStack Query provider
+
+src/types/
+  index.ts               shared FE domain types
+
+src/components/
+  ui/                    shadcn/ui components
+```
+
+## UI Framework
+
+Read the project UI framework before implementing frontend screens:
+
+```txt
+../../docs/frontend-ui-framework.md
+```
+
+The static files in `../../ui-frameware/` are visual reference only. Do not copy
+their HTML, Tailwind CDN setup, Material Symbols, inline scripts, external
+images, or hard-coded demo data. Rebuild screens as React components with
+Tailwind v4, shadcn/ui, lucide icons, TanStack Query hooks, and `apiFetch`.
+
+## Auth Boundary
+
+Supabase is used in the frontend for Auth/session handling only.
+
+```txt
+Browser signs in with Supabase Auth
+Supabase stores session cookies
+Middleware redirects unauthenticated users to /login
+apiFetch gets the Supabase access token
+apiFetch calls FastAPI with Authorization: Bearer <token>
+```
+
+Business logic, permission checks, notifications, assignment history, status
+logs, and service-role database access belong in `apps/api`.
+
+## Current State
+
+The frontend is still a skeleton:
+
+```txt
+- /login is a placeholder and does not yet call Google OAuth.
+- Dashboard/request pages are placeholders.
+- apiFetch is ready to call the backend once UI flows are implemented.
+- Middleware already protects dashboard routes.
+```
+
+Do not create `src/app/api/` route handlers for product business logic. Call the
+FastAPI backend through `src/lib/api/client.ts`.

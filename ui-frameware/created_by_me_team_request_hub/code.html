@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Created by me - Team Request Hub</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .signature-shadow {
+            box-shadow: rgba(0, 0, 0, 0.22) 3px 5px 30px 0px;
+        }
+        .glass-header {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary-container": "#1b1b1b",
+                      "on-surface-variant": "#4c4546",
+                      "text-secondary": "#86868b",
+                      "secondary-fixed": "#d7e2ff",
+                      "tertiary-fixed": "#e2e2e2",
+                      "tertiary": "#000000",
+                      "primary-container": "#1b1b1b",
+                      "outline-variant": "#cfc4c5",
+                      "on-primary": "#ffffff",
+                      "on-secondary": "#ffffff",
+                      "primary-fixed": "#e2e2e2",
+                      "surface-container-low": "#f3f3f3",
+                      "secondary-fixed-dim": "#abc7ff",
+                      "on-error": "#ffffff",
+                      "on-background": "#1b1b1b",
+                      "surface-tint": "#5e5e5e",
+                      "on-tertiary-fixed-variant": "#474747",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-bright": "#f9f9f9",
+                      "surface-container-high": "#e8e8e8",
+                      "warning": "#ff9f0a",
+                      "link": "#0066cc",
+                      "error": "#ff3b30",
+                      "on-tertiary-container": "#848484",
+                      "on-tertiary": "#ffffff",
+                      "surface": "#f9f9f9",
+                      "on-surface": "#1b1b1b",
+                      "surface-variant": "#e2e2e2",
+                      "background": "#f9f9f9",
+                      "on-tertiary-fixed": "#1b1b1b",
+                      "inverse-on-surface": "#f1f1f1",
+                      "surface-dim": "#dadada",
+                      "primary": "#000000",
+                      "tertiary-fixed-dim": "#c6c6c6",
+                      "secondary-container": "#0372e4",
+                      "on-primary-container": "#848484",
+                      "on-primary-fixed": "#1b1b1b",
+                      "inverse-primary": "#c6c6c6",
+                      "on-secondary-fixed": "#001b3f",
+                      "error-container": "#ffdad6",
+                      "inverse-surface": "#303030",
+                      "text-primary": "#1d1d1f",
+                      "on-primary-fixed-variant": "#474747",
+                      "surface-container": "#eeeeee",
+                      "on-error-container": "#93000a",
+                      "on-secondary-fixed-variant": "#00458f",
+                      "secondary": "#005ab7",
+                      "surface-container-highest": "#e2e2e2",
+                      "primary-fixed-dim": "#c6c6c6",
+                      "outline": "#7e7576",
+                      "on-secondary-container": "#fefcff",
+                      "surface-alt": "#f5f5f7",
+                      "success": "#28a745"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "container-max": "1200px",
+                      "margin-desktop": "40px",
+                      "margin-mobile": "16px",
+                      "gutter": "24px",
+                      "unit": "8px"
+              },
+              "fontFamily": {
+                      "body-md": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "display-lg-mobile": ["Inter"],
+                      "headline-md": ["Inter"],
+                      "display-lg": ["Inter"],
+                      "caption-sm": ["Inter"]
+              },
+              "fontSize": {
+                      "body-md": ["17px", {"lineHeight": "1.47", "letterSpacing": "-0.022em", "fontWeight": "400"}],
+                      "label-sm": ["14px", {"lineHeight": "1.2", "letterSpacing": "0", "fontWeight": "600"}],
+                      "display-lg-mobile": ["32px", {"lineHeight": "1.1", "letterSpacing": "-0.005em", "fontWeight": "600"}],
+                      "headline-md": ["21px", {"lineHeight": "1.19", "letterSpacing": "0", "fontWeight": "400"}],
+                      "display-lg": ["56px", {"lineHeight": "1.07", "letterSpacing": "-0.005em", "fontWeight": "600"}],
+                      "caption-sm": ["14px", {"lineHeight": "1.2", "letterSpacing": "0", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface antialiased overflow-x-hidden">
+<!-- Top Navigation Bar -->
+<header class="sticky top-0 z-50 flex justify-between items-center w-full px-margin-desktop py-3 h-16 bg-black/80 backdrop-blur-xl shadow-sm">
+<div class="flex items-center gap-6">
+<span class="text-headline-md font-bold tracking-tight text-on-primary">Team Request Hub</span>
+<div class="hidden md:flex gap-4 items-center">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-primary/60">search</span>
+<input class="bg-on-primary/10 border-none rounded-xl py-1.5 pl-10 pr-4 text-on-primary placeholder-on-primary/40 focus:ring-1 focus:ring-secondary w-64 transition-all duration-300 focus:w-80" placeholder="Search requests..." type="text"/>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-on-primary/60 hover:text-on-primary transition-colors">notifications</button>
+<button class="material-symbols-outlined text-on-primary/60 hover:text-on-primary transition-colors">apps</button>
+<div class="h-8 w-8 rounded-full overflow-hidden border border-on-primary/20">
+<img alt="User profile with role badge" class="w-full h-full object-cover" data-alt="A professional studio portrait of a young male professional in his late 20s, featuring clean lighting and a minimalist soft gray background. He is wearing a crisp dark navy polo shirt. The aesthetic is high-end corporate with a focus on precision and clarity, using a cinematic neutral color palette that reflects the brand's sophisticated and modern identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6H-aR22JZiZC_PI5FixHVDzK9L9k3gYqxhAIcQnfy1SlcrN9nxybqzfgU4_Fw14upYg4QpMXSE13uFadmt7uPDmivVFaIMS-5YUivGrYUYlaZX_3ajRBt4-cVAQDUkwRD_iLPogxRRBXjROV-KSNNvGBeXMWSD593oM8Dq119o0rjJZf3B7H6YYa9zmIHfseGQfJlehqaRNBtAMm1za5UBa6xlL6HOk6E8_lKpk3mGp5O0kccvnaPmm3VlPVQRuPnb3at3MbnRHg"/>
+</div>
+</div>
+</header>
+<div class="flex min-h-[calc(100vh-64px)]">
+<!-- Side Navigation Bar -->
+<aside class="hidden md:flex flex-col h-auto py-8 px-4 gap-y-2 border-r border-outline-variant/30 bg-surface-container-lowest sticky top-16 w-64 shrink-0">
+<div class="px-3 mb-6">
+<h3 class="font-headline-md text-headline-md font-bold text-primary">Navigation</h3>
+<p class="text-label-sm font-label-sm text-text-secondary">Technical Tool</p>
+</div>
+<nav class="space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 text-text-secondary hover:bg-surface-container transition-colors duration-200 rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-sm text-label-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-text-secondary hover:bg-surface-container transition-colors duration-200 rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="assignment_ind">assignment_ind</span>
+<span class="font-label-sm text-label-sm">Assigned to me</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-secondary font-bold bg-secondary/5 rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="person_add">person_add</span>
+<span class="font-label-sm text-label-sm">Created by me</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-text-secondary hover:bg-surface-container transition-colors duration-200 rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="reorder">reorder</span>
+<span class="font-label-sm text-label-sm">Pool</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-text-secondary hover:bg-surface-container transition-colors duration-200 rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>
+<span class="font-label-sm text-label-sm">Done</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-text-secondary hover:bg-surface-container transition-colors duration-200 rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-label-sm text-label-sm">All Requests</span>
+</a>
+</nav>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 w-full max-w-5xl mx-auto px-margin-mobile md:px-margin-desktop py-12">
+<!-- Page Header -->
+<div class="mb-12">
+<h1 class="text-display-lg-mobile md:text-display-lg font-display-lg text-text-primary tracking-tight mb-2">Created by me</h1>
+<p class="text-body-md font-body-md text-text-secondary max-w-2xl">Track and manage the requests you have submitted to the team. Review status updates and assigned personnel at a glance.</p>
+</div>
+<!-- Filter Bar Section -->
+<div class="mb-10 flex flex-wrap items-center justify-between gap-6 p-1 bg-surface-container-low rounded-2xl">
+<div class="flex overflow-x-auto no-scrollbar gap-1 p-1">
+<button class="px-5 py-2 rounded-xl text-label-sm font-label-sm bg-white shadow-sm text-text-primary">All</button>
+<button class="px-5 py-2 rounded-xl text-label-sm font-label-sm text-text-secondary hover:bg-white/50 transition-colors">Pending</button>
+<button class="px-5 py-2 rounded-xl text-label-sm font-label-sm text-text-secondary hover:bg-white/50 transition-colors">Acknowledged</button>
+<button class="px-5 py-2 rounded-xl text-label-sm font-label-sm text-text-secondary hover:bg-white/50 transition-colors">In Progress</button>
+<button class="px-5 py-2 rounded-xl text-label-sm font-label-sm text-text-secondary hover:bg-white/50 transition-colors">Done</button>
+<button class="px-5 py-2 rounded-xl text-label-sm font-label-sm text-text-secondary hover:bg-white/50 transition-colors">Cancelled</button>
+</div>
+<div class="px-4 border-l border-outline-variant/30 flex items-center gap-3">
+<span class="text-label-sm font-label-sm text-text-secondary">Sort by:</span>
+<button class="flex items-center gap-2 text-label-sm font-label-sm text-text-primary">
+                        Priority
+                        <span class="material-symbols-outlined text-[18px]">expand_more</span>
+</button>
+</div>
+</div>
+<!-- Request Cards Grid/List -->
+<div class="space-y-6">
+<!-- Request Item 1 -->
+<article class="bg-surface-alt rounded-xl p-6 border border-outline-variant/20 hover:border-secondary/30 transition-all duration-300 flex flex-col md:flex-row gap-6 items-start">
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-3">
+<span class="px-2.5 py-0.5 rounded-full bg-warning/10 text-warning text-[11px] font-bold uppercase tracking-wider">High Priority</span>
+<span class="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[11px] font-bold uppercase tracking-wider">Pending</span>
+</div>
+<h2 class="text-headline-md font-bold text-text-primary mb-2">Add avatarUrl to profile response</h2>
+<div class="flex flex-wrap gap-2 mb-4">
+<span class="text-caption-sm font-caption-sm bg-surface-container px-2 py-0.5 rounded text-on-surface-variant">#api</span>
+<span class="text-caption-sm font-caption-sm bg-surface-container px-2 py-0.5 rounded text-on-surface-variant">#backend</span>
+</div>
+<div class="flex items-center gap-4 text-caption-sm font-caption-sm text-text-secondary">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">account_circle</span>
+<span>Assigned to: <span class="text-text-primary font-medium">Bao Tran (BE)</span></span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span>Created 2h ago</span>
+</div>
+</div>
+</div>
+<div class="flex md:flex-col gap-2 shrink-0 self-center md:self-start w-full md:w-auto">
+<button class="flex-1 md:flex-none px-4 py-2 bg-secondary text-white rounded-lg font-label-sm text-label-sm hover:opacity-80 transition-opacity">View Detail</button>
+<button class="flex-1 md:flex-none px-4 py-2 bg-white border border-outline-variant/30 text-text-primary rounded-lg font-label-sm text-label-sm hover:bg-surface-container transition-colors">Edit</button>
+<button class="p-2 text-error hover:bg-error/10 rounded-lg transition-colors material-symbols-outlined" title="Cancel Request">cancel</button>
+</div>
+</article>
+<!-- Request Item 2 -->
+<article class="bg-surface-alt rounded-xl p-6 border border-outline-variant/20 hover:border-secondary/30 transition-all duration-300 flex flex-col md:flex-row gap-6 items-start">
+<div class="flex-1 w-full">
+<div class="flex items-center gap-3 mb-3">
+<span class="px-2.5 py-0.5 rounded-full bg-error text-white text-[11px] font-bold uppercase tracking-wider">Urgent</span>
+<span class="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[11px] font-bold uppercase tracking-wider">Pending</span>
+</div>
+<h2 class="text-headline-md font-bold text-text-primary mb-2">Check broken deploy env</h2>
+<div class="flex flex-wrap gap-2 mb-4">
+<span class="text-caption-sm font-caption-sm bg-surface-container px-2 py-0.5 rounded text-on-surface-variant">#deployment</span>
+<span class="text-caption-sm font-caption-sm bg-surface-container px-2 py-0.5 rounded text-on-surface-variant">#backend</span>
+<span class="text-caption-sm font-caption-sm bg-error/10 text-error px-2 py-0.5 rounded font-medium">#blocked</span>
+</div>
+<div class="flex items-center gap-4 text-caption-sm font-caption-sm text-text-secondary">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-warning">info</span>
+<span class="text-warning font-medium italic">Unassigned / In Pool</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span>Created 5h ago</span>
+</div>
+</div>
+</div>
+<div class="flex md:flex-col gap-2 shrink-0 self-center md:self-start w-full md:w-auto">
+<button class="flex-1 md:flex-none px-4 py-2 bg-secondary text-white rounded-lg font-label-sm text-label-sm hover:opacity-80 transition-opacity">View Detail</button>
+<button class="flex-1 md:flex-none px-4 py-2 bg-white border border-outline-variant/30 text-text-primary rounded-lg font-label-sm text-label-sm hover:bg-surface-container transition-colors">Edit</button>
+<button class="p-2 text-error hover:bg-error/10 rounded-lg transition-colors material-symbols-outlined">cancel</button>
+</div>
+</article>
+<!-- Request Item 3 (Done) -->
+<article class="bg-white rounded-xl p-8 signature-shadow border-none flex flex-col gap-6 relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-success"></div>
+<div class="flex flex-col md:flex-row gap-6">
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-3">
+<span class="px-2.5 py-0.5 rounded-full bg-surface-container text-text-secondary text-[11px] font-bold uppercase tracking-wider">Low Priority</span>
+<span class="px-2.5 py-0.5 rounded-full bg-success text-white text-[11px] font-bold uppercase tracking-wider">Done</span>
+</div>
+<h2 class="text-headline-md font-bold text-text-primary mb-2">Update seed data for demo</h2>
+<div class="flex flex-wrap gap-2 mb-6">
+<span class="text-caption-sm font-caption-sm bg-surface-container px-2 py-0.5 rounded text-on-surface-variant">#data</span>
+<span class="text-caption-sm font-caption-sm bg-surface-container px-2 py-0.5 rounded text-on-surface-variant">#config</span>
+</div>
+<!-- Done Reply Container -->
+<div class="bg-surface-alt rounded-lg p-5 border-l-4 border-success/30">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-success text-[20px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-label-sm font-label-sm text-text-primary">Resolution Reply</span>
+</div>
+<p class="text-body-md font-body-md text-text-primary italic">"Demo seed data has been added and verified locally."</p>
+<div class="mt-4 flex items-center gap-3">
+<img alt="Minh Le profile" class="w-6 h-6 rounded-full border border-outline-variant/20" data-alt="A clean, close-up professional profile picture of a tech professional in his early 30s with a friendly expression. The background is a soft, blurred modern office environment with hints of natural light and glass partitions. The lighting is bright and airy, adhering to a high-end corporate aesthetic with a neutral color palette and crisp visual fidelity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5ROxa9fwlkU_oSSkKxr1paibZelpbJoOccU-ToWUX9gEd4jHZoTbTMx26NX-_tHgRGXUAf0ntSsPokMPCo8Oe-xofGjWfGxLnrcIo_8t56TS2Jkv4eIQvfNpJF8RYfnC1SD21boc2ztV4INtIWvvTyluFs_Q0RiPeKQ3eoMFhtrujPLRYP6jYtdkcBnUGhXwtuEwQQTdBAhS4MUSB7Yaf88rBY9fKq0HVqmMImG0dF1yfr5AuHSk9oVCyAXa6EmT1apd629JGFKA"/>
+<span class="text-caption-sm font-caption-sm text-text-secondary">Closed by <span class="text-text-primary font-medium">Minh Le (BE)</span> • Yesterday</span>
+</div>
+</div>
+</div>
+<div class="flex md:flex-col gap-2 shrink-0 self-center md:self-start w-full md:w-auto">
+<button class="flex-1 md:flex-none px-6 py-2.5 bg-secondary text-white rounded-full font-label-sm text-label-sm hover:opacity-80 transition-opacity flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+                                View Detail
+                            </button>
+</div>
+</div>
+</article>
+</div>
+<!-- Empty State Illustration (Hidden by default, shown when no results) -->
+<div class="hidden flex-col items-center justify-center py-20 text-center" id="empty-state">
+<div class="w-24 h-24 bg-surface-container rounded-full flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-[48px] text-text-secondary">description</span>
+</div>
+<h3 class="text-headline-md font-bold text-text-primary mb-2">No requests found</h3>
+<p class="text-body-md font-body-md text-text-secondary mb-8">You haven't submitted any requests matching these filters yet.</p>
+<button class="px-8 py-3 bg-secondary text-white rounded-full font-label-sm text-label-sm shadow-lg hover:shadow-xl transition-all">Create New Request</button>
+</div>
+</main>
+</div>
+<!-- Floating Action Button -->
+<button class="fixed bottom-8 right-8 w-14 h-14 bg-secondary text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-105 transition-transform duration-150 z-40 group">
+<span class="material-symbols-outlined text-[28px] group-active:scale-90 transition-transform">add</span>
+<span class="absolute right-16 bg-black text-white px-3 py-1.5 rounded-lg text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-xl">New Request</span>
+</button>
+<script>
+        // Simple Micro-interactions
+        document.querySelectorAll('article').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-2px)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0)';
+            });
+        });
+
+        // Filter button behavior
+        const filterBtns = document.querySelectorAll('.no-scrollbar button');
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => {
+                    b.classList.remove('bg-white', 'shadow-sm', 'text-text-primary');
+                    b.classList.add('text-text-secondary', 'hover:bg-white/50');
+                });
+                btn.classList.add('bg-white', 'shadow-sm', 'text-text-primary');
+                btn.classList.remove('text-text-secondary', 'hover:bg-white/50');
+            });
+        });
+    </script>
+</body></html>

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Create Request | Team Request Hub</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-alt": "#f5f5f7",
+                        "success": "#28a745",
+                        "primary-fixed": "#e2e2e2",
+                        "error-container": "#ffdad6",
+                        "primary": "#000000",
+                        "on-primary-fixed": "#1b1b1b",
+                        "text-primary": "#1d1d1f",
+                        "inverse-surface": "#303030",
+                        "link": "#0066cc",
+                        "secondary-container": "#0372e4",
+                        "tertiary-fixed": "#e2e2e2",
+                        "on-secondary-container": "#fefcff",
+                        "surface-container-low": "#f3f3f3",
+                        "outline-variant": "#cfc4c5",
+                        "secondary-fixed-dim": "#abc7ff",
+                        "on-tertiary-container": "#848484",
+                        "surface-container-high": "#e8e8e8",
+                        "text-secondary": "#86868b",
+                        "on-secondary-fixed-variant": "#00458f",
+                        "on-primary-container": "#848484",
+                        "background": "#f9f9f9",
+                        "primary-fixed-dim": "#c6c6c6",
+                        "on-surface": "#1b1b1b",
+                        "on-tertiary-fixed": "#1b1b1b",
+                        "on-surface-variant": "#4c4546",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed": "#d7e2ff",
+                        "surface-variant": "#e2e2e2",
+                        "inverse-on-surface": "#f1f1f1",
+                        "surface-dim": "#dadada",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary": "#005ab7",
+                        "on-background": "#1b1b1b",
+                        "on-primary": "#ffffff",
+                        "outline": "#7e7576",
+                        "surface-container-highest": "#e2e2e2",
+                        "tertiary-fixed-dim": "#c6c6c6",
+                        "tertiary": "#000000",
+                        "surface": "#f9f9f9",
+                        "on-secondary": "#ffffff",
+                        "tertiary-container": "#1b1b1b",
+                        "warning": "#ff9f0a",
+                        "on-error-container": "#93000a",
+                        "surface-tint": "#5e5e5e",
+                        "on-tertiary-fixed-variant": "#474747",
+                        "error": "#ff3b30",
+                        "inverse-primary": "#c6c6c6",
+                        "on-primary-fixed-variant": "#474747",
+                        "surface-container": "#eeeeee",
+                        "on-secondary-fixed": "#001b3f",
+                        "on-error": "#ffffff",
+                        "surface-bright": "#f9f9f9",
+                        "primary-container": "#1b1b1b"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-desktop": "40px",
+                        "container-max": "1200px",
+                        "margin-mobile": "16px",
+                        "gutter": "24px",
+                        "unit": "8px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "caption-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["17px", {"lineHeight": "1.47", "letterSpacing": "-0.022em", "fontWeight": "400"}],
+                        "display-lg": ["56px", {"lineHeight": "1.07", "letterSpacing": "-0.005em", "fontWeight": "600"}],
+                        "caption-sm": ["14px", {"lineHeight": "1.2", "letterSpacing": "0", "fontWeight": "400"}],
+                        "headline-md": ["21px", {"lineHeight": "1.19", "letterSpacing": "0", "fontWeight": "400"}],
+                        "label-sm": ["14px", {"lineHeight": "1.2", "letterSpacing": "0", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .signature-shadow {
+            box-shadow: rgba(0, 0, 0, 0.22) 3px 5px 30px 0px;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none !important;
+            border-color: transparent !important;
+            box-shadow: 0 0 0 2px #0066cc !important;
+        }
+    </style>
+</head>
+<body class="bg-surface-alt font-body-md text-text-primary min-h-screen">
+<!-- TopNavBar -->
+<header class="sticky top-0 z-50 flex justify-between items-center w-full px-margin-desktop py-3 h-16 bg-primary/80 dark:bg-primary/90 backdrop-blur-xl bg-black/80 shadow-sm text-on-primary">
+<div class="flex items-center gap-8">
+<span class="text-headline-md font-bold tracking-tight text-on-primary">Team Request Hub</span>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-on-primary/60 font-medium hover:text-on-primary transition-opacity duration-200 text-label-sm font-label-sm" href="#">Dashboard</a>
+<a class="text-on-primary font-bold border-b-2 border-secondary text-label-sm font-label-sm" href="#">Create Request</a>
+<a class="text-on-primary/60 font-medium hover:text-on-primary transition-opacity duration-200 text-label-sm font-label-sm" href="#">Pool</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-primary/50" data-icon="search">search</span>
+<input class="bg-white/10 border-none rounded-full py-1.5 pl-10 pr-4 text-label-sm font-label-sm text-on-primary focus:ring-1 focus:ring-secondary w-64" placeholder="Search requests..." type="text"/>
+</div>
+<button class="material-symbols-outlined text-on-primary/80 hover:text-on-primary" data-icon="notifications">notifications</button>
+<button class="material-symbols-outlined text-on-primary/80 hover:text-on-primary" data-icon="apps">apps</button>
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-high border border-white/20">
+<img alt="User Profile" data-alt="A professional high-resolution headshot of a team member in a minimalist setting. The lighting is soft and corporate, matching a high-end electronic brand's aesthetic. The background is a clean, out-of-focus office environment with soft neutral tones and professional color grading." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDNYxRzPJTefG4_9DF1JWNQv8LVrXUZoCX6gRJbREQE1ykgK2xTfeeSYejBNON0m7w-40qYlJcCfeU8q3dMY2amQZVuLeM_n-kxJjFbamryfNSghWI6Br0OXXd1dagnSRmM5fmKwu8ZsYUFQ6Y5nwvWlY6FUynivvaDAE2rWpGHUkC7vFgxCdSc3IiL7XkRWxdcJkxEsZGMAB5hGl_020yHkuy9_sLeTI1CFE_wQ6P6uZQ_Y8Ghac-aUmkukQ8Xc9OhorBAwOyI3-M"/>
+</div>
+</div>
+</header>
+<div class="flex">
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col h-[calc(100vh-64px)] w-64 py-8 px-4 gap-y-2 bg-surface-container-lowest border-r border-outline-variant/30 sticky top-16">
+<div class="mb-6 px-2">
+<p class="text-label-sm font-label-sm text-text-secondary uppercase tracking-widest opacity-60">Navigation</p>
+</div>
+<a class="flex items-center gap-3 px-3 py-2 text-text-secondary hover:bg-surface-container transition-colors duration-200 rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="text-label-sm font-label-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-text-secondary hover:bg-surface-container transition-colors duration-200 rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="assignment_ind">assignment_ind</span>
+<span class="text-label-sm font-label-sm">Assigned to me</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-secondary font-bold bg-secondary/5 rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="person_add">person_add</span>
+<span class="text-label-sm font-label-sm">Created by me</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-text-secondary hover:bg-surface-container transition-colors duration-200 rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="reorder">reorder</span>
+<span class="text-label-sm font-label-sm">Pool</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-text-secondary hover:bg-surface-container transition-colors duration-200 rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>
+<span class="text-label-sm font-label-sm">Done</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-text-secondary hover:bg-surface-container transition-colors duration-200 rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="text-label-sm font-label-sm">All Requests</span>
+</a>
+<div class="mt-auto p-4 rounded-xl bg-primary text-on-primary">
+<p class="text-label-sm font-bold mb-1">Technical Tool</p>
+<p class="text-caption-sm opacity-70">Internal Request Hub v2.4.1</p>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 px-margin-mobile md:px-margin-desktop py-12 max-w-container-max mx-auto">
+<!-- Header Section -->
+<div class="mb-12">
+<h1 class="text-display-lg-mobile md:text-display-lg font-display-lg mb-2">Create Request</h1>
+<p class="text-text-secondary text-body-md max-w-2xl">Initiate a new technical task or feature request. Please provide as much detail as possible to ensure efficient processing by the engineering team.</p>
+</div>
+<!-- Form Container -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<div class="lg:col-span-8 bg-surface-container-lowest p-8 rounded-xl signature-shadow">
+<form class="space-y-8" onsubmit="event.preventDefault()">
+<!-- Title Field -->
+<div class="space-y-2">
+<label class="text-label-sm font-label-sm text-text-primary">Title</label>
+<input class="w-full bg-[#E8E8ED] border-none rounded-lg px-4 py-3 text-body-md focus:bg-white transition-all duration-200" placeholder="e.g., Implement dark mode for the dashboard" type="text"/>
+</div>
+<!-- Description Field -->
+<div class="space-y-2">
+<label class="text-label-sm font-label-sm text-text-primary">Description</label>
+<textarea class="w-full bg-[#E8E8ED] border-none rounded-lg px-4 py-3 text-body-md focus:bg-white transition-all duration-200 resize-none" placeholder="Provide a detailed overview of the request, including goals and constraints..." rows="6"></textarea>
+</div>
+<!-- Tags Section -->
+<div class="space-y-3">
+<label class="text-label-sm font-label-sm text-text-primary">Tags</label>
+<div class="flex flex-wrap gap-2 p-3 bg-[#E8E8ED] rounded-lg min-h-[48px]">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 bg-primary text-on-primary text-caption-sm rounded-full">
+                                    Frontend <button class="material-symbols-outlined text-[14px]">close</button>
+</span>
+<span class="inline-flex items-center gap-1.5 px-3 py-1 bg-primary text-on-primary text-caption-sm rounded-full">
+                                    UI/UX <button class="material-symbols-outlined text-[14px]">close</button>
+</span>
+<input class="bg-transparent border-none p-0 px-2 text-caption-sm focus:ring-0 flex-1 min-w-[100px]" placeholder="Add tag..." type="text"/>
+</div>
+</div>
+<!-- Reference Links -->
+<div class="space-y-3" id="links-container">
+<label class="text-label-sm font-label-sm text-text-primary flex justify-between">
+                                Reference Links
+                                <button class="text-link hover:underline text-caption-sm" onclick="addLinkRow()" type="button">+ Add Link</button>
+</label>
+<div class="space-y-2" id="links-list">
+<div class="flex gap-2">
+<input class="flex-1 bg-[#E8E8ED] border-none rounded-lg px-4 py-2 text-body-md" placeholder="https://linear.app/..." type="url"/>
+<button class="material-symbols-outlined text-text-secondary hover:text-error" data-icon="delete">delete</button>
+</div>
+</div>
+</div>
+<!-- Submission Area -->
+<div class="pt-6 border-t border-outline-variant/30 flex justify-end items-center gap-4">
+<button class="px-6 py-2.5 rounded-lg text-text-secondary font-label-sm hover:bg-surface-container transition-colors" type="button">Cancel</button>
+<button class="px-8 py-2.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm hover:opacity-80 transition-opacity flex items-center gap-2" type="submit">
+                                Create Request
+                                <span class="material-symbols-outlined" data-icon="send">send</span>
+</button>
+</div>
+</form>
+</div>
+<!-- Right Rail / Configuration -->
+<div class="lg:col-span-4 space-y-6">
+<div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/20">
+<h3 class="text-label-sm font-bold mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary" data-icon="settings">settings</span>
+                            Configuration
+                        </h3>
+<div class="space-y-6">
+<!-- Priority -->
+<div class="space-y-2">
+<label class="text-label-sm font-label-sm text-text-secondary">Priority</label>
+<div class="relative">
+<select class="w-full bg-white border border-outline-variant/30 rounded-lg px-4 py-2.5 appearance-none text-body-md">
+<option>Low</option>
+<option selected="">Medium</option>
+<option>High</option>
+<option>Urgent (P0)</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-text-secondary" data-icon="expand_more">expand_more</span>
+</div>
+</div>
+<!-- Assign To -->
+<div class="space-y-2">
+<label class="text-label-sm font-label-sm text-text-secondary">Assign To</label>
+<div class="relative">
+<select class="w-full bg-white border border-outline-variant/30 rounded-lg px-4 py-2.5 appearance-none text-body-md">
+<option value="pool">Leave in pool</option>
+<option value="user1">Alex Rivera (Design)</option>
+<option value="user2">Sarah Chen (Engineering)</option>
+<option value="user3">Jordan Smith (Product)</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-text-secondary" data-icon="person">person</span>
+</div>
+</div>
+<!-- Visibility -->
+<div class="space-y-2">
+<label class="text-label-sm font-label-sm text-text-secondary">Visibility</label>
+<div class="flex items-center justify-between p-3 bg-white rounded-lg border border-outline-variant/30">
+<span class="text-caption-sm">Public to Team</span>
+<div class="relative inline-block w-10 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-2 border-outline-variant appearance-none cursor-pointer checked:right-0 checked:border-secondary-container right-4 transition-all duration-300" id="toggle" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-outline-variant cursor-pointer" for="toggle"></label>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Helpful Tips Card -->
+<div class="p-6 rounded-xl bg-gradient-to-br from-primary to-gray-800 text-on-primary">
+<span class="material-symbols-outlined mb-3 text-warning" data-icon="lightbulb" style="font-variation-settings: 'FILL' 1;">lightbulb</span>
+<h4 class="text-label-sm font-bold mb-2">Submission Tip</h4>
+<p class="text-caption-sm opacity-80 leading-relaxed">Ensure you link the corresponding Linear ticket and attach any relevant Figma designs to expedite the review process by the technical lead.</p>
+</div>
+<!-- Visual Accent Image -->
+<div class="rounded-xl overflow-hidden aspect-video relative group">
+<img alt="System Architecture Visualization" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A futuristic and abstract digital visualization of a system architecture. Intricate networks of glowing white lines connect sleek, volumetric black cubes against a deep, charcoal-gray background. Soft lens flares and a shallow depth of field create a high-end cinematic feel, echoing modern technical interfaces. The overall mood is sophisticated, minimalist, and precise." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIRM7G0Y8-R_68TragWbTvodFNzz9Zb9ZXgS1PY5OZJYLD6K9mWUsT3bUKOrReTq0s-ujUq7MYDL0VRiu7z6iDPUnIX_E8cQrQIgQH5jmQCB3CsaS76qf9NiDII_nHjTjOvHkN1UKJtbModDgQ5Rl_UVj9vqLIh8OJI3hA7s8nmRLrfHtnz3ERN1yoH3Ibu1M1bZwCeMy17Hg5BmLUufrWot7ovvR1roufA_zkhj-qm1ZlaTNqjV4S7qfKhnFClyHTNtuKAXa0OU4"/>
+<div class="absolute inset-0 bg-black/40 flex items-end p-4">
+<span class="text-white text-caption-sm font-bold">System Architecture Insight</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<script>
+        function addLinkRow() {
+            const list = document.getElementById('links-list');
+            const newRow = document.createElement('div');
+            newRow.className = 'flex gap-2 animate-in fade-in slide-in-from-top-1 duration-300';
+            newRow.innerHTML = `
+                <input type="url" placeholder="https://..." class="flex-1 bg-[#E8E8ED] border-none rounded-lg px-4 py-2 text-body-md">
+                <button type="button" onclick="this.parentElement.remove()" class="material-symbols-outlined text-text-secondary hover:text-error" data-icon="delete">delete</button>
+            `;
+            list.appendChild(newRow);
+            
+            // Re-initialize icons for newly added elements
+            const icons = newRow.querySelectorAll('.material-symbols-outlined');
+            icons.forEach(icon => {
+                icon.innerText = icon.getAttribute('data-icon');
+            });
+        }
+
+        // Simple Toggle Behavior
+        const toggle = document.getElementById('toggle');
+        const toggleLabel = document.querySelector('.toggle-label');
+        toggle.addEventListener('change', function() {
+            if(this.checked) {
+                toggleLabel.classList.replace('bg-outline-variant', 'bg-secondary-container');
+            } else {
+                toggleLabel.classList.replace('bg-secondary-container', 'bg-outline-variant');
+            }
+        });
+        // Initial state for toggle background
+        if(toggle.checked) toggleLabel.classList.add('bg-secondary-container');
+    </script>
+</body></html>
