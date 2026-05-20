@@ -1,5 +1,7 @@
+import { AppShell } from "@/components/app/app-shell";
+
 export default function DashboardLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  return <main className="min-h-screen bg-background">{children}</main>;
+  return <AppShell>{children}</AppShell>;
 }

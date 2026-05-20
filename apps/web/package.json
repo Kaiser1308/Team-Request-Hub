@@ -17,6 +17,7 @@
     "@tanstack/react-query-devtools": "^5.100.11",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "lightningcss-linux-x64-gnu": "^1.32.0",
     "next": "^15.5.18",
     "radix-ui": "^1.4.3",
     "react": "^19.2.6",
