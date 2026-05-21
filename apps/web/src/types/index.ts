@@ -22,8 +22,9 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  avatar_url?: string;
+  avatar_url?: string | null;
   role: Role;
+  is_active: boolean;
   created_at: string;
 }
 

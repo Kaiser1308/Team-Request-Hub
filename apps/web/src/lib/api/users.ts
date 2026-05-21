@@ -7,10 +7,15 @@ export interface CurrentUser {
   name: string | null;
   avatar_url?: string | null;
   role: Role;
+  is_active: boolean;
 }
 
 export interface UserRoleUpdate {
   role: Role;
+}
+
+export interface UserActiveUpdate {
+  is_active: boolean;
 }
 
 export function getCurrentUser() {
@@ -21,8 +26,19 @@ export function listUsers() {
   return apiFetch<User[]>("/users");
 }
 
+export function listActiveUsers() {
+  return apiFetch<User[]>("/users/active");
+}
+
 export function updateUserRole(userId: string, payload: UserRoleUpdate) {
   return apiFetch<User>(`/users/${userId}/role`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function updateUserActiveState(userId: string, payload: UserActiveUpdate) {
+  return apiFetch<User>(`/users/${userId}/active`, {
     method: "PATCH",
     body: JSON.stringify(payload),
   });

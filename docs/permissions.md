@@ -14,7 +14,8 @@ New users default to `fe` through the Supabase Auth profile trigger.
 
 - Creators can see requests they created.
 - Assignees can see and act on requests assigned to them.
-- Unassigned pending requests appear in the pool and can be self-assigned.
+- Unassigned pending requests appear in the pool and can be viewed by active users.
+- Active users can self-assign from the pool; backend rejects invalid state changes.
 - `view=all` is lead-only.
 - Leads can reassign and cancel requests across the team.
 

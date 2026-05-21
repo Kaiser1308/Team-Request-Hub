@@ -3,6 +3,7 @@ import type { RequestView } from "@/lib/api/requests";
 export const queryKeys = {
   currentUser: ["current-user"] as const,
   users: ["users"] as const,
+  assignableUsers: ["users", "active"] as const,
   requests: {
     all: ["requests"] as const,
     list: (view: RequestView) => ["requests", view] as const,

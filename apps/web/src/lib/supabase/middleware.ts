@@ -36,17 +36,20 @@ export async function updateSession(request: NextRequest) {
     "/pool",
     "/done",
     "/all",
+    "/admin",
   ];
   const isProtectedRoute = protectedRoutes.some((path) =>
     request.nextUrl.pathname.startsWith(path),
   );
-  const isAuthRoute = request.nextUrl.pathname.startsWith("/login");
+  const isAuthRoute =
+    request.nextUrl.pathname.startsWith("/login") ||
+    request.nextUrl.pathname.startsWith("/pending-approval");
 
   if (!user && isProtectedRoute) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  if (user && isAuthRoute) {
+  if (user && isAuthRoute && !request.nextUrl.pathname.startsWith("/pending-approval")) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { useNotifications } from "@/hooks/use-notifications";
 import { cn } from "@/lib/utils";
 import type { Role } from "@/types";
 
@@ -18,7 +19,7 @@ const navItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/assigned", label: "Assigned to me", roles: ["be", "lead"] },
   { href: "/requests", label: "Created by me" },
-  { href: "/pool", label: "Pool", roles: ["be", "lead"] },
+  { href: "/pool", label: "Pool" },
   { href: "/done", label: "Done" },
   { href: "/all", label: "All requests", roles: ["lead"] },
   { href: "/admin/users", label: "Users", roles: ["lead"] },
@@ -35,9 +36,23 @@ function isActivePath(pathname: string, href: string) {
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { data: currentUser, isLoading, isError, error } = useCurrentUser();
+  const notificationsQuery = useNotifications(true);
+  const unreadCount = notificationsQuery.data?.length ?? 0;
   const visibleNavItems = navItems.filter((item) =>
     canSeeNavItem(item, currentUser?.role),
   );
+
+  if (currentUser?.is_active === false) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#f9fafb] px-4">
+        <div className="grid max-w-lg gap-4 rounded-lg border border-[#e5e7eb] bg-white p-8 text-center">
+          <h1 className="text-2xl font-semibold">Waiting for lead approval</h1>
+          <p className="text-sm text-[#4b5563]">A lead must approve your account before you can access requests.</p>
+          <LogoutButton />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#f9fafb] text-[#111827]">
@@ -57,6 +72,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 {currentUser?.role ? `Role: ${currentUser.role}` : "Session"}
               </p>
             </div>
+            <Link
+              href="/dashboard"
+              className="rounded-md border border-[#e5e7eb] px-3 py-2 text-xs text-[#4b5563]"
+            >
+              {unreadCount} unread
+            </Link>
             <LogoutButton />
           </div>
         </div>
