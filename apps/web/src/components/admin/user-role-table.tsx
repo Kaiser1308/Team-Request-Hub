@@ -68,8 +68,82 @@ export function UserRoleTable() {
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-[#e5e7eb] bg-white">
-      <table className="w-full min-w-[720px] text-left text-sm">
+    <div className="rounded-lg border border-[#e5e7eb] bg-white">
+      <div className="grid divide-y divide-[#e5e7eb] md:hidden">
+        {usersQuery.data.map((user) => (
+          <div key={user.id} className="grid gap-3 p-3 text-sm">
+            <div className="min-w-0">
+              <p className="font-medium text-[#111827]">{user.name ?? "Unnamed"}</p>
+              <p className="break-all text-[#4b5563]">{user.email}</p>
+            </div>
+
+            <div className="grid gap-1">
+              <label className="text-xs font-medium text-[#6b7280]" htmlFor={`user-role-${user.id}`}>
+                Role
+              </label>
+              <select
+                id={`user-role-${user.id}`}
+                className="h-9 rounded-md border border-[#e5e7eb] bg-white px-2 text-sm"
+                value={user.role}
+                disabled={updateRole.isPending}
+                onChange={(event) =>
+                  updateRole.mutate({
+                    userId: user.id,
+                    role: event.target.value as Role,
+                  })
+                }
+              >
+                {roles.map((role) => (
+                  <option key={role} value={role}>
+                    {roleLabel(role)}
+                  </option>
+                ))}
+              </select>
+              {updateRole.isPending ? (
+                <p className="text-xs text-[#6b7280]">Saving role...</p>
+              ) : null}
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className={user.is_active ? "text-green-700" : "text-amber-700"}>
+                {user.is_active ? "Active account" : "Pending approval"}
+              </span>
+              <Button
+                type="button"
+                variant={user.is_active ? "outline" : "default"}
+                size="sm"
+                disabled={updateActive.isPending}
+                onClick={() =>
+                  updateActive.mutate({
+                    userId: user.id,
+                    isActive: !user.is_active,
+                  })
+                }
+              >
+                {updateActive.isPending
+                  ? user.is_active
+                    ? "Disabling..."
+                    : "Approving..."
+                  : user.is_active
+                    ? "Disable"
+                    : "Approve"}
+              </Button>
+            </div>
+
+            <p className="text-xs text-[#6b7280]">
+              Created{" "}
+              {new Intl.DateTimeFormat("en", {
+                month: "short",
+                day: "2-digit",
+                year: "numeric",
+              }).format(new Date(user.created_at))}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      <div className="hidden overflow-x-auto md:block">
+        <table className="w-full min-w-[720px] text-left text-sm">
         <thead className="bg-[#f3f4f6] text-xs text-[#6b7280]">
           <tr>
             <th className="px-3 py-2 font-medium">Name</th>
@@ -146,7 +220,8 @@ export function UserRoleTable() {
             </tr>
           ))}
         </tbody>
-      </table>
+        </table>
+      </div>
 
       {updateRole.error ? (
         <div className="border-t border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
