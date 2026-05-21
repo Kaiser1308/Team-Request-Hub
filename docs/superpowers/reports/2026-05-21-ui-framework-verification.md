@@ -5,7 +5,7 @@
 | Command | Result | Notes |
 | --- | --- | --- |
 | `npm run lint` from `apps/web` | PASS | ESLint completed with exit 0 and no reported issues. |
-| `npm run build` from `apps/web` | FAIL | `next build` failed because `lucide-react` cannot be resolved from `src/components/app/app-shell.tsx` and `src/components/auth/logout-button.tsx`. This was not an environment variable failure; `.env.local` was loaded, and `.env.example` documents `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `NEXT_PUBLIC_API_URL`. |
+| `npm run build` from `apps/web` | PASS | `next build` compiled successfully, generated 16 static pages, and completed build traces after adding the missing frontend `lucide-react` dependency used by shell/auth icons. |
 
 ## Route Smoke
 
@@ -41,6 +41,5 @@ The dev server selected `http://localhost:3001` because port 3000 was already in
 
 ## Concerns
 
-- Production build is blocked by missing dependency resolution for `lucide-react`. This task is verification-only, so no package or source changes were made.
 - Route smoke was unauthenticated. Protected routes were verified by middleware redirect behavior, not by authenticated page rendering.
-- The worktree contained broad unrelated changes before this report was created; final staging should include only this report unless README updates become necessary.
+- The worktree contained broad unrelated changes before this report was created; final staging should include only verification/package dependency fixes from this follow-up.
