@@ -72,7 +72,7 @@ create table if not exists public.users (
   name text,
   avatar_url text,
   role user_role not null default 'fe',
-  is_active boolean not null default true,
+  is_active boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -262,6 +262,7 @@ execute function public.set_updated_at();
 -- =========================================================
 -- 8. Auto-create user profile after Supabase Auth signup
 -- =========================================================
+-- New signups start inactive. A lead must approve the profile by setting is_active = true.
 -- This creates a default profile with role = fe.
 -- Lead/admin can update role later from Supabase dashboard or backend admin tool.
 
@@ -272,13 +273,14 @@ security definer
 set search_path = public
 as $$
 begin
-  insert into public.users (id, email, name, avatar_url, role)
+  insert into public.users (id, email, name, avatar_url, role, is_active)
   values (
     new.id,
     new.email,
     coalesce(new.raw_user_meta_data->>'name', new.raw_user_meta_data->>'full_name'),
     new.raw_user_meta_data->>'avatar_url',
-    'fe'
+    'fe',
+    false
   )
   on conflict (id) do nothing;
 

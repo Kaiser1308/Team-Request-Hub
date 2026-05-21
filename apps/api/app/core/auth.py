@@ -2,9 +2,7 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jose import JWTError, jwt
 
-from app.core.config import get_settings
 from app.db.supabase import get_supabase_admin
 from app.schemas.users import CurrentUser
 
@@ -15,31 +13,25 @@ async def get_current_user(
     credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> CurrentUser:
     token = credentials.credentials
-    settings = get_settings()
+    supabase = get_supabase_admin()
 
     try:
-        payload = jwt.decode(
-            token,
-            settings.supabase_jwt_secret,
-            algorithms=["HS256"],
-            audience="authenticated",
-        )
-    except JWTError as exc:
+        auth_result = supabase.auth.get_user(token)
+    except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired token",
         ) from exc
 
-    user_id = payload.get("sub")
-    email = payload.get("email")
+    auth_user = getattr(auth_result, "user", None)
+    user_id = getattr(auth_user, "id", None)
+    email = getattr(auth_user, "email", None)
 
     if not user_id:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token payload",
         )
-
-    supabase = get_supabase_admin()
 
     result = (
         supabase.table("users")
@@ -61,4 +53,14 @@ async def get_current_user(
         name=result.data.get("name"),
         avatar_url=result.data.get("avatar_url"),
         role=result.data["role"],
+        is_active=result.data.get("is_active", True),
     )
+
+
+def require_active_current_user(current_user: CurrentUser) -> CurrentUser:
+    if not current_user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Your account is pending lead approval",
+        )
+    return current_user

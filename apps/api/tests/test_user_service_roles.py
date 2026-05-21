@@ -3,8 +3,8 @@ from unittest.mock import patch
 
 from fastapi import HTTPException
 
-from app.schemas.users import CurrentUser, UserRoleUpdate
-from app.services.users import update_user_role
+from app.schemas.users import CurrentUser, UserActiveUpdate, UserRoleUpdate
+from app.services.users import update_user_active_state, update_user_role
 
 
 class UserRoleServiceTests(unittest.TestCase):
@@ -45,6 +45,40 @@ class UserRoleServiceTests(unittest.TestCase):
 
         update_user_role_mock.assert_called_once_with("user-2", "be")
         self.assertEqual(result["role"], "be")
+
+
+class UserActiveStateServiceTests(unittest.TestCase):
+    def test_non_lead_cannot_update_user_active_state(self):
+        current_user = CurrentUser(
+            id="fe-1",
+            email="fe@example.com",
+            name="FE",
+            role="fe",
+        )
+
+        with self.assertRaises(HTTPException) as context:
+            update_user_active_state("user-1", UserActiveUpdate(is_active=True), current_user)
+
+        self.assertEqual(context.exception.status_code, 403)
+        self.assertEqual(context.exception.detail, "Only leads can approve users")
+
+    @patch("app.services.users.user_repository.update_user_active_state")
+    def test_lead_can_update_user_active_state(self, update_active_mock):
+        update_active_mock.return_value = {
+            "id": "user-1",
+            "is_active": True,
+        }
+        current_user = CurrentUser(
+            id="lead-1",
+            email="lead@example.com",
+            name="Lead",
+            role="lead",
+        )
+
+        result = update_user_active_state("user-1", UserActiveUpdate(is_active=True), current_user)
+
+        self.assertTrue(result["is_active"])
+        update_active_mock.assert_called_once_with("user-1", True)
 
 
 if __name__ == "__main__":

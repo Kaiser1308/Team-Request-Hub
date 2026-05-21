@@ -35,7 +35,19 @@ def list_users() -> list[dict]:
     result = (
         get_supabase_admin()
         .table("users")
-        .select("id,email,name,avatar_url,role,created_at")
+        .select("id,email,name,avatar_url,role,is_active,created_at")
+        .order("name")
+        .execute()
+    )
+    return result.data or []
+
+
+def list_active_users() -> list[dict]:
+    result = (
+        get_supabase_admin()
+        .table("users")
+        .select("id,email,name,avatar_url,role,is_active,created_at")
+        .eq("is_active", True)
         .order("name")
         .execute()
     )
@@ -47,6 +59,24 @@ def update_user_role(user_id: str, role: str) -> dict:
         get_supabase_admin()
         .table("users")
         .update({"role": role})
+        .eq("id", user_id)
+        .execute()
+    )
+
+    if not result.data:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+
+    return result.data[0]
+
+
+def update_user_active_state(user_id: str, is_active: bool) -> dict:
+    result = (
+        get_supabase_admin()
+        .table("users")
+        .update({"is_active": is_active})
         .eq("id", user_id)
         .execute()
     )
