@@ -16,9 +16,13 @@ function formatDate(value: string) {
 export function RequestTimeline({
   assignmentHistory,
   statusLogs,
+  isLoading = false,
+  errorMessage = null,
 }: {
   assignmentHistory: AssignmentHistory[];
   statusLogs: RequestStatusLog[];
+  isLoading?: boolean;
+  errorMessage?: string | null;
 }) {
   const activeUsersQuery = useActiveUsers();
 
@@ -41,6 +45,22 @@ export function RequestTimeline({
       new Date(left.created_at).getTime(),
   );
 
+  if (isLoading) {
+    return (
+      <div className="rounded-lg border border-[#e5e7eb] bg-white p-4 text-sm text-[#6b7280]">
+        Loading assignment and status history...
+      </div>
+    );
+  }
+
+  if (errorMessage) {
+    return (
+      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        {errorMessage}
+      </div>
+    );
+  }
+
   if (!events.length) {
     return (
       <div className="rounded-lg border border-[#e5e7eb] bg-white p-4 text-sm text-[#6b7280]">
@@ -51,7 +71,7 @@ export function RequestTimeline({
 
   return (
     <div className="rounded-lg border border-[#e5e7eb] bg-white p-4">
-      <h2 className="text-base font-semibold">Timeline</h2>
+      <h2 className="text-base font-semibold">Assignment and status timeline</h2>
       <div className="mt-4 grid gap-4">
         {events.map((event) => (
           <div key={event.id} className="border-l-2 border-[#e5e7eb] pl-4">

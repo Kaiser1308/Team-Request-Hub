@@ -25,6 +25,14 @@ function formatDate(value?: string | null) {
   }).format(new Date(value));
 }
 
+function formatError(error: unknown, fallback: string) {
+  if (error instanceof Error && error.message.trim()) {
+    return error.message;
+  }
+
+  return fallback;
+}
+
 export function RequestDetail({ requestId }: { requestId: string }) {
   const requestQuery = useRequest(requestId);
   const assignmentHistoryQuery = useRequestAssignmentHistory(requestId);
@@ -86,6 +94,10 @@ export function RequestDetail({ requestId }: { requestId: string }) {
 
         <div className="mt-5 grid gap-3 text-sm text-[#4b5563] sm:grid-cols-2 lg:grid-cols-4">
           <div>
+            <p className="text-xs text-[#6b7280]">Creator</p>
+            <p>{findUserLabel(activeUsersQuery.data, request.created_by)}</p>
+          </div>
+          <div>
             <p className="text-xs text-[#6b7280]">Created</p>
             <p>{formatDate(request.created_at)}</p>
           </div>
@@ -94,12 +106,20 @@ export function RequestDetail({ requestId }: { requestId: string }) {
             <p>{findUserLabel(activeUsersQuery.data, request.assigned_to)}</p>
           </div>
           <div>
+            <p className="text-xs text-[#6b7280]">Updated</p>
+            <p>{formatDate(request.updated_at)}</p>
+          </div>
+          <div>
             <p className="text-xs text-[#6b7280]">Started</p>
             <p>{formatDate(request.started_at)}</p>
           </div>
           <div>
             <p className="text-xs text-[#6b7280]">Done</p>
             <p>{formatDate(request.done_at)}</p>
+          </div>
+          <div>
+            <p className="text-xs text-[#6b7280]">Cancelled</p>
+            <p>{formatDate(request.cancelled_at)}</p>
           </div>
         </div>
 
@@ -110,12 +130,24 @@ export function RequestDetail({ requestId }: { requestId: string }) {
           </div>
         ) : null}
 
-        <RequestActions request={request} />
+        <div className="mt-5 border-t border-[#e5e7eb] pt-4">
+          <h2 className="text-sm font-semibold text-[#111827]">Actions</h2>
+          <RequestActions request={request} />
+        </div>
       </section>
 
       <RequestTimeline
         assignmentHistory={assignmentHistoryQuery.data ?? []}
         statusLogs={statusLogsQuery.data ?? []}
+        isLoading={assignmentHistoryQuery.isLoading || statusLogsQuery.isLoading}
+        errorMessage={
+          assignmentHistoryQuery.isError || statusLogsQuery.isError
+            ? formatError(
+                assignmentHistoryQuery.error ?? statusLogsQuery.error,
+                "Could not load request history.",
+              )
+            : null
+        }
       />
     </div>
   );

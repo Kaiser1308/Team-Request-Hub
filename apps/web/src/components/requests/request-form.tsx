@@ -17,6 +17,14 @@ function splitCommaList(value: string) {
     .filter(Boolean);
 }
 
+function normalizeError(error: unknown, fallback: string) {
+  if (error instanceof Error && error.message.trim()) {
+    return error.message;
+  }
+
+  return fallback;
+}
+
 function splitLineList(value: string) {
   return value
     .split("\n")
@@ -32,21 +40,21 @@ export function RequestForm() {
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<RequestPriority>("medium");
   const [assignedTo, setAssignedTo] = useState("");
-  const [tags, setTags] = useState("");
-  const [referenceLinks, setReferenceLinks] = useState("");
-  const [validationError, setValidationError] = useState<string | null>(null);
+  const [titleError, setTitleError] = useState<string | null>(null);
+  const [descriptionError, setDescriptionError] = useState<string | null>(null);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setValidationError(null);
+    setTitleError(null);
+    setDescriptionError(null);
 
     if (!title.trim()) {
-      setValidationError("Title is required.");
+      setTitleError("Enter a request title.");
       return;
     }
 
     if (!description.trim()) {
-      setValidationError("Description is required.");
+      setDescriptionError("Enter a request description.");
       return;
     }
 
@@ -55,8 +63,8 @@ export function RequestForm() {
         title: title.trim(),
         description: description.trim(),
         priority,
-        tags: splitCommaList(tags),
-        reference_links: splitLineList(referenceLinks),
+        tags: splitCommaList(""),
+        reference_links: splitLineList(""),
         assigned_to: assignedTo || null,
       });
       router.push("/requests");
@@ -66,7 +74,7 @@ export function RequestForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="grid max-w-3xl gap-5 rounded-lg border border-[#e5e7eb] bg-white p-5"
+      className="grid gap-5 rounded-lg border border-[#e5e7eb] bg-white p-5"
     >
       <label className="grid gap-2 text-sm font-medium text-[#111827]">
         Title
@@ -76,7 +84,14 @@ export function RequestForm() {
           onChange={(event) => setTitle(event.target.value)}
           required
           maxLength={160}
+          aria-invalid={Boolean(titleError)}
+          aria-describedby={titleError ? "request-title-error" : undefined}
         />
+        {titleError ? (
+          <span id="request-title-error" className="text-xs font-normal text-red-700">
+            {titleError}
+          </span>
+        ) : null}
       </label>
 
       <label className="grid gap-2 text-sm font-medium text-[#111827]">
@@ -86,7 +101,17 @@ export function RequestForm() {
           value={description}
           onChange={(event) => setDescription(event.target.value)}
           required
+          aria-invalid={Boolean(descriptionError)}
+          aria-describedby={descriptionError ? "request-description-error" : undefined}
         />
+        {descriptionError ? (
+          <span
+            id="request-description-error"
+            className="text-xs font-normal text-red-700"
+          >
+            {descriptionError}
+          </span>
+        ) : null}
       </label>
 
       <label className="grid gap-2 text-sm font-medium text-[#111827]">
@@ -122,39 +147,13 @@ export function RequestForm() {
           ))}
         </select>
         <span className="text-xs font-normal text-[#6b7280]">
-          Choose an active teammate or leave this request available in the pool.
+          Optional. Leave empty to keep this request in the pool.
         </span>
       </label>
 
-      <label className="grid gap-2 text-sm font-medium text-[#111827]">
-        Tags
-        <input
-          className="h-10 rounded-md border border-[#e5e7eb] bg-white px-3 text-sm font-normal"
-          value={tags}
-          onChange={(event) => setTags(event.target.value)}
-          placeholder="api, backend, urgent"
-        />
-        <span className="text-xs font-normal text-[#6b7280]">
-          Separate tags with commas.
-        </span>
-      </label>
-
-      <label className="grid gap-2 text-sm font-medium text-[#111827]">
-        Reference links
-        <textarea
-          className="min-h-24 rounded-md border border-[#e5e7eb] bg-white px-3 py-2 text-sm font-normal"
-          value={referenceLinks}
-          onChange={(event) => setReferenceLinks(event.target.value)}
-          placeholder="One URL per line"
-        />
-      </label>
-
-      {validationError || actions.create.error ? (
+      {actions.create.error ? (
         <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {validationError ??
-            (actions.create.error instanceof Error
-              ? actions.create.error.message
-              : "Could not create the request.")}
+          {normalizeError(actions.create.error, "Could not create the request.")}
         </p>
       ) : null}
 
