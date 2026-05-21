@@ -19,14 +19,21 @@ export function UserRoleTable() {
 
   if (currentUserQuery.isLoading || usersQuery.isLoading) {
     return (
-      <div className="h-40 animate-pulse rounded-lg border border-[#e5e7eb] bg-white" />
+      <div className="space-y-2 rounded-lg border border-[#e5e7eb] bg-white p-3">
+        <div className="h-4 w-48 animate-pulse rounded bg-[#f3f4f6]" />
+        <div className="h-10 animate-pulse rounded bg-[#f3f4f6]" />
+        <div className="h-10 animate-pulse rounded bg-[#f3f4f6]" />
+      </div>
     );
   }
 
   if (currentUserQuery.data?.role !== "lead") {
     return (
-      <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-        Only lead users can manage roles.
+      <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+        <p className="text-sm font-medium text-amber-900">Forbidden</p>
+        <p className="mt-1 text-sm text-amber-800">
+          Only lead users can manage user roles and account access.
+        </p>
       </div>
     );
   }
@@ -34,10 +41,11 @@ export function UserRoleTable() {
   if (usersQuery.isError) {
     return (
       <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-        <p className="text-sm font-medium text-red-700">
+        <p className="text-sm font-medium text-red-900">Could not load users</p>
+        <p className="mt-1 text-sm text-red-700">
           {usersQuery.error instanceof Error
             ? usersQuery.error.message
-            : "Could not load users."}
+            : "The backend returned an unexpected response."}
         </p>
         <Button
           type="button"
@@ -53,7 +61,7 @@ export function UserRoleTable() {
 
   if (!usersQuery.data?.length) {
     return (
-      <div className="rounded-lg border border-[#e5e7eb] bg-white p-6 text-sm text-[#6b7280]">
+      <div className="rounded-lg border border-[#e5e7eb] bg-white p-4 text-sm text-[#6b7280]">
         No users found.
       </div>
     );
@@ -61,25 +69,25 @@ export function UserRoleTable() {
 
   return (
     <div className="overflow-x-auto rounded-lg border border-[#e5e7eb] bg-white">
-      <table className="w-full min-w-[680px] text-left text-sm">
+      <table className="w-full min-w-[720px] text-left text-sm">
         <thead className="bg-[#f3f4f6] text-xs text-[#6b7280]">
           <tr>
-            <th className="px-4 py-3 font-medium">Name</th>
-            <th className="px-4 py-3 font-medium">Email</th>
-            <th className="px-4 py-3 font-medium">Role</th>
-            <th className="px-4 py-3 font-medium">Status</th>
-            <th className="px-4 py-3 font-medium">Action</th>
-            <th className="px-4 py-3 font-medium">Created</th>
+            <th className="px-3 py-2 font-medium">Name</th>
+            <th className="px-3 py-2 font-medium">Email</th>
+            <th className="px-3 py-2 font-medium">Role</th>
+            <th className="px-3 py-2 font-medium">State</th>
+            <th className="px-3 py-2 font-medium">Access</th>
+            <th className="px-3 py-2 font-medium">Created</th>
           </tr>
         </thead>
         <tbody>
           {usersQuery.data.map((user) => (
             <tr key={user.id} className="border-t border-[#e5e7eb]">
-              <td className="px-4 py-3 text-[#111827]">
+              <td className="px-3 py-2 text-[#111827]">
                 {user.name ?? "Unnamed"}
               </td>
-              <td className="px-4 py-3 text-[#4b5563]">{user.email}</td>
-              <td className="px-4 py-3">
+              <td className="px-3 py-2 text-[#4b5563]">{user.email}</td>
+              <td className="px-3 py-2">
                 <select
                   className="h-9 rounded-md border border-[#e5e7eb] bg-white px-2 text-sm"
                   value={user.role}
@@ -97,13 +105,16 @@ export function UserRoleTable() {
                     </option>
                   ))}
                 </select>
+                {updateRole.isPending ? (
+                  <p className="mt-1 text-xs text-[#6b7280]">Saving role...</p>
+                ) : null}
               </td>
-              <td className="px-4 py-3">
+              <td className="px-3 py-2">
                 <span className={user.is_active ? "text-green-700" : "text-amber-700"}>
-                  {user.is_active ? "Active" : "Pending"}
+                  {user.is_active ? "Active account" : "Pending approval"}
                 </span>
               </td>
-              <td className="px-4 py-3">
+              <td className="px-3 py-2">
                 <Button
                   type="button"
                   variant={user.is_active ? "outline" : "default"}
@@ -116,10 +127,16 @@ export function UserRoleTable() {
                     })
                   }
                 >
-                  {user.is_active ? "Disable" : "Approve"}
+                  {updateActive.isPending
+                    ? user.is_active
+                      ? "Disabling..."
+                      : "Approving..."
+                    : user.is_active
+                      ? "Disable"
+                      : "Approve"}
                 </Button>
               </td>
-              <td className="px-4 py-3 text-[#6b7280]">
+              <td className="px-3 py-2 text-[#6b7280]">
                 {new Intl.DateTimeFormat("en", {
                   month: "short",
                   day: "2-digit",
@@ -136,6 +153,14 @@ export function UserRoleTable() {
           {updateRole.error instanceof Error
             ? updateRole.error.message
             : "Could not update this user role."}
+        </div>
+      ) : null}
+
+      {updateActive.error ? (
+        <div className="border-t border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {updateActive.error instanceof Error
+            ? updateActive.error.message
+            : "Could not update user access state."}
         </div>
       ) : null}
     </div>
