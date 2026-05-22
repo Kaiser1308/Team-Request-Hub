@@ -16,7 +16,8 @@ from app.schemas.requests import (
     StatusUpdateRequest,
 )
 from app.schemas.users import CurrentUser
-from app.services import assignments, notifications, status_logs, users
+from app.repositories import assignment_repository, status_log_repository
+from app.services import notifications, users
 from app.utils.time import utc_now_iso
 
 CLOSED_STATUSES = {"done", "cancelled"}
@@ -195,7 +196,7 @@ def create_request(payload: InternalRequestCreate, current_user: CurrentUser) ->
     request = request_repository.create_request(data)
 
     if request.get("assigned_to"):
-        assignments.record_assignment(
+        assignment_repository.create_assignment_history(
             request_id=request["id"],
             from_user_id=None,
             to_user_id=request["assigned_to"],
@@ -241,7 +242,7 @@ def self_assign_request(request_id: str, current_user: CurrentUser) -> dict:
         )
 
     updated_request = request_repository.assign_if_unassigned(request_id, current_user.id)
-    assignments.record_assignment(
+    assignment_repository.create_assignment_history(
         request_id=request_id,
         from_user_id=None,
         to_user_id=current_user.id,
@@ -275,7 +276,7 @@ def reassign_request(
         "started_at": None,
     }
     updated_request = request_repository.update_request(request_id, data)
-    assignments.record_assignment(
+    assignment_repository.create_assignment_history(
         request_id=request_id,
         from_user_id=request.get("assigned_to"),
         to_user_id=payload.assigned_to,
@@ -284,7 +285,7 @@ def reassign_request(
     )
 
     if request.get("status") in {"acknowledged", "in_progress"}:
-        status_logs.record_status_change(
+        status_log_repository.create_status_log(
             request_id=request_id,
             from_status=request.get("status"),
             to_status="pending",
@@ -318,7 +319,7 @@ def update_status(
         request_id,
         build_status_update_data(payload.status),
     )
-    status_logs.record_status_change(
+    status_log_repository.create_status_log(
         request_id=request_id,
         from_status=request.get("status"),
         to_status=payload.status,
@@ -346,7 +347,7 @@ def mark_done(
         request_id,
         {"status": "done", "reply": payload.reply, "done_at": utc_now_iso()},
     )
-    status_logs.record_status_change(
+    status_log_repository.create_status_log(
         request_id=request_id,
         from_status=request.get("status"),
         to_status="done",
@@ -373,7 +374,7 @@ def cancel_request(
         request_id,
         {"status": "cancelled", "cancelled_at": utc_now_iso()},
     )
-    status_logs.record_status_change(
+    status_log_repository.create_status_log(
         request_id=request_id,
         from_status=request.get("status"),
         to_status="cancelled",
@@ -390,10 +391,10 @@ def cancel_request(
 def list_assignment_history(request_id: str, current_user: CurrentUser) -> list[dict]:
     request = request_repository.get_request_or_404(request_id)
     ensure_can_view_request(current_user, request)
-    return assignments.list_assignment_history(request_id)
+    return assignment_repository.list_assignment_history(request_id)
 
 
 def list_status_logs(request_id: str, current_user: CurrentUser) -> list[dict]:
     request = request_repository.get_request_or_404(request_id)
     ensure_can_view_request(current_user, request)
-    return status_logs.list_status_logs(request_id)
+    return status_log_repository.list_status_logs(request_id)
