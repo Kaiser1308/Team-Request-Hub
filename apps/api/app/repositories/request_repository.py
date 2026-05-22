@@ -152,8 +152,7 @@ def get_dashboard_data(user_id: str) -> list[dict]:
         .or_(
             f"assigned_to.eq.{user_id},"
             f"created_by.eq.{user_id},"
-            f"and(status.eq.pending,assigned_to.is.null),"
-            f"and(status.eq.done,or(created_by.eq.{user_id},assigned_to.eq.{user_id}))"
+            f"and(status.eq.pending,assigned_to.is.null)"
         )
         .order("created_at", desc=True)
         .limit(200)
