@@ -16,16 +16,14 @@ def create_notification(
     request_id: str | None,
     notification_type: str,
     message: str,
-    request: dict | None = None,
-) -> None:
+) -> dict | None:
     notification = notification_repository.create_notification(
         user_id=user_id,
         request_id=request_id,
         notification_type=notification_type,
         message=message,
     )
-    if notification and notification_type in TELEGRAM_TYPES and request:
-        dispatch_telegram_delivery(notification=notification, request=request)
+    return notification
 
 
 def dispatch_telegram_delivery(*, notification: dict, request: dict) -> None:
@@ -54,6 +52,8 @@ def dispatch_telegram_delivery(*, notification: dict, request: dict) -> None:
     )
 
     try:
+        from datetime import datetime, timezone
+
         provider_message_id = telegram.send_telegram_message(
             bot_token=settings.telegram_bot_token,
             chat_id=profile["telegram_chat_id"],
@@ -62,25 +62,56 @@ def dispatch_telegram_delivery(*, notification: dict, request: dict) -> None:
         notification_repository.mark_delivery_sent(
             delivery["id"],
             provider_message_id,
-            __import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat(),
+            datetime.now(timezone.utc).isoformat(),
         )
     except Exception as exc:
-        logger.warning("Telegram delivery failed for notification %s: %s", notification["id"], exc)
+        logger.warning(
+            "Telegram delivery failed for notification %s: %s",
+            notification["id"],
+            exc,
+        )
         notification_repository.mark_delivery_failed(delivery["id"], str(exc))
 
 
-def notify_assigned(user_id: str, request: dict) -> None:
-    create_notification(
+def dispatch_telegram_background(user_id: str, request: dict, is_reassigned: bool) -> None:
+    """Send a Telegram message directly, intended for BackgroundTasks."""
+    settings = get_settings()
+    if not settings.telegram_bot_token:
+        return
+    profile = telegram_repository.get_user_telegram_profile(user_id)
+    if not profile or not profile.get("telegram_chat_id"):
+        return
+    text = telegram.build_assignment_message(
+        request,
+        reassigned=is_reassigned,
+        app_base_url=settings.app_base_url,
+    )
+    try:
+        telegram.send_telegram_message(
+            bot_token=settings.telegram_bot_token,
+            chat_id=profile["telegram_chat_id"],
+            text=text,
+        )
+    except Exception as exc:
+        logger.warning(
+            "Background Telegram dispatch failed for user %s: %s",
+            user_id,
+            exc,
+        )
+
+
+def notify_assigned(user_id: str, request: dict) -> dict | None:
+    notification = create_notification(
         user_id=user_id,
         request_id=request["id"],
         notification_type="assigned",
         message=f"You were assigned a request: {request['title']}",
-        request=request,
     )
+    return notification
 
 
-def notify_request_picked_up(user_id: str, request: dict) -> None:
-    create_notification(
+def notify_request_picked_up(user_id: str, request: dict) -> dict | None:
+    return create_notification(
         user_id=user_id,
         request_id=request["id"],
         notification_type="assigned",
@@ -88,18 +119,18 @@ def notify_request_picked_up(user_id: str, request: dict) -> None:
     )
 
 
-def notify_reassigned(user_id: str, request: dict) -> None:
-    create_notification(
+def notify_reassigned(user_id: str, request: dict) -> dict | None:
+    notification = create_notification(
         user_id=user_id,
         request_id=request["id"],
         notification_type="reassigned",
         message=f"You were reassigned a request: {request['title']}",
-        request=request,
     )
+    return notification
 
 
-def notify_status_changed(user_id: str, request: dict) -> None:
-    create_notification(
+def notify_status_changed(user_id: str, request: dict) -> dict | None:
+    return create_notification(
         user_id=user_id,
         request_id=request["id"],
         notification_type="status_changed",
@@ -107,8 +138,8 @@ def notify_status_changed(user_id: str, request: dict) -> None:
     )
 
 
-def notify_done(user_id: str, request: dict) -> None:
-    create_notification(
+def notify_done(user_id: str, request: dict) -> dict | None:
+    return create_notification(
         user_id=user_id,
         request_id=request["id"],
         notification_type="done",
@@ -116,8 +147,8 @@ def notify_done(user_id: str, request: dict) -> None:
     )
 
 
-def notify_cancelled(user_id: str, request: dict) -> None:
-    create_notification(
+def notify_cancelled(user_id: str, request: dict) -> dict | None:
+    return create_notification(
         user_id=user_id,
         request_id=request["id"],
         notification_type="cancelled",

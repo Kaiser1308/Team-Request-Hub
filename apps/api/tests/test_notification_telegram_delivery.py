@@ -33,11 +33,6 @@ class TestTelegramDeliverySkipsNoProfile(unittest.TestCase):
         self, mock_notif_repo, mock_telegram_repo, mock_get_settings
     ):
         mock_get_settings.return_value = _make_settings()
-        mock_notif_repo.create_notification.return_value = {
-            "id": "notif-1",
-            "user_id": "user-1",
-            "type": "assigned",
-        }
         mock_telegram_repo.get_user_telegram_profile.return_value = {
             "id": "user-1",
             "telegram_chat_id": None,
@@ -45,15 +40,15 @@ class TestTelegramDeliverySkipsNoProfile(unittest.TestCase):
             "telegram_linked_at": None,
         }
 
-        notifications.create_notification(
-            user_id="user-1",
-            request_id="req-1",
-            notification_type="assigned",
-            message="assigned",
+        notifications.dispatch_telegram_delivery(
+            notification={
+                "id": "notif-1",
+                "user_id": "user-1",
+                "type": "assigned",
+            },
             request={"id": "req-1", "title": "T", "priority": "high", "status": "pending"},
         )
 
-        mock_notif_repo.create_notification.assert_called_once()
         mock_notif_repo.create_delivery.assert_not_called()
 
 
@@ -66,11 +61,6 @@ class TestTelegramDeliveryFailureRecordsFailed(unittest.TestCase):
         self, mock_notif_repo, mock_telegram_repo, mock_telegram_svc, mock_get_settings
     ):
         mock_get_settings.return_value = _make_settings()
-        mock_notif_repo.create_notification.return_value = {
-            "id": "notif-1",
-            "user_id": "user-1",
-            "type": "assigned",
-        }
         mock_telegram_repo.get_user_telegram_profile.return_value = {
             "id": "user-1",
             "telegram_chat_id": "123",
@@ -80,15 +70,15 @@ class TestTelegramDeliveryFailureRecordsFailed(unittest.TestCase):
         mock_notif_repo.create_delivery.return_value = {"id": "delivery-1"}
         mock_telegram_svc.send_telegram_message.side_effect = httpx.HTTPError("timeout")
 
-        notifications.create_notification(
-            user_id="user-1",
-            request_id="req-1",
-            notification_type="assigned",
-            message="assigned",
+        notifications.dispatch_telegram_delivery(
+            notification={
+                "id": "notif-1",
+                "user_id": "user-1",
+                "type": "assigned",
+            },
             request={"id": "req-1", "title": "T", "priority": "high", "status": "pending"},
         )
 
-        mock_notif_repo.create_notification.assert_called_once()
         mock_notif_repo.create_delivery.assert_called_once()
         mock_notif_repo.mark_delivery_failed.assert_called_once_with(
             "delivery-1", "timeout"
@@ -105,11 +95,6 @@ class TestTelegramDeliverySuccessRecordsSent(unittest.TestCase):
         self, mock_notif_repo, mock_telegram_repo, mock_telegram_svc, mock_get_settings
     ):
         mock_get_settings.return_value = _make_settings()
-        mock_notif_repo.create_notification.return_value = {
-            "id": "notif-1",
-            "user_id": "user-1",
-            "type": "assigned",
-        }
         mock_telegram_repo.get_user_telegram_profile.return_value = {
             "id": "user-1",
             "telegram_chat_id": "123",
@@ -119,11 +104,12 @@ class TestTelegramDeliverySuccessRecordsSent(unittest.TestCase):
         mock_notif_repo.create_delivery.return_value = {"id": "delivery-1"}
         mock_telegram_svc.send_telegram_message.return_value = "456"
 
-        notifications.create_notification(
-            user_id="user-1",
-            request_id="req-1",
-            notification_type="assigned",
-            message="assigned",
+        notifications.dispatch_telegram_delivery(
+            notification={
+                "id": "notif-1",
+                "user_id": "user-1",
+                "type": "assigned",
+            },
             request={"id": "req-1", "title": "T", "priority": "high", "status": "pending"},
         )
 
@@ -137,21 +123,16 @@ class TestNoTelegramTokenSkipsDelivery(unittest.TestCase):
     @patch("app.services.notifications.notification_repository")
     def test_missing_bot_token_skips_delivery(self, mock_notif_repo, mock_get_settings):
         mock_get_settings.return_value = _make_settings(telegram_bot_token=None)
-        mock_notif_repo.create_notification.return_value = {
-            "id": "notif-1",
-            "user_id": "user-1",
-            "type": "assigned",
-        }
 
-        notifications.create_notification(
-            user_id="user-1",
-            request_id="req-1",
-            notification_type="assigned",
-            message="assigned",
+        notifications.dispatch_telegram_delivery(
+            notification={
+                "id": "notif-1",
+                "user_id": "user-1",
+                "type": "assigned",
+            },
             request={"id": "req-1", "title": "T", "priority": "high", "status": "pending"},
         )
 
-        mock_notif_repo.create_notification.assert_called_once()
         mock_notif_repo.create_delivery.assert_not_called()
 
 

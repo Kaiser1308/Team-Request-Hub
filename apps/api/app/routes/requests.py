@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, BackgroundTasks, Depends, status
 
 from app.core.auth import get_current_user, require_active_current_user
 from app.schemas.requests import (
@@ -15,7 +15,7 @@ from app.schemas.requests import (
     StatusUpdateRequest,
 )
 from app.schemas.users import CurrentUser
-from app.services import request_service
+from app.services import notifications, request_service
 
 router = APIRouter()
 
@@ -34,9 +34,18 @@ async def list_requests(
 async def create_request(
     payload: InternalRequestCreate,
     current_user: Annotated[CurrentUser, Depends(get_current_user)],
+    background_tasks: BackgroundTasks,
 ):
     require_active_current_user(current_user)
-    return request_service.create_request(payload, current_user)
+    result = request_service.create_request(payload, current_user)
+    if result.get("assigned_to"):
+        background_tasks.add_task(
+            notifications.dispatch_telegram_background,
+            result["assigned_to"],
+            result,
+            False,
+        )
+    return result
 
 
 @router.get("/{request_id}", response_model=InternalRequestOut)
@@ -62,9 +71,18 @@ async def update_request(
 async def self_assign_request(
     request_id: str,
     current_user: Annotated[CurrentUser, Depends(get_current_user)],
+    background_tasks: BackgroundTasks,
 ):
     require_active_current_user(current_user)
-    return request_service.self_assign_request(request_id, current_user)
+    result = request_service.self_assign_request(request_id, current_user)
+    if result["created_by"] != current_user.id:
+        background_tasks.add_task(
+            notifications.dispatch_telegram_background,
+            result["created_by"],
+            result,
+            False,
+        )
+    return result
 
 
 @router.post("/{request_id}/reassign", response_model=InternalRequestOut)
@@ -72,9 +90,24 @@ async def reassign_request(
     request_id: str,
     payload: ReassignRequest,
     current_user: Annotated[CurrentUser, Depends(get_current_user)],
+    background_tasks: BackgroundTasks,
 ):
     require_active_current_user(current_user)
-    return request_service.reassign_request(request_id, payload, current_user)
+    result = request_service.reassign_request(request_id, payload, current_user)
+    background_tasks.add_task(
+        notifications.dispatch_telegram_background,
+        payload.assigned_to,
+        result,
+        True,
+    )
+    if result["created_by"] != current_user.id:
+        background_tasks.add_task(
+            notifications.dispatch_telegram_background,
+            result["created_by"],
+            result,
+            True,
+        )
+    return result
 
 
 @router.post("/{request_id}/status", response_model=InternalRequestOut)
