@@ -84,6 +84,14 @@ Request actions update `internal_requests` and create the required side effects:
 - `request_status_logs` for status changes, done, cancel, and active reassign reset
 - `notifications` for assignment, reassignment, status change, done, and cancel events
 
+## Current State
+
+- Google OAuth login/logout is implemented in `apps/web`.
+- Frontend protected pages call FastAPI through `apiFetch` with a Supabase Bearer JWT.
+- Request list, create, detail, workflow action, role management, and notification UI are implemented.
+- Backend request workflow creates assignment history, status logs, and notifications.
+- Lead role management is available through `PATCH /users/{user_id}/role`.
+
 ## Local Backend Commands
 
 Run from `apps/api`:
@@ -94,3 +102,5 @@ uv --cache-dir .uv-cache pip install -r requirements.txt
 uv --cache-dir .uv-cache run python -m unittest discover tests
 uv --cache-dir .uv-cache run uvicorn app.main:app --reload --port 8000
 ```
+
+Backend request timing can be enabled locally with `LOG_REQUEST_TIMING=true`. Use it when diagnosing slow API endpoints before adding optimizations.

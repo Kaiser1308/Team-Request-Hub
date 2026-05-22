@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     supabase_anon_key: str
     supabase_service_role_key: str
     supabase_jwt_secret: str
+    log_request_timing: bool = False
 
     class Config:
         env_file = ".env"
