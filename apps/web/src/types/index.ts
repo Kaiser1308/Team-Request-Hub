@@ -18,6 +18,13 @@ export type NotificationType =
   | "done"
   | "cancelled";
 
+export interface UserSummary {
+  id: string;
+  email: string | null;
+  name: string | null;
+  avatar_url?: string | null;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -45,6 +52,8 @@ export interface InternalRequest {
   cancelled_at?: string | null;
   created_at: string;
   updated_at: string;
+  creator?: UserSummary | null;
+  assignee?: UserSummary | null;
 }
 
 export interface AssignmentHistory {

@@ -6,7 +6,7 @@ from app.core.permissions import (
     ensure_can_view_request,
     ensure_is_assignee_or_lead,
 )
-from app.repositories import request_repository
+from app.repositories import request_repository, user_repository
 from app.schemas.requests import (
     CancelRequest,
     DoneRequest,
@@ -20,6 +20,8 @@ from app.services import assignments, notifications, status_logs, users
 from app.utils.time import utc_now_iso
 
 CLOSED_STATUSES = {"done", "cancelled"}
+DEFAULT_REQUEST_LIST_LIMIT = 50
+MAX_REQUEST_LIST_LIMIT = 100
 ALLOWED_STATUS_TRANSITIONS = {
     "pending": {"acknowledged", "cancelled"},
     "acknowledged": {"in_progress", "cancelled"},
@@ -116,21 +118,59 @@ def filter_viewable_requests(
     return viewable
 
 
-def list_requests(view: str, current_user: CurrentUser) -> list[dict]:
+def normalize_request_list_limit(limit: int | None) -> int:
+    if limit is None:
+        return DEFAULT_REQUEST_LIST_LIMIT
+
+    return max(1, min(limit, MAX_REQUEST_LIST_LIMIT))
+
+
+def enrich_requests_with_users(requests: list[dict]) -> list[dict]:
+    user_ids: list[str] = []
+    for request in requests:
+        if request.get("created_by"):
+            user_ids.append(request["created_by"])
+        if request.get("assigned_to"):
+            user_ids.append(request["assigned_to"])
+
+    users_by_id = user_repository.list_user_summaries(user_ids)
+    enriched = []
+    for request in requests:
+        item = dict(request)
+        item["creator"] = users_by_id.get(request.get("created_by"))
+        item["assignee"] = users_by_id.get(request.get("assigned_to"))
+        enriched.append(item)
+    return enriched
+
+
+def enrich_request_with_users(request: dict) -> dict:
+    return enrich_requests_with_users([request])[0]
+
+
+def list_requests(
+    view: str,
+    current_user: CurrentUser,
+    limit: int | None = None,
+) -> list[dict]:
+    normalized_limit = normalize_request_list_limit(limit)
+
     if view == "assigned":
-        return request_repository.list_assigned_requests(current_user.id)
+        return enrich_requests_with_users(request_repository.list_assigned_requests(current_user.id, limit=normalized_limit))
 
     if view == "created":
-        return request_repository.list_created_requests(current_user.id)
+        return enrich_requests_with_users(request_repository.list_created_requests(current_user.id, limit=normalized_limit))
 
     if view == "pool":
-        return request_repository.list_pool_requests()
+        return enrich_requests_with_users(request_repository.list_pool_requests(limit=normalized_limit))
 
     if view == "done":
-        return filter_viewable_requests(
-            request_repository.list_done_requests(),
-            current_user,
-        )
+        if is_lead(current_user):
+            return enrich_requests_with_users(request_repository.list_done_requests(limit=normalized_limit))
+
+        return enrich_requests_with_users(request_repository.list_done_requests(
+            limit=normalized_limit,
+            user_id=current_user.id,
+        ))
 
     if view == "all":
         if not is_lead(current_user):
@@ -138,7 +178,7 @@ def list_requests(view: str, current_user: CurrentUser) -> list[dict]:
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Only leads can view all requests",
             )
-        return request_repository.list_all_requests()
+        return enrich_requests_with_users(request_repository.list_all_requests(limit=normalized_limit))
 
     raise HTTPException(
         status_code=status.HTTP_400_BAD_REQUEST,
@@ -164,13 +204,13 @@ def create_request(payload: InternalRequestCreate, current_user: CurrentUser) ->
         )
         notifications.notify_assigned(request["assigned_to"], request)
 
-    return request
+    return enrich_request_with_users(request)
 
 
 def get_request_detail(request_id: str, current_user: CurrentUser) -> dict:
     request = request_repository.get_request_or_404(request_id)
     ensure_can_view_request(current_user, request)
-    return request
+    return enrich_request_with_users(request)
 
 
 def update_request(
@@ -184,9 +224,9 @@ def update_request(
 
     data = payload.model_dump(exclude_unset=True)
     if not data:
-        return request
+        return enrich_request_with_users(request)
 
-    return request_repository.update_request(request_id, data)
+    return enrich_request_with_users(request_repository.update_request(request_id, data))
 
 
 def self_assign_request(request_id: str, current_user: CurrentUser) -> dict:
@@ -214,7 +254,7 @@ def self_assign_request(request_id: str, current_user: CurrentUser) -> dict:
             updated_request,
         )
 
-    return updated_request
+    return enrich_request_with_users(updated_request)
 
 
 def reassign_request(
@@ -256,7 +296,7 @@ def reassign_request(
     if updated_request["created_by"] != current_user.id:
         notifications.notify_reassigned(updated_request["created_by"], updated_request)
 
-    return updated_request
+    return enrich_request_with_users(updated_request)
 
 
 def update_status(
@@ -289,7 +329,7 @@ def update_status(
     if updated_request["created_by"] != current_user.id:
         notifications.notify_status_changed(updated_request["created_by"], updated_request)
 
-    return updated_request
+    return enrich_request_with_users(updated_request)
 
 
 def mark_done(
@@ -317,7 +357,7 @@ def mark_done(
     if updated_request["created_by"] != current_user.id:
         notifications.notify_done(updated_request["created_by"], updated_request)
 
-    return updated_request
+    return enrich_request_with_users(updated_request)
 
 
 def cancel_request(
@@ -344,7 +384,7 @@ def cancel_request(
     if updated_request.get("assigned_to") and updated_request["assigned_to"] != current_user.id:
         notifications.notify_cancelled(updated_request["assigned_to"], updated_request)
 
-    return updated_request
+    return enrich_request_with_users(updated_request)
 
 
 def list_assignment_history(request_id: str, current_user: CurrentUser) -> list[dict]:

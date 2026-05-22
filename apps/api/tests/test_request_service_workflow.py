@@ -34,6 +34,7 @@ class RequestServiceWorkflowTests(unittest.TestCase):
             patch("app.services.request_service.assignments.record_assignment") as record_assignment,
             patch("app.services.request_service.status_logs.record_status_change") as record_status_change,
             patch("app.services.request_service.notifications.notify_reassigned") as notify_reassigned,
+            patch("app.services.request_service.user_repository.list_user_summaries", return_value={}),
         ):
             result = request_service.reassign_request(
                 "request-1",
@@ -83,6 +84,7 @@ class RequestServiceWorkflowTests(unittest.TestCase):
             patch("app.services.request_service.request_repository.update_request", return_value=updated_request),
             patch("app.services.request_service.status_logs.record_status_change") as record_status_change,
             patch("app.services.request_service.notifications.notify_status_changed") as notify_status_changed,
+            patch("app.services.request_service.user_repository.list_user_summaries", return_value={}),
         ):
             result = request_service.update_status(
                 "request-1",
@@ -125,6 +127,7 @@ class RequestServiceWorkflowTests(unittest.TestCase):
             patch("app.services.request_service.request_repository.update_request", return_value=updated_request),
             patch("app.services.request_service.status_logs.record_status_change") as record_status_change,
             patch("app.services.request_service.notifications.notify_done") as notify_done,
+            patch("app.services.request_service.user_repository.list_user_summaries", return_value={}),
         ):
             result = request_service.mark_done(
                 "request-1",
@@ -141,6 +144,36 @@ class RequestServiceWorkflowTests(unittest.TestCase):
             reason=None,
         )
         notify_done.assert_called_once_with("creator-1", updated_request)
+
+    def test_list_requests_enriches_creator_and_assignee(self):
+        current_user = CurrentUser(
+            id="lead-1",
+            email="lead@example.com",
+            name="Lead",
+            role="lead",
+            is_active=True,
+        )
+        requests = [
+            {
+                "id": "request-1",
+                "created_by": "creator-1",
+                "assigned_to": "assignee-1",
+                "status": "pending",
+            }
+        ]
+        users_by_id = {
+            "creator-1": {"id": "creator-1", "email": "creator@example.com", "name": "Creator", "avatar_url": None},
+            "assignee-1": {"id": "assignee-1", "email": "assignee@example.com", "name": "Assignee", "avatar_url": None},
+        }
+
+        with (
+            patch("app.services.request_service.request_repository.list_all_requests", return_value=requests),
+            patch("app.services.request_service.user_repository.list_user_summaries", return_value=users_by_id),
+        ):
+            result = request_service.list_requests("all", current_user)
+
+        self.assertEqual(result[0]["creator"]["email"], "creator@example.com")
+        self.assertEqual(result[0]["assignee"]["email"], "assignee@example.com")
 
 
 if __name__ == "__main__":

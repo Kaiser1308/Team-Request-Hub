@@ -3,6 +3,13 @@ from pydantic import BaseModel, Field
 from app.schemas.common import RequestPriority, RequestStatus
 
 
+class UserSummary(BaseModel):
+    id: str
+    email: str | None = None
+    name: str | None = None
+    avatar_url: str | None = None
+
+
 class InternalRequestBase(BaseModel):
     title: str = Field(min_length=1, max_length=160)
     description: str = Field(min_length=1)
@@ -64,6 +71,8 @@ class InternalRequestOut(BaseModel):
     cancelled_at: str | None = None
     created_at: str
     updated_at: str
+    creator: UserSummary | None = None
+    assignee: UserSummary | None = None
 
 
 class AssignmentHistoryOut(BaseModel):

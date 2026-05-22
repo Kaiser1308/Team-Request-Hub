@@ -92,3 +92,18 @@ def update_user_active_state(user_id: str, is_active: bool) -> dict:
 
 def get_user_profile_or_404(user_id: str) -> dict:
     return get_user_or_404(user_id)
+
+
+def list_user_summaries(user_ids: list[str]) -> dict[str, dict]:
+    unique_ids = sorted(set(user_ids))
+    if not unique_ids:
+        return {}
+
+    result = (
+        get_supabase_admin()
+        .table("users")
+        .select("id,email,name,avatar_url")
+        .in_("id", unique_ids)
+        .execute()
+    )
+    return {item["id"]: item for item in result.data or []}
