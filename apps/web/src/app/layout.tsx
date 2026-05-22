@@ -1,9 +1,19 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Orbitron, Rajdhani } from "next/font/google";
 import { QueryProvider } from "@/providers/query-provider";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const orbitron = Orbitron({
+  subsets: ["latin"],
+  variable: "--font-orbitron",
+  weight: ["600", "700", "800"],
+});
+
+const rajdhani = Rajdhani({
+  subsets: ["latin"],
+  variable: "--font-rajdhani",
+  weight: ["500", "600", "700"],
+});
 
 export const metadata: Metadata = {
   title: "Team Request Hub",
@@ -17,7 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${orbitron.variable} ${rajdhani.variable}`}>
         <QueryProvider>{children}</QueryProvider>
       </body>
     </html>

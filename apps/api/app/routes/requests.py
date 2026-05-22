@@ -24,9 +24,10 @@ router = APIRouter()
 async def list_requests(
     current_user: Annotated[CurrentUser, Depends(get_current_user)],
     view: str = "assigned",
+    limit: int | None = None,
 ):
     require_active_current_user(current_user)
-    return request_service.list_requests(view, current_user)
+    return request_service.list_requests(view, current_user, limit=limit)
 
 
 @router.post("", response_model=InternalRequestOut, status_code=status.HTTP_201_CREATED)

@@ -1,7 +1,10 @@
 import unittest
+from unittest.mock import patch
 
 from fastapi import HTTPException
 
+from app.schemas.users import CurrentUser
+from app.services import request_service
 from app.services.request_service import (
     build_status_update_data,
     ensure_done_allowed,
@@ -11,6 +14,70 @@ from app.services.request_service import (
 
 
 class RequestServiceRuleTests(unittest.TestCase):
+    def test_all_view_defaults_to_50_requests_for_leads(self):
+        lead_user = CurrentUser(
+            id="lead-1",
+            email="lead@example.com",
+            name="Lead",
+            role="lead",
+        )
+
+        with patch(
+            "app.services.request_service.request_repository.list_all_requests",
+            return_value=[],
+        ) as list_all_requests:
+            request_service.list_requests("all", lead_user)
+
+        list_all_requests.assert_called_once_with(limit=50)
+
+    def test_all_view_caps_requested_limit_at_100_for_leads(self):
+        lead_user = CurrentUser(
+            id="lead-1",
+            email="lead@example.com",
+            name="Lead",
+            role="lead",
+        )
+
+        with patch(
+            "app.services.request_service.request_repository.list_all_requests",
+            return_value=[],
+        ) as list_all_requests:
+            request_service.list_requests("all", lead_user, limit=500)
+
+        list_all_requests.assert_called_once_with(limit=100)
+
+    def test_all_view_clamps_small_limit_to_one_for_leads(self):
+        lead_user = CurrentUser(
+            id="lead-1",
+            email="lead@example.com",
+            name="Lead",
+            role="lead",
+        )
+
+        with patch(
+            "app.services.request_service.request_repository.list_all_requests",
+            return_value=[],
+        ) as list_all_requests:
+            request_service.list_requests("all", lead_user, limit=0)
+
+        list_all_requests.assert_called_once_with(limit=1)
+
+    def test_done_view_scopes_non_lead_query_before_limiting(self):
+        current_user = CurrentUser(
+            id="fe-1",
+            email="fe@example.com",
+            name="Frontend",
+            role="fe",
+        )
+
+        with patch(
+            "app.services.request_service.request_repository.list_done_requests",
+            return_value=[],
+        ) as list_done_requests:
+            request_service.list_requests("done", current_user)
+
+        list_done_requests.assert_called_once_with(limit=50, user_id="fe-1")
+
     def test_pending_can_transition_to_acknowledged(self):
         ensure_status_transition_allowed("pending", "acknowledged")
 

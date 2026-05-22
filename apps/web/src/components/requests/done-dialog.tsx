@@ -1,21 +1,71 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { useRequestActions } from "@/hooks/use-request-actions";
+import { animate } from 'animejs';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+  MOTION_DURATION,
+  MOTION_EASE,
+  MOTION_OFFSET,
+  MOTION_SCALE,
+} from '@/lib/animation/constants';
+import { useRequestActions } from '@/hooks/use-request-actions';
 
 export function DoneDialog({ requestId }: { requestId: string }) {
   const actions = useRequestActions();
-  const [isOpen, setIsOpen] = useState(false);
-  const [reply, setReply] = useState("");
+  const [isMounted, setIsMounted] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+  const [reply, setReply] = useState('');
   const [validationError, setValidationError] = useState<string | null>(null);
+  const overlayRef = useRef<HTMLDivElement | null>(null);
+  const panelRef = useRef<HTMLFormElement | null>(null);
+
+  const openDialog = useCallback(() => {
+    setIsClosing(false);
+    setIsMounted(true);
+  }, []);
+
+  const closeDialog = useCallback(async () => {
+    if (isClosing) {
+      return;
+    }
+
+    const overlay = overlayRef.current;
+    const panel = panelRef.current;
+    setIsClosing(true);
+
+    if (overlay) {
+      animate(overlay, {
+        opacity: [1, 0],
+        duration: MOTION_DURATION.dialogOut,
+        ease: MOTION_EASE.exit,
+        autoplay: true,
+      });
+    }
+
+    if (panel) {
+      animate(panel, {
+        y: [0, MOTION_OFFSET.small],
+        opacity: [1, 0],
+        scale: MOTION_SCALE.dialogOut,
+        duration: MOTION_DURATION.dialogOut,
+        ease: MOTION_EASE.exit,
+        autoplay: true,
+      });
+    }
+
+    window.setTimeout(() => {
+      setIsMounted(false);
+      setIsClosing(false);
+    }, MOTION_DURATION.dialogOut);
+  }, [isClosing]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setValidationError(null);
 
     if (!reply.trim()) {
-      setValidationError("Reply is required.");
+      setValidationError('Reply is required.');
       return;
     }
 
@@ -24,79 +74,117 @@ export function DoneDialog({ requestId }: { requestId: string }) {
         requestId,
         payload: { reply: reply.trim() },
       });
-      setReply("");
-      setIsOpen(false);
+      setReply('');
+      await closeDialog();
     } catch {
       // The mutation error is rendered below.
     }
   }
 
   useEffect(() => {
-    if (!isOpen) {
+    if (!isMounted || isClosing) {
+      return;
+    }
+
+    const overlay = overlayRef.current;
+    const panel = panelRef.current;
+
+    if (overlay) {
+      animate(overlay, {
+        opacity: [0, 1],
+        duration: MOTION_DURATION.dialogIn,
+        ease: MOTION_EASE.entrance,
+        autoplay: true,
+      });
+    }
+
+    if (panel) {
+      animate(panel, {
+        y: [MOTION_OFFSET.panel, 0],
+        opacity: [0, 1],
+        scale: MOTION_SCALE.dialogIn,
+        duration: MOTION_DURATION.dialogIn,
+        ease: MOTION_EASE.entrance,
+        autoplay: true,
+      });
+    }
+  }, [isMounted, isClosing]);
+
+  useEffect(() => {
+    if (!isMounted) {
       return;
     }
 
     function handleEscape(event: KeyboardEvent) {
-      if (event.key === "Escape" && !actions.markDone.isPending) {
-        setIsOpen(false);
+      if (event.key === 'Escape' && !actions.markDone.isPending) {
+        void closeDialog();
       }
     }
 
-    window.addEventListener("keydown", handleEscape);
-    return () => window.removeEventListener("keydown", handleEscape);
-  }, [isOpen, actions.markDone.isPending]);
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [isMounted, actions.markDone.isPending, closeDialog]);
 
-  if (!isOpen) {
+  if (!isMounted) {
     return (
-      <Button type="button" onClick={() => setIsOpen(true)}>
+      <Button type='button' onClick={openDialog}>
         Mark done
       </Button>
     );
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+    <div
+      ref={overlayRef}
+      className='fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4'
+      onClick={(event) => {
+        if (event.target === event.currentTarget && !actions.markDone.isPending) {
+          void closeDialog();
+        }
+      }}
+    >
       <form
+        ref={panelRef}
         onSubmit={handleSubmit}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="done-dialog-title"
-        className="w-full max-w-lg rounded-lg border border-[#e5e7eb] bg-white p-4"
+        role='dialog'
+        aria-modal='true'
+        aria-labelledby='done-dialog-title'
+        className='w-full max-w-lg rounded-lg border border-[#e5e7eb] bg-white p-4'
       >
-        <h3 id="done-dialog-title" className="text-base font-semibold text-[#111827]">
+        <h3 id='done-dialog-title' className='text-base font-semibold text-[#111827]'>
           Mark request done
         </h3>
-        <p className="mt-1 text-sm text-[#6b7280]">A completion reply is required.</p>
+        <p className='mt-1 text-sm text-[#6b7280]'>A completion reply is required.</p>
 
-        <label className="mt-3 grid gap-2 text-sm font-medium text-[#111827]">
+        <label className='mt-3 grid gap-2 text-sm font-medium text-[#111827]'>
           Done reply
           <textarea
-            className="min-h-24 rounded-md border border-[#e5e7eb] px-3 py-2 text-sm font-normal"
+            className='min-h-24 rounded-md border border-[#e5e7eb] px-3 py-2 text-sm font-normal'
             value={reply}
             onChange={(event) => setReply(event.target.value)}
-            placeholder="Describe what was completed"
+            placeholder='Describe what was completed'
             required
           />
         </label>
 
         {validationError || actions.markDone.error ? (
-          <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p className='mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700'>
             {validationError ??
               (actions.markDone.error instanceof Error
                 ? actions.markDone.error.message
-                : "Could not mark this request done.")}
+                : 'Could not mark this request done.')}
           </p>
         ) : null}
 
-        <div className="mt-3 flex gap-2">
-          <Button type="submit" disabled={actions.markDone.isPending}>
-            {actions.markDone.isPending ? "Submitting..." : "Submit reply"}
+        <div className='mt-3 flex gap-2'>
+          <Button type='submit' disabled={actions.markDone.isPending || isClosing}>
+            {actions.markDone.isPending ? 'Submitting...' : 'Submit reply'}
           </Button>
           <Button
-            type="button"
-            variant="outline"
-            disabled={actions.markDone.isPending}
-            onClick={() => setIsOpen(false)}
+            type='button'
+            variant='outline'
+            disabled={actions.markDone.isPending || isClosing}
+            onClick={() => void closeDialog()}
           >
             Close
           </Button>

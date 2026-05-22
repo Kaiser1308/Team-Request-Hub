@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useDashboardSummary } from "@/hooks/use-dashboard-summary";
+import { TelegramSettings } from "@/components/settings/telegram-settings";
 import type { InternalRequest } from "@/types";
 
 function formatDate(value: string) {
@@ -81,6 +82,8 @@ export default function DashboardPage() {
           </p>
         </div>
       </div>
+
+      <TelegramSettings />
 
       {isLead ? (
         <section className="flex flex-wrap gap-2 text-sm">

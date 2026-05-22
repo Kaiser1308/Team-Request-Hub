@@ -1,11 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { RequestActions } from "@/components/requests/request-actions";
 import { RequestPriorityBadge } from "@/components/requests/request-priority-badge";
 import { RequestStatusBadge } from "@/components/requests/request-status-badge";
-import { findUserLabel } from "@/components/requests/user-display";
-import { useActiveUsers } from "@/hooks/use-users";
 import type { InternalRequest } from "@/types";
 
 function formatDate(value: string) {
@@ -41,10 +38,15 @@ function getNextActionLabel(request: InternalRequest) {
   return null;
 }
 
-export function RequestCard({ request }: { request: InternalRequest }) {
-  const activeUsersQuery = useActiveUsers();
-  const creatorLabel = findUserLabel(activeUsersQuery.data, request.created_by);
-  const assigneeLabel = findUserLabel(activeUsersQuery.data, request.assigned_to);
+export function RequestCard({
+  request,
+  creatorLabel,
+  assigneeLabel,
+}: {
+  request: InternalRequest;
+  creatorLabel: string;
+  assigneeLabel: string;
+}) {
   const nextAction = getNextActionLabel(request);
 
   return (
@@ -82,8 +84,6 @@ export function RequestCard({ request }: { request: InternalRequest }) {
           View details
         </Link>
       </div>
-
-      <RequestActions request={request} />
     </article>
   );
 }

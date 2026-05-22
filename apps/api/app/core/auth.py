@@ -1,6 +1,7 @@
 from typing import Annotated
 from time import monotonic
 
+import httpx
 from jose import JWTError, jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -21,11 +22,19 @@ def clear_current_user_cache() -> None:
 
 def decode_supabase_access_token(token: str) -> tuple[str, str | None]:
     settings = get_settings()
+    header = _get_unverified_header(token)
+    algorithm = header.get("alg")
+
+    if algorithm == "HS256":
+        key = settings.supabase_jwt_secret
+    else:
+        key = _get_jwks_key(token, settings.supabase_url)
+
     try:
         payload = jwt.decode(
             token,
-            settings.supabase_jwt_secret,
-            algorithms=["HS256"],
+            key,
+            algorithms=[algorithm],
             audience="authenticated",
             options={"verify_iss": False},
         )
@@ -44,6 +53,49 @@ def decode_supabase_access_token(token: str) -> tuple[str, str | None]:
         )
 
     return user_id, email
+
+
+def _get_unverified_header(token: str) -> dict:
+    try:
+        return jwt.get_unverified_header(token)
+    except JWTError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token",
+        ) from exc
+
+
+def _get_jwks_key(token: str, supabase_url: str) -> dict:
+    header = _get_unverified_header(token)
+    key_id = header.get("kid")
+    algorithm = header.get("alg")
+    if not key_id or not algorithm:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token payload",
+        )
+
+    try:
+        response = httpx.get(
+            f"{supabase_url.rstrip('/')}/auth/v1/.well-known/jwks.json",
+            timeout=5,
+        )
+        response.raise_for_status()
+        jwks = response.json()
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token",
+        ) from exc
+
+    for key in jwks.get("keys", []):
+        if key.get("kid") == key_id and key.get("alg") == algorithm:
+            return key
+
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid or expired token",
+    )
 
 
 async def get_current_user(

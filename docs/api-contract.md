@@ -131,3 +131,39 @@ Returns bounded dashboard data for the current active user:
   "notifications_unread": 0
 }
 ```
+
+## Telegram
+
+```txt
+GET    /notifications/telegram/profile
+POST   /notifications/telegram/link
+DELETE /notifications/telegram/link
+POST   /notifications/telegram/webhook
+```
+
+`GET /notifications/telegram/profile` — returns Telegram linking status for current user.
+
+Response:
+
+```json
+{
+  "linked": true,
+  "username": "tguser",
+  "linked_at": "2026-05-22T10:00:00Z"
+}
+```
+
+`POST /notifications/telegram/link` — creates a one-time link token, returns Telegram deep link.
+
+Response:
+
+```json
+{
+  "url": "https://t.me/bot?start=token",
+  "expires_at": "2026-05-22T10:10:00Z"
+}
+```
+
+`DELETE /notifications/telegram/link` — unlinks Telegram from current user.
+
+`POST /notifications/telegram/webhook` — receives Telegram webhook updates. Validates `X-Telegram-Bot-Api-Secret-Token` header when `TELEGRAM_WEBHOOK_SECRET` is configured. Handles `/start <code>` messages for account linking.

@@ -59,6 +59,20 @@ Rules:
 Login/signup is owned by Supabase Auth. The frontend receives a Supabase access
 token and sends it to FastAPI as a Bearer token.
 
+Frontend post-login flow:
+
+```txt
+/login -> /auth/callback -> /auth/welcome?next=...
+```
+
+`/auth/welcome` is an intentional gate, not a cosmetic-only page:
+
+- It resolves runtime account state via `GET /users/me`.
+- If `is_active = true`, it preloads the target page (usually dashboard) and
+  then redirects.
+- If `is_active = false`, it renders `ACCOUNT DISABLED` and must not redirect
+  into protected dashboard routes.
+
 FastAPI verifies the JWT in `app/core/auth.py`, then loads the application
 profile from `public.users`. The backend never trusts a role supplied by the
 frontend.

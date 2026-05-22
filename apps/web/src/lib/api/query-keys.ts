@@ -15,4 +15,5 @@ export const queryKeys = {
   },
   notifications: ["notifications"] as const,
   dashboardSummary: ["dashboard", "summary"] as const,
+  telegramProfile: ["telegram", "profile"] as const,
 };

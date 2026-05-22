@@ -1,11 +1,19 @@
 "use client";
 
+import { animate, stagger } from "animejs";
 import Link from "next/link";
+import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   useNotificationActions,
   useNotifications,
 } from "@/hooks/use-notifications";
+import {
+  MOTION_DURATION,
+  MOTION_EASE,
+  MOTION_OFFSET,
+  MOTION_STAGGER,
+} from "@/lib/animation/constants";
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en", {
@@ -19,8 +27,37 @@ function formatDate(value: string) {
 export function NotificationList() {
   const notificationsQuery = useNotifications(false);
   const actions = useNotificationActions();
-  const notifications = notificationsQuery.data ?? [];
-  const unreadCount = notifications.filter((item) => !item.is_read).length;
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const notifications = notificationsQuery.data;
+  const notificationItems = notifications ?? [];
+  const unreadCount = notificationItems.filter((item) => !item.is_read).length;
+
+  useEffect(() => {
+    const container = listRef.current;
+    if (!container || !notificationItems.length) {
+      return;
+    }
+
+    const targets = Array.from(
+      container.querySelectorAll<HTMLElement>("[data-notification-item]"),
+    );
+    if (!targets.length) {
+      return;
+    }
+
+    const animation = animate(targets, {
+      x: [MOTION_OFFSET.tiny, 0],
+      opacity: [0, 1],
+      duration: MOTION_DURATION.normal,
+      delay: stagger(MOTION_STAGGER.tight, { from: "first" }),
+      ease: MOTION_EASE.entrance,
+      autoplay: true,
+    });
+
+    return () => {
+      animation.pause();
+    };
+  }, [notificationItems.length]);
 
   if (notificationsQuery.isLoading) {
     return (
@@ -52,7 +89,7 @@ export function NotificationList() {
     );
   }
 
-  if (!notifications.length) {
+  if (!notificationItems.length) {
     return (
       <div className="rounded-lg border border-[#e5e7eb] bg-white p-4 text-sm text-[#6b7280]">
         No notifications yet. New request activity and status updates will appear here.
@@ -76,10 +113,11 @@ export function NotificationList() {
         </Button>
       </div>
 
-      <div className="divide-y divide-[#e5e7eb]">
-        {notifications.map((notification) => (
+      <div ref={listRef} className="divide-y divide-[#e5e7eb]">
+        {notificationItems.map((notification) => (
           <div
             key={notification.id}
+            data-notification-item
             className="grid gap-2 px-3 py-2 sm:grid-cols-[1fr_auto]"
           >
             <div>

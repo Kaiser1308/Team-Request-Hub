@@ -5,7 +5,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_settings
-from app.routes import dashboard, health, notifications, requests, users
+from app.routes import dashboard, health, notifications, requests, telegram, users
 
 settings = get_settings()
 
@@ -44,3 +44,4 @@ app.include_router(users.router, prefix="/users", tags=["users"])
 app.include_router(requests.router, prefix="/requests", tags=["requests"])
 app.include_router(notifications.router, prefix="/notifications", tags=["notifications"])
 app.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
+app.include_router(telegram.router, prefix="/notifications/telegram", tags=["telegram"])

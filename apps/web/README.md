@@ -40,12 +40,14 @@ NEXT_PUBLIC_API_URL=
 
 ```txt
 src/app/
-  (auth)/login/          login route placeholder
+  (auth)/login/          Google OAuth login route
+  auth/welcome/          Post-login animated welcome gate
   (dashboard)/           protected app routes
   page.tsx               redirects to /dashboard
 
 src/lib/
   api/client.ts          FastAPI client with Supabase Bearer JWT
+  animation/constants.ts shared motion timing/easing constants
   supabase/client.ts     browser Supabase client
   supabase/middleware.ts session refresh and route protection
 
@@ -80,23 +82,36 @@ Supabase is used in the frontend for Auth/session handling only.
 Browser signs in with Supabase Auth
 Supabase stores session cookies
 Middleware redirects unauthenticated users to /login
+/auth/callback redirects to /auth/welcome (not directly to dashboard)
+/auth/welcome fetches /users/me to resolve active/blocked account state
+/auth/welcome preloads the next route, then redirects
 apiFetch gets the Supabase access token
 apiFetch calls FastAPI with Authorization: Bearer <token>
 ```
+
+If `/users/me` returns `is_active = false`, welcome screen must render
+`ACCOUNT DISABLED` and must not navigate to dashboard.
+
+## Motion System
+
+Anime.js motion values are centralized in:
+
+```txt
+src/lib/animation/constants.ts
+```
+
+Tune global animation behavior there (durations/easing/stagger/offsets) instead
+of editing per-component magic numbers.
 
 Business logic, permission checks, notifications, assignment history, status
 logs, and service-role database access belong in `apps/api`.
 
 ## Current State
 
-The frontend is still a skeleton:
-
-```txt
-- /login is a placeholder and does not yet call Google OAuth.
-- Dashboard/request pages are placeholders.
-- apiFetch is ready to call the backend once UI flows are implemented.
-- Middleware already protects dashboard routes.
-```
+- Google OAuth login/logout is implemented.
+- Protected dashboard routes use the app shell and current user role.
+- Request list, create, detail, workflow action, admin users, and notification UI are implemented.
+- Frontend still depends on a running FastAPI backend and Supabase project for runtime smoke tests.
 
 Do not create `src/app/api/` route handlers for product business logic. Call the
 FastAPI backend through `src/lib/api/client.ts`.

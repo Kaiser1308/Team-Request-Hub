@@ -14,6 +14,11 @@ class Settings(BaseSettings):
     supabase_jwt_secret: str
     log_request_timing: bool = False
 
+    telegram_bot_token: str | None = None
+    telegram_bot_username: str | None = None
+    telegram_webhook_secret: str | None = None
+    app_base_url: str = "http://localhost:3000"
+
     class Config:
         env_file = ".env"
 

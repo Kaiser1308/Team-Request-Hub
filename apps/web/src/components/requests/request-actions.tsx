@@ -1,11 +1,19 @@
 "use client";
 
+import { animate, stagger } from "animejs";
+import { useEffect, useRef } from "react";
 import { CancelDialog } from "@/components/requests/cancel-dialog";
 import { DoneDialog } from "@/components/requests/done-dialog";
 import { ReassignDialog } from "@/components/requests/reassign-dialog";
 import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useRequestActions } from "@/hooks/use-request-actions";
+import {
+  MOTION_DURATION,
+  MOTION_EASE,
+  MOTION_OFFSET,
+  MOTION_STAGGER,
+} from "@/lib/animation/constants";
 import type { InternalRequest } from "@/types";
 
 function getReadableError(error: unknown): string | null {
@@ -19,11 +27,13 @@ function getReadableError(error: unknown): string | null {
 export function RequestActions({ request }: { request: InternalRequest }) {
   const { data: currentUser } = useCurrentUser();
   const actions = useRequestActions();
+  const actionRowRef = useRef<HTMLDivElement | null>(null);
   const isLead = currentUser?.role === "lead";
   const isCreator = currentUser?.id === request.created_by;
   const isAssignee = currentUser?.id === request.assigned_to;
   const isWorker = currentUser?.role === "be" || isLead;
   const isClosed = request.status === "done" || request.status === "cancelled";
+  const shouldRender = Boolean(currentUser) && !isClosed;
   const canSelfAssign =
     !isClosed && isWorker && !request.assigned_to && request.status === "pending";
   const canAcknowledge =
@@ -38,7 +48,36 @@ export function RequestActions({ request }: { request: InternalRequest }) {
   const canCancel = !isClosed && (isCreator || isLead);
   const canReassign = !isClosed && isLead;
 
-  if (!currentUser || isClosed) {
+  useEffect(() => {
+    if (!shouldRender) {
+      return;
+    }
+
+    const container = actionRowRef.current;
+    if (!container) {
+      return;
+    }
+
+    const targets = Array.from(container.querySelectorAll<HTMLElement>("button"));
+    if (!targets.length) {
+      return;
+    }
+
+    const animation = animate(targets, {
+      y: [MOTION_OFFSET.tiny, 0],
+      opacity: [0, 1],
+      duration: MOTION_DURATION.page,
+      delay: stagger(MOTION_STAGGER.compact, { from: "first" }),
+      ease: MOTION_EASE.entrance,
+      autoplay: true,
+    });
+
+    return () => {
+      animation.pause();
+    };
+  }, [request.id, request.status, shouldRender]);
+
+  if (!shouldRender) {
     return null;
   }
 
@@ -51,7 +90,7 @@ export function RequestActions({ request }: { request: InternalRequest }) {
 
   return (
     <div className="mt-5 space-y-3">
-      <div className="flex flex-wrap gap-2">
+      <div ref={actionRowRef} className="flex flex-wrap gap-2">
         {canSelfAssign ? (
           <Button
             type="button"

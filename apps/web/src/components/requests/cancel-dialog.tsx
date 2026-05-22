@@ -1,13 +1,63 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { useRequestActions } from "@/hooks/use-request-actions";
+import { animate } from 'animejs';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+  MOTION_DURATION,
+  MOTION_EASE,
+  MOTION_OFFSET,
+  MOTION_SCALE,
+} from '@/lib/animation/constants';
+import { useRequestActions } from '@/hooks/use-request-actions';
 
 export function CancelDialog({ requestId }: { requestId: string }) {
   const actions = useRequestActions();
-  const [isOpen, setIsOpen] = useState(false);
-  const [reason, setReason] = useState("");
+  const [isMounted, setIsMounted] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+  const [reason, setReason] = useState('');
+  const overlayRef = useRef<HTMLDivElement | null>(null);
+  const panelRef = useRef<HTMLFormElement | null>(null);
+
+  const openDialog = useCallback(() => {
+    setIsClosing(false);
+    setIsMounted(true);
+  }, []);
+
+  const closeDialog = useCallback(async () => {
+    if (isClosing) {
+      return;
+    }
+
+    const overlay = overlayRef.current;
+    const panel = panelRef.current;
+    setIsClosing(true);
+
+    if (overlay) {
+      animate(overlay, {
+        opacity: [1, 0],
+        duration: MOTION_DURATION.dialogOut,
+        ease: MOTION_EASE.exit,
+        autoplay: true,
+      });
+    }
+
+    if (panel) {
+      animate(panel, {
+        y: [0, MOTION_OFFSET.small],
+        opacity: [1, 0],
+        scale: MOTION_SCALE.dialogOut,
+        duration: MOTION_DURATION.dialogOut,
+        ease: MOTION_EASE.exit,
+        autoplay: true,
+      });
+    }
+
+    window.setTimeout(() => {
+      setIsMounted(false);
+      setIsClosing(false);
+    }, MOTION_DURATION.dialogOut);
+  }, [isClosing]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -17,77 +67,115 @@ export function CancelDialog({ requestId }: { requestId: string }) {
         requestId,
         payload: { reason: reason.trim() || null },
       });
-      setReason("");
-      setIsOpen(false);
+      setReason('');
+      await closeDialog();
     } catch {
       // The parent action error state is rendered by RequestActions.
     }
   }
 
   useEffect(() => {
-    if (!isOpen) {
+    if (!isMounted || isClosing) {
+      return;
+    }
+
+    const overlay = overlayRef.current;
+    const panel = panelRef.current;
+
+    if (overlay) {
+      animate(overlay, {
+        opacity: [0, 1],
+        duration: MOTION_DURATION.dialogIn,
+        ease: MOTION_EASE.entrance,
+        autoplay: true,
+      });
+    }
+
+    if (panel) {
+      animate(panel, {
+        y: [MOTION_OFFSET.panel, 0],
+        opacity: [0, 1],
+        scale: MOTION_SCALE.dialogIn,
+        duration: MOTION_DURATION.dialogIn,
+        ease: MOTION_EASE.entrance,
+        autoplay: true,
+      });
+    }
+  }, [isMounted, isClosing]);
+
+  useEffect(() => {
+    if (!isMounted) {
       return;
     }
 
     function handleEscape(event: KeyboardEvent) {
-      if (event.key === "Escape" && !actions.cancel.isPending) {
-        setIsOpen(false);
+      if (event.key === 'Escape' && !actions.cancel.isPending) {
+        void closeDialog();
       }
     }
 
-    window.addEventListener("keydown", handleEscape);
-    return () => window.removeEventListener("keydown", handleEscape);
-  }, [isOpen, actions.cancel.isPending]);
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [isMounted, actions.cancel.isPending, closeDialog]);
 
-  if (!isOpen) {
+  if (!isMounted) {
     return (
-      <Button type="button" variant="outline" onClick={() => setIsOpen(true)}>
+      <Button type='button' variant='outline' onClick={openDialog}>
         Cancel request
       </Button>
     );
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+    <div
+      ref={overlayRef}
+      className='fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4'
+      onClick={(event) => {
+        if (event.target === event.currentTarget && !actions.cancel.isPending) {
+          void closeDialog();
+        }
+      }}
+    >
       <form
+        ref={panelRef}
         onSubmit={handleSubmit}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="cancel-dialog-title"
-        className="w-full max-w-lg rounded-lg border border-red-200 bg-red-50 p-4"
+        role='dialog'
+        aria-modal='true'
+        aria-labelledby='cancel-dialog-title'
+        className='w-full max-w-lg rounded-lg border border-red-200 bg-red-50 p-4'
       >
-        <h3 id="cancel-dialog-title" className="text-base font-semibold text-red-900">
+        <h3 id='cancel-dialog-title' className='text-base font-semibold text-red-900'>
           Cancel request
         </h3>
-        <p className="mt-1 text-sm text-red-800">
+        <p className='mt-1 text-sm text-red-800'>
           Are you sure you want to cancel this request?
         </p>
-        <label className="mt-3 grid gap-2 text-sm font-medium text-red-900">
+        <label className='mt-3 grid gap-2 text-sm font-medium text-red-900'>
           Cancel reason
           <textarea
-            className="min-h-20 rounded-md border border-red-200 bg-white px-3 py-2 text-sm font-normal text-[#111827]"
+            className='min-h-20 rounded-md border border-red-200 bg-white px-3 py-2 text-sm font-normal text-[#111827]'
             value={reason}
             onChange={(event) => setReason(event.target.value)}
-            placeholder="Optional reason"
+            placeholder='Optional reason'
             disabled={actions.cancel.isPending}
           />
         </label>
         {actions.cancel.error ? (
-          <p className="mt-3 rounded-lg border border-red-200 bg-white px-3 py-2 text-sm text-red-700">
+          <p className='mt-3 rounded-lg border border-red-200 bg-white px-3 py-2 text-sm text-red-700'>
             {actions.cancel.error instanceof Error
               ? actions.cancel.error.message
-              : "Could not cancel this request."}
+              : 'Could not cancel this request.'}
           </p>
         ) : null}
-        <div className="mt-3 flex gap-2">
-          <Button type="submit" disabled={actions.cancel.isPending}>
-            {actions.cancel.isPending ? "Cancelling..." : "Confirm cancel"}
+        <div className='mt-3 flex gap-2'>
+          <Button type='submit' disabled={actions.cancel.isPending || isClosing}>
+            {actions.cancel.isPending ? 'Cancelling...' : 'Confirm cancel'}
           </Button>
           <Button
-            type="button"
-            variant="outline"
-            disabled={actions.cancel.isPending}
-            onClick={() => setIsOpen(false)}
+            type='button'
+            variant='outline'
+            disabled={actions.cancel.isPending || isClosing}
+            onClick={() => void closeDialog()}
           >
             Keep request
           </Button>

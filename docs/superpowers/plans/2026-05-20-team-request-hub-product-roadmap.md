@@ -166,6 +166,12 @@ Execute Phase 2 from docs/superpowers/plans/2026-05-20-team-request-hub-mvp-phas
 
 **Goal:** Create reusable FE data access and dashboard shell before feature pages.
 
+**Phase detail plan:**
+
+```txt
+docs/superpowers/plans/2026-05-20-phase-3-frontend-data-layer-app-shell-detail.md
+```
+
 **Main tasks:**
 
 ```txt
@@ -199,7 +205,7 @@ Both pass, and dashboard layout shows navigation after login.
 **Suggested prompt to run later:**
 
 ```txt
-Execute Phase 3 from docs/superpowers/plans/2026-05-20-team-request-hub-mvp-phased-build.md. Add FE API clients, hooks, and dashboard shell.
+Execute Phase 3 from docs/superpowers/plans/2026-05-20-phase-3-frontend-data-layer-app-shell-detail.md. Add FE API clients, hooks, and dashboard shell. Keep scope inside Phase 3 and verify lint/build.
 ```
 
 ---
@@ -207,6 +213,12 @@ Execute Phase 3 from docs/superpowers/plans/2026-05-20-team-request-hub-mvp-phas
 ### Phase 4: Request List And Create UI
 
 **Goal:** Let users create requests and view request lists by backend view.
+
+**Phase detail plan:**
+
+```txt
+docs/superpowers/plans/2026-05-20-phase-4-request-list-create-ui-detail.md
+```
 
 **Main tasks:**
 
@@ -243,7 +255,7 @@ Both pass, and a logged-in user can create a request and see it in Created by me
 **Suggested prompt to run later:**
 
 ```txt
-Execute Phase 4 from docs/superpowers/plans/2026-05-20-team-request-hub-mvp-phased-build.md. Build request list pages and create request form.
+Execute Phase 4 from docs/superpowers/plans/2026-05-20-phase-4-request-list-create-ui-detail.md. Build request list pages and create request form. Keep scope inside Phase 4 and verify lint/build.
 ```
 
 ---
@@ -251,6 +263,12 @@ Execute Phase 4 from docs/superpowers/plans/2026-05-20-team-request-hub-mvp-phas
 ### Phase 5: Request Actions
 
 **Goal:** Complete the core request workflow from the UI.
+
+**Phase detail plan:**
+
+```txt
+docs/superpowers/plans/2026-05-20-phase-5-request-actions-detail.md
+```
 
 **Main tasks:**
 
@@ -268,7 +286,12 @@ Execute Phase 4 from docs/superpowers/plans/2026-05-20-team-request-hub-mvp-phas
 ```txt
 apps/web/src/components/requests/request-actions.tsx
 apps/web/src/components/requests/done-dialog.tsx
+apps/web/src/components/requests/cancel-dialog.tsx
+apps/web/src/components/requests/reassign-dialog.tsx
+apps/web/src/components/requests/request-detail.tsx
+apps/web/src/components/requests/request-timeline.tsx
 apps/web/src/components/requests/request-card.tsx
+apps/web/src/app/(dashboard)/requests/[requestId]/page.tsx
 ```
 
 **Done when:**
@@ -288,7 +311,7 @@ create -> self-assign -> acknowledge -> start -> done
 **Suggested prompt to run later:**
 
 ```txt
-Execute Phase 5 from docs/superpowers/plans/2026-05-20-team-request-hub-mvp-phased-build.md. Add role/status-aware request action UI.
+Execute Phase 5 from docs/superpowers/plans/2026-05-20-phase-5-request-actions-detail.md. Add role/status-aware request action UI and request detail. Keep scope inside Phase 5 and verify lint/build.
 ```
 
 ---
@@ -296,6 +319,12 @@ Execute Phase 5 from docs/superpowers/plans/2026-05-20-team-request-hub-mvp-phas
 ### Phase 6: Lead Admin And Notifications
 
 **Goal:** Finish lead role management and in-app notifications.
+
+**Phase detail plan:**
+
+```txt
+docs/superpowers/plans/2026-05-20-phase-6-lead-admin-notifications-detail.md
+```
 
 **Main tasks:**
 
@@ -311,7 +340,7 @@ Execute Phase 5 from docs/superpowers/plans/2026-05-20-team-request-hub-mvp-phas
 
 ```txt
 apps/web/src/hooks/use-users.ts
-apps/web/src/components/users/role-management-table.tsx
+apps/web/src/components/admin/user-role-table.tsx
 apps/web/src/app/(dashboard)/admin/users/page.tsx
 apps/web/src/lib/api/notifications.ts
 apps/web/src/hooks/use-notifications.ts
@@ -332,7 +361,7 @@ Both pass, lead can update roles, and notifications are visible/readable.
 **Suggested prompt to run later:**
 
 ```txt
-Execute Phase 6 from docs/superpowers/plans/2026-05-20-team-request-hub-mvp-phased-build.md. Add lead role management and notifications UI.
+Execute Phase 6 from docs/superpowers/plans/2026-05-20-phase-6-lead-admin-notifications-detail.md. Add lead role management and notifications UI. Keep scope inside Phase 6 and verify lint/build.
 ```
 
 ---
@@ -340,6 +369,12 @@ Execute Phase 6 from docs/superpowers/plans/2026-05-20-team-request-hub-mvp-phas
 ### Phase 7: Full End-To-End Verification
 
 **Goal:** Prove the MVP works with real Supabase configuration.
+
+**Phase detail plan:**
+
+```txt
+docs/superpowers/plans/2026-05-20-phase-7-full-e2e-verification-detail.md
+```
 
 **Main tasks:**
 
@@ -373,7 +408,7 @@ All pass, and manual smoke test is complete.
 **Suggested prompt to run later:**
 
 ```txt
-Execute Phase 7 from docs/superpowers/plans/2026-05-20-team-request-hub-mvp-phased-build.md. Run full backend/frontend verification, real Supabase smoke test, and update docs.
+Execute Phase 7 from docs/superpowers/plans/2026-05-20-phase-7-full-e2e-verification-detail.md. Run full backend/frontend verification, real Supabase smoke test, and update docs. Do not add new features.
 ```
 
 ---

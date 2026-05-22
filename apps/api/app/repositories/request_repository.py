@@ -24,31 +24,33 @@ def get_request_or_404(request_id: str) -> dict:
     return result.data[0]
 
 
-def list_assigned_requests(user_id: str) -> list[dict]:
+def list_assigned_requests(user_id: str, limit: int = 50) -> list[dict]:
     result = (
         get_supabase_admin()
         .table(REQUESTS_TABLE)
         .select("*")
         .eq("assigned_to", user_id)
         .order("created_at", desc=True)
+        .limit(limit)
         .execute()
     )
     return result.data or []
 
 
-def list_created_requests(user_id: str) -> list[dict]:
+def list_created_requests(user_id: str, limit: int = 50) -> list[dict]:
     result = (
         get_supabase_admin()
         .table(REQUESTS_TABLE)
         .select("*")
         .eq("created_by", user_id)
         .order("created_at", desc=True)
+        .limit(limit)
         .execute()
     )
     return result.data or []
 
 
-def list_pool_requests() -> list[dict]:
+def list_pool_requests(limit: int = 50) -> list[dict]:
     result = (
         get_supabase_admin()
         .table(REQUESTS_TABLE)
@@ -56,29 +58,37 @@ def list_pool_requests() -> list[dict]:
         .is_("assigned_to", "null")
         .eq("status", "pending")
         .order("created_at", desc=True)
+        .limit(limit)
         .execute()
     )
     return result.data or []
 
 
-def list_done_requests() -> list[dict]:
-    result = (
+def list_done_requests(limit: int = 50, user_id: str | None = None) -> list[dict]:
+    query = (
         get_supabase_admin()
         .table(REQUESTS_TABLE)
         .select("*")
         .eq("status", "done")
         .order("created_at", desc=True)
-        .execute()
     )
+
+    if user_id is not None:
+        query = query.or_(
+            f"created_by.eq.{user_id},assigned_to.eq.{user_id},assigned_to.is.null"
+        )
+
+    result = query.limit(limit).execute()
     return result.data or []
 
 
-def list_all_requests() -> list[dict]:
+def list_all_requests(limit: int = 50) -> list[dict]:
     result = (
         get_supabase_admin()
         .table(REQUESTS_TABLE)
         .select("*")
         .order("created_at", desc=True)
+        .limit(limit)
         .execute()
     )
     return result.data or []

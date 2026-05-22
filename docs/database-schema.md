@@ -4,11 +4,13 @@ The executable schema lives in `DB_SCHEMA_TEAM_REQUEST_HUB.sql` and targets Supa
 
 ## Tables
 
-- `public.users`: application profile for `auth.users`, including `role`, `is_active`, and profile metadata.
+- `public.users`: application profile for `auth.users`, including `role`, `is_active`, profile metadata, and optional Telegram linking fields.
 - `public.internal_requests`: core request records with title, description, tags, priority, status, creator, assignee, reply, and lifecycle timestamps.
 - `public.assignment_history`: audit trail for create-with-assignee, self-assign, and reassign events.
 - `public.request_status_logs`: audit trail for status changes, done, and cancel events.
 - `public.notifications`: user-facing notification records tied to request workflow events.
+- `public.telegram_link_tokens`: one-time tokens for linking a user's Telegram account via deep link.
+- `public.notification_deliveries`: per-channel delivery tracking for notifications (e.g. Telegram).
 
 ## Enums
 
@@ -16,6 +18,8 @@ The executable schema lives in `DB_SCHEMA_TEAM_REQUEST_HUB.sql` and targets Supa
 - `request_status`: `pending`, `acknowledged`, `in_progress`, `done`, `cancelled`.
 - `request_priority`: `low`, `medium`, `high`, `urgent`.
 - `notification_type`: `assigned`, `reassigned`, `status_changed`, `pool_new`, `replied`, `done`, `cancelled`.
+- `notification_channel`: `telegram`.
+- `notification_delivery_status`: `pending`, `sent`, `failed`.
 
 ## Auth Profile Trigger
 

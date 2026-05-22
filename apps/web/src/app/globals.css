@@ -119,7 +119,7 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
@@ -128,4 +128,51 @@
   html {
     @apply font-sans;
   }
+}
+
+@layer components {
+  #app-shell-navigation {
+    background-color: #080b12;
+    background-image:
+      radial-gradient(120% 80% at 100% 100%, rgb(37 99 235 / 18%) 0%, rgb(37 99 235 / 0%) 60%),
+      linear-gradient(180deg, #05070c 0%, #0a0f1a 45%, #131a27 100%);
+    border-right: none !important;
+    color: #ffffff;
+  }
+
+  #app-shell-navigation a {
+    color: #d1d5db;
+  }
+
+  #app-shell-navigation a:hover {
+    background: rgb(255 255 255 / 10%);
+    color: #ffffff;
+  }
+
+  #app-shell-navigation a[aria-current="page"] {
+    background: #1f2937;
+    color: #ffffff;
+  }
+
+  #app-shell-navigation button {
+    color: #ffffff;
+  }
+
+  #app-shell-navigation button:hover {
+    background: rgb(255 255 255 / 10%);
+    color: #ffffff;
+  }
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.skeleton-pulse {
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
 }

@@ -3,16 +3,13 @@
 import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { createClient } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
 
-export function LogoutButton() {
+export function LogoutButton({ className }: { className?: string }) {
   const router = useRouter();
 
-  async function handleLogout() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.replace("/login");
-    router.refresh();
+  function handleLogout() {
+    router.replace("/auth/goodbye");
   }
 
   return (
@@ -20,8 +17,8 @@ export function LogoutButton() {
       type="button"
       variant="outline"
       size="sm"
-      className="gap-1"
-      onClick={() => void handleLogout()}
+      className={cn("gap-1", className)}
+      onClick={handleLogout}
     >
       <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
       Sign out

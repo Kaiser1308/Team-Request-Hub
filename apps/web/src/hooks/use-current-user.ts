@@ -9,5 +9,7 @@ export function useCurrentUser() {
     queryKey: queryKeys.currentUser,
     queryFn: getCurrentUser,
     retry: false,
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }

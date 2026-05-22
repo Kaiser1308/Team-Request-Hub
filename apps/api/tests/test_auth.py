@@ -1,9 +1,12 @@
 import os
 import unittest
+from base64 import urlsafe_b64encode
 from types import SimpleNamespace
 from unittest.mock import patch
 
 from jose import jwt
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 from fastapi import HTTPException
 from fastapi.security import HTTPAuthorizationCredentials
 
@@ -28,6 +31,47 @@ def build_token(user_id="user-1", email="user@example.com", secret="secret"):
         secret,
         algorithm="HS256",
     )
+
+
+def _base64url_uint(value: int) -> str:
+    raw = value.to_bytes((value.bit_length() + 7) // 8, "big")
+    return urlsafe_b64encode(raw).rstrip(b"=").decode()
+
+
+def build_rsa_token(user_id="user-1", email="user@example.com"):
+    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    private_pem = private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption(),
+    )
+    key_id = "test-key"
+    token = jwt.encode(
+        {
+            "sub": user_id,
+            "email": email,
+            "aud": "authenticated",
+            "role": "authenticated",
+            "iss": "https://project.supabase.co/auth/v1",
+        },
+        private_pem,
+        algorithm="RS256",
+        headers={"kid": key_id},
+    )
+    numbers = private_key.public_key().public_numbers()
+    jwks = {
+        "keys": [
+            {
+                "kty": "RSA",
+                "kid": key_id,
+                "alg": "RS256",
+                "use": "sig",
+                "n": _base64url_uint(numbers.n),
+                "e": _base64url_uint(numbers.e),
+            }
+        ]
+    }
+    return token, jwks
 
 
 class FakeTableQuery:
@@ -202,6 +246,31 @@ class AuthTests(unittest.IsolatedAsyncioTestCase):
                 await get_current_user(credentials)
 
         self.assertEqual(context.exception.status_code, 401)
+
+    async def test_current_user_accepts_asymmetric_supabase_jwt_from_jwks(self):
+        token, jwks = build_rsa_token()
+        credentials = HTTPAuthorizationCredentials(scheme="Bearer", credentials=token)
+
+        with (
+            patch("app.core.auth.httpx.get") as http_get,
+            patch("app.core.auth.user_repository.get_user_profile_or_404", return_value={
+                "id": "user-1",
+                "email": "user@example.com",
+                "name": "User",
+                "avatar_url": None,
+                "role": "fe",
+                "is_active": True,
+            }),
+        ):
+            http_get.return_value.json.return_value = jwks
+            http_get.return_value.raise_for_status.return_value = None
+            current_user = await get_current_user(credentials)
+
+        self.assertEqual(current_user.id, "user-1")
+        http_get.assert_called_once_with(
+            "http://localhost/auth/v1/.well-known/jwks.json",
+            timeout=5,
+        )
 
 
 if __name__ == "__main__":

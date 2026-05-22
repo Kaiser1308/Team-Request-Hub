@@ -42,7 +42,7 @@ export function AuthForm({ initialMode = "login" }: { initialMode?: Mode }) {
       return;
     }
 
-    window.location.href = "/dashboard";
+    window.location.href = "/auth/welcome?next=/dashboard";
   }
 
   return (

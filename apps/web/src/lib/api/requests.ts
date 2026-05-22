@@ -9,6 +9,11 @@ import type {
 
 export type RequestView = "assigned" | "created" | "pool" | "done" | "all";
 
+export interface ListRequestsParams {
+  view: RequestView;
+  limit?: number;
+}
+
 export interface InternalRequestCreatePayload {
   title: string;
   description: string;
@@ -44,8 +49,11 @@ export interface CancelRequestPayload {
   reason?: string | null;
 }
 
-export function listRequests(view: RequestView) {
-  const searchParams = new URLSearchParams({ view });
+export function listRequests({ view, limit = 50 }: ListRequestsParams) {
+  const searchParams = new URLSearchParams({
+    view,
+    limit: String(limit),
+  });
   return apiFetch<InternalRequest[]>(`/requests?${searchParams.toString()}`);
 }
 

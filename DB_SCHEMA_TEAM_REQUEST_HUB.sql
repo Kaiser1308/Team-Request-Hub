@@ -234,7 +234,78 @@ create index if not exists idx_notifications_created_at
   on public.notifications(created_at desc);
 
 -- =========================================================
--- 7. Updated_at Trigger
+-- 7. Telegram columns on users
+-- =========================================================
+
+alter table public.users
+  add column if not exists telegram_chat_id text,
+  add column if not exists telegram_username text,
+  add column if not exists telegram_linked_at timestamptz;
+
+create unique index if not exists idx_users_telegram_chat_id
+  on public.users(telegram_chat_id)
+  where telegram_chat_id is not null;
+
+-- =========================================================
+-- 8. Telegram Link Tokens
+-- =========================================================
+
+create table if not exists public.telegram_link_tokens (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.users(id) on delete cascade,
+  token text not null unique,
+  expires_at timestamptz not null,
+  used_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_telegram_link_tokens_user_id
+  on public.telegram_link_tokens(user_id);
+
+create index if not exists idx_telegram_link_tokens_token
+  on public.telegram_link_tokens(token);
+
+-- =========================================================
+-- 9. Notification Delivery Tracking
+-- =========================================================
+
+do $$
+begin
+  if not exists (select 1 from pg_type where typname = 'notification_channel') then
+    create type notification_channel as enum ('telegram');
+  end if;
+end $$;
+
+do $$
+begin
+  if not exists (select 1 from pg_type where typname = 'notification_delivery_status') then
+    create type notification_delivery_status as enum ('pending', 'sent', 'failed');
+  end if;
+end $$;
+
+create table if not exists public.notification_deliveries (
+  id uuid primary key default gen_random_uuid(),
+  notification_id uuid not null references public.notifications(id) on delete cascade,
+  user_id uuid not null references public.users(id) on delete cascade,
+  channel notification_channel not null,
+  status notification_delivery_status not null default 'pending',
+  provider_message_id text,
+  error_message text,
+  created_at timestamptz not null default now(),
+  sent_at timestamptz
+);
+
+create index if not exists idx_notification_deliveries_notification_id
+  on public.notification_deliveries(notification_id);
+
+create index if not exists idx_notification_deliveries_user_channel
+  on public.notification_deliveries(user_id, channel);
+
+create index if not exists idx_notification_deliveries_status
+  on public.notification_deliveries(status);
+
+-- =========================================================
+-- 10. Updated_at Trigger
 -- =========================================================
 
 create or replace function public.set_updated_at()
@@ -260,7 +331,7 @@ for each row
 execute function public.set_updated_at();
 
 -- =========================================================
--- 8. Auto-create user profile after Supabase Auth signup
+-- 11. Auto-create user profile after Supabase Auth signup
 -- =========================================================
 -- New signups start inactive. A lead must approve the profile by setting is_active = true.
 -- This creates a default profile with role = fe.
@@ -295,7 +366,7 @@ for each row
 execute function public.handle_new_auth_user();
 
 -- =========================================================
--- 9. Row Level Security
+-- 12. Row Level Security
 -- =========================================================
 -- Architecture rule:
 -- FE must NOT query DB directly.
@@ -309,6 +380,8 @@ alter table public.internal_requests enable row level security;
 alter table public.assignment_history enable row level security;
 alter table public.request_status_logs enable row level security;
 alter table public.notifications enable row level security;
+alter table public.telegram_link_tokens enable row level security;
+alter table public.notification_deliveries enable row level security;
 
 -- Users can read their own profile if direct client access is ever used.
 drop policy if exists "users can read own profile" on public.users;
@@ -339,7 +412,7 @@ with check (auth.uid() = user_id);
 -- Keep business logic in FastAPI.
 
 -- =========================================================
--- 10. Realtime
+-- 13. Realtime
 -- =========================================================
 -- In Supabase dashboard, enable Realtime for:
 -- - notifications
@@ -353,7 +426,7 @@ with check (auth.uid() = user_id);
 -- Use dashboard toggle if unsure.
 
 -- =========================================================
--- 11. Seed examples
+-- 14. Seed examples
 -- =========================================================
 -- Do not run this blindly in production.
 -- Replace UUIDs with real auth.users IDs after login.
@@ -371,10 +444,12 @@ with check (auth.uid() = user_id);
 -- where email = 'frontend@example.com';
 
 -- =========================================================
--- 12. MVP Tables Summary
+-- 15. MVP Tables Summary
 -- =========================================================
 -- public.users
 -- public.internal_requests
 -- public.assignment_history
 -- public.request_status_logs
 -- public.notifications
+-- public.telegram_link_tokens
+-- public.notification_deliveries

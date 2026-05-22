@@ -22,6 +22,7 @@ Run backend tests:
 
 ```bash
 uv --cache-dir .uv-cache run python -m unittest discover tests
+uv --cache-dir .uv-cache run python -m compileall app tests
 ```
 
 Health check:
@@ -41,3 +42,11 @@ API docs:
 ```txt
 http://localhost:8000/docs
 ```
+
+## Current State
+
+- FastAPI routers are mounted for health, users, requests, and notifications.
+- Supabase service-role access stays backend-only through `app/db/supabase.py`.
+- Request workflow logic lives in services and writes assignment history, status logs, and notification records.
+- Role updates are lead-only through `PATCH /users/{user_id}/role`.
+- Local verification uses `uv --cache-dir .uv-cache` from this directory.

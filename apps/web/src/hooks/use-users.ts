@@ -14,6 +14,8 @@ export function useUsers() {
   return useQuery({
     queryKey: queryKeys.users,
     queryFn: listUsers,
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -21,6 +23,8 @@ export function useActiveUsers() {
   return useQuery({
     queryKey: queryKeys.assignableUsers,
     queryFn: listActiveUsers,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }
 
