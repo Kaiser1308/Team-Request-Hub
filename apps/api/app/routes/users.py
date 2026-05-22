@@ -3,8 +3,9 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from app.core.auth import get_current_user, require_active_current_user
-from app.schemas.users import CurrentUser, UserActiveUpdate, UserOut, UserRoleUpdate
+from app.schemas.users import CurrentUser, UserActiveUpdate, UserOut, UserRoleUpdate, UserLanguageUpdate
 from app.services import users
+from app.repositories import user_repository
 
 router = APIRouter()
 
@@ -14,6 +15,15 @@ async def get_me(
     current_user: Annotated[CurrentUser, Depends(get_current_user)],
 ):
     return current_user
+
+
+@router.patch("/me/language")
+async def update_my_language(
+    payload: UserLanguageUpdate,
+    current_user: Annotated[CurrentUser, Depends(get_current_user)],
+):
+    require_active_current_user(current_user)
+    return user_repository.update_user_language(current_user.id, payload.language)
 
 
 @router.get("/active", response_model=list[UserOut])

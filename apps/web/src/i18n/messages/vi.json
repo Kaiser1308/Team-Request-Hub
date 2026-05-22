@@ -130,6 +130,18 @@
     "roleUpdateError": "Không thể cập nhật vai trò người dùng này.",
     "accessUpdateError": "Không thể cập nhật trạng thái truy cập người dùng."
   },
+  "telegram": {
+    "title": "Telegram",
+    "description": "Nhận thông báo khi bạn được giao task.",
+    "linked": "Đã liên kết",
+    "notLinked": "Chưa liên kết",
+    "linkButton": "Liên kết Telegram",
+    "openTelegram": "Mở Telegram",
+    "unlinkButton": "Hủy liên kết",
+    "expiresIn": "Liên kết có hiệu lực trong 10 phút.",
+    "loadError": "Không thể tạo liên kết.",
+    "loading": "Đang tải cài đặt Telegram..."
+  },
   "requests": {
     "status": {
       "all": "Tất cả",

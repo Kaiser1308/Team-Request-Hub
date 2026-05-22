@@ -142,6 +142,20 @@ create index if not exists idx_internal_requests_priority
 create index if not exists idx_internal_requests_created_at
   on public.internal_requests(created_at desc);
 
+create index if not exists idx_internal_requests_assigned_to_created_at
+  on public.internal_requests(assigned_to, created_at desc)
+  where assigned_to is not null;
+
+create index if not exists idx_internal_requests_created_by_created_at
+  on public.internal_requests(created_by, created_at desc);
+
+create index if not exists idx_internal_requests_status_created_at
+  on public.internal_requests(status, created_at desc);
+
+create index if not exists idx_internal_requests_done_created_at
+  on public.internal_requests(created_at desc)
+  where status = 'done';
+
 create index if not exists idx_internal_requests_tags
   on public.internal_requests using gin(tags);
 
@@ -303,6 +317,10 @@ create index if not exists idx_notification_deliveries_user_channel
 
 create index if not exists idx_notification_deliveries_status
   on public.notification_deliveries(status);
+
+create index if not exists idx_notification_deliveries_pending_created_at
+  on public.notification_deliveries(created_at)
+  where status = 'pending';
 
 -- =========================================================
 -- 10. Updated_at Trigger

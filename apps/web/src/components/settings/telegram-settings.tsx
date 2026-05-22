@@ -2,6 +2,7 @@
 
 import { Send, ExternalLink, Unplug, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   useTelegramProfile,
@@ -10,6 +11,7 @@ import {
 } from "@/hooks/use-telegram";
 
 export function TelegramSettings() {
+  const t = useTranslations("telegram");
   const profileQuery = useTelegramProfile();
   const createLink = useCreateTelegramLink();
   const unlink = useUnlinkTelegram();
@@ -20,7 +22,7 @@ export function TelegramSettings() {
   if (profileQuery.isLoading) {
     return (
       <div className="rounded-lg border border-[#e5e7eb] bg-white px-4 py-3">
-        <p className="text-sm text-[#6b7280]">Loading Telegram settings...</p>
+        <p className="text-sm text-[#6b7280]">{t("loading")}</p>
       </div>
     );
   }
@@ -32,13 +34,13 @@ export function TelegramSettings() {
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <Send className="h-4 w-4 text-[#0088cc]" aria-hidden="true" />
-              <span className="text-sm font-medium text-[#111827]">Telegram</span>
+              <span className="text-sm font-medium text-[#111827]">{t("title")}</span>
               <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
-                Đã liên kết
+                {t("linked")}
               </span>
             </div>
             <p className="mt-1 text-xs text-[#6b7280]">
-              Nhận thông báo khi bạn được giao task.
+              {t("description")}
               {profile.username ? ` (@${profile.username})` : ""}
             </p>
           </div>
@@ -53,7 +55,7 @@ export function TelegramSettings() {
             ) : (
               <Unplug className="h-3.5 w-3.5" aria-hidden="true" />
             )}
-            Hủy liên kết
+            {t("unlinkButton")}
           </Button>
         </div>
       </div>
@@ -64,12 +66,10 @@ export function TelegramSettings() {
     <div className="rounded-lg border border-[#e5e7eb] bg-white px-4 py-3">
       <div className="flex items-center gap-2">
         <Send className="h-4 w-4 text-[#6b7280]" aria-hidden="true" />
-        <span className="text-sm font-medium text-[#111827]">Telegram</span>
-        <span className="text-xs text-[#6b7280]">Chưa liên kết</span>
+        <span className="text-sm font-medium text-[#111827]">{t("title")}</span>
+        <span className="text-xs text-[#6b7280]">{t("notLinked")}</span>
       </div>
-      <p className="mt-1 text-xs text-[#6b7280]">
-        Nhận thông báo khi bạn được giao task.
-      </p>
+      <p className="mt-1 text-xs text-[#6b7280]">{t("description")}</p>
 
       {!showLink ? (
         <Button
@@ -87,7 +87,7 @@ export function TelegramSettings() {
           ) : (
             <Send className="h-3.5 w-3.5" aria-hidden="true" />
           )}
-          Liên kết Telegram
+          {t("linkButton")}
         </Button>
       ) : createLink.data ? (
         <div className="mt-3 space-y-2">
@@ -98,17 +98,15 @@ export function TelegramSettings() {
             className="inline-flex items-center gap-1.5 rounded-md bg-[#0088cc] px-3 py-2 text-sm font-medium text-white hover:bg-[#006699] transition-colors"
           >
             <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
-            Mở Telegram
+            {t("openTelegram")}
           </a>
-          <p className="text-xs text-[#9ca3af]">
-            Liên kết có hiệu lực trong 10 phút.
-          </p>
+          <p className="text-xs text-[#9ca3af]">{t("expiresIn")}</p>
         </div>
       ) : createLink.isError ? (
         <p className="mt-2 text-xs text-red-600">
           {createLink.error instanceof Error
             ? createLink.error.message
-            : "Could not create link."}
+            : t("loadError")}
         </p>
       ) : null}
     </div>

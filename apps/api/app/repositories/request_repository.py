@@ -3,13 +3,34 @@ from app.core.exceptions import ConflictError, DomainError, NotFoundError
 from app.db.supabase import get_supabase_admin
 
 REQUESTS_TABLE = "internal_requests"
+REQUEST_DETAIL_COLUMNS = "*"
+REQUEST_LIST_COLUMNS = ",".join(
+    [
+        "id",
+        "title",
+        "description",
+        "tags",
+        "priority",
+        "status",
+        "created_by",
+        "assigned_to",
+        "reference_links",
+        "reply",
+        "acknowledged_at",
+        "started_at",
+        "done_at",
+        "cancelled_at",
+        "created_at",
+        "updated_at",
+    ]
+)
 
 
 def get_request_or_404(request_id: str) -> dict:
     result = (
         get_supabase_admin()
         .table(REQUESTS_TABLE)
-        .select("*")
+        .select(REQUEST_DETAIL_COLUMNS)
         .eq("id", request_id)
         .limit(1)
         .execute()
@@ -25,7 +46,7 @@ def list_assigned_requests(user_id: str, limit: int = 50) -> list[dict]:
     result = (
         get_supabase_admin()
         .table(REQUESTS_TABLE)
-        .select("*")
+        .select(REQUEST_LIST_COLUMNS)
         .eq("assigned_to", user_id)
         .order("created_at", desc=True)
         .limit(limit)
@@ -38,7 +59,7 @@ def list_created_requests(user_id: str, limit: int = 50) -> list[dict]:
     result = (
         get_supabase_admin()
         .table(REQUESTS_TABLE)
-        .select("*")
+        .select(REQUEST_LIST_COLUMNS)
         .eq("created_by", user_id)
         .order("created_at", desc=True)
         .limit(limit)
@@ -51,7 +72,7 @@ def list_pool_requests(limit: int = 50) -> list[dict]:
     result = (
         get_supabase_admin()
         .table(REQUESTS_TABLE)
-        .select("*")
+        .select(REQUEST_LIST_COLUMNS)
         .is_("assigned_to", "null")
         .eq("status", "pending")
         .order("created_at", desc=True)
@@ -65,7 +86,7 @@ def list_done_requests(limit: int = 50, user_id: str | None = None) -> list[dict
     query = (
         get_supabase_admin()
         .table(REQUESTS_TABLE)
-        .select("*")
+        .select(REQUEST_LIST_COLUMNS)
         .eq("status", "done")
         .order("created_at", desc=True)
     )
@@ -83,7 +104,7 @@ def list_all_requests(limit: int = 50) -> list[dict]:
     result = (
         get_supabase_admin()
         .table(REQUESTS_TABLE)
-        .select("*")
+        .select(REQUEST_LIST_COLUMNS)
         .order("created_at", desc=True)
         .limit(limit)
         .execute()
@@ -136,7 +157,7 @@ def get_dashboard_data(user_id: str) -> list[dict]:
     result = (
         get_supabase_admin()
         .table(REQUESTS_TABLE)
-        .select("*")
+        .select(REQUEST_LIST_COLUMNS)
         .or_(
             f"assigned_to.eq.{user_id},"
             f"created_by.eq.{user_id},"

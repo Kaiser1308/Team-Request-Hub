@@ -92,13 +92,17 @@ in_progress -> acknowledged | done | cancelled
 
 Use `/done` for `done` and `/cancel` for cancel actions from the frontend.
 
+`assignment-history` and `status-logs` support optional `limit` query param with default `50` and max `100`.
+
 ## Notifications
 
 ```txt
-GET  /notifications?unread_only=false
+GET  /notifications?unread_only=false&limit=50
 POST /notifications/{notification_id}/read
 POST /notifications/read-all
 ```
+
+`GET /notifications` supports `limit` with default `50` and max `100`.
 
 `POST /notifications/read-all` response:
 

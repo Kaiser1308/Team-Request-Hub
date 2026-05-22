@@ -130,6 +130,18 @@
     "roleUpdateError": "Could not update this user role.",
     "accessUpdateError": "Could not update user access state."
   },
+  "telegram": {
+    "title": "Telegram",
+    "description": "Get notified when you are assigned a task.",
+    "linked": "Linked",
+    "notLinked": "Not linked",
+    "linkButton": "Link Telegram",
+    "openTelegram": "Open Telegram",
+    "unlinkButton": "Unlink",
+    "expiresIn": "Link expires in 10 minutes.",
+    "loadError": "Could not create link.",
+    "loading": "Loading Telegram settings..."
+  },
   "requests": {
     "status": {
       "all": "All",

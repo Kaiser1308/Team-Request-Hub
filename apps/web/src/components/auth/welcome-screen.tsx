@@ -20,7 +20,7 @@ export function WelcomeScreen({ nextPath }: { nextPath: string }) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [displayName, setDisplayName] = useState('');
-  const [statusText, setStatusText] = useState('Booting workspace...');
+  const [statusText, setStatusText] = useState('Preparing your workspace...');
   const [isDisabledAccount, setIsDisabledAccount] = useState(false);
   const titleRef = useRef<HTMLHeadingElement | null>(null);
   const nameRef = useRef<HTMLParagraphElement | null>(null);
@@ -64,7 +64,7 @@ export function WelcomeScreen({ nextPath }: { nextPath: string }) {
         if (currentUser.is_active === false) {
           setIsDisabledAccount(true);
           setDisplayName(currentUser.name ?? currentUser.email ?? 'Unknown user');
-          setStatusText('Access blocked by administrator policy.');
+          setStatusText('Account access is currently disabled.');
           return;
         }
 
@@ -160,7 +160,7 @@ export function WelcomeScreen({ nextPath }: { nextPath: string }) {
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
-      setStatusText('Syncing dashboard modules...');
+      setStatusText('Loading dashboard...');
     }, MOTION_DELAY.short);
 
     return () => {
@@ -180,7 +180,7 @@ export function WelcomeScreen({ nextPath }: { nextPath: string }) {
 
     const preload = (async () => {
       router.prefetch(nextPath);
-      setStatusText('Hydrating dashboard data...');
+      setStatusText('Loading dashboard...');
       await Promise.all([
         queryClient.prefetchQuery({
           queryKey: queryKeys.currentUser,
@@ -191,7 +191,7 @@ export function WelcomeScreen({ nextPath }: { nextPath: string }) {
           queryFn: getDashboardSummary,
         }),
       ]);
-      setStatusText('Syncing dashboard modules...');
+      setStatusText('Preparing your workspace...');
       try {
         await fetch(nextPath, {
           method: 'GET',
@@ -280,7 +280,7 @@ export function WelcomeScreen({ nextPath }: { nextPath: string }) {
       }
       hasNavigatedRef.current = true;
 
-      setStatusText('Connection established. Redirecting...');
+      setStatusText('Ready. Redirecting...');
       await playShatterExit();
       router.replace(nextPath);
     });
@@ -290,15 +290,15 @@ export function WelcomeScreen({ nextPath }: { nextPath: string }) {
     };
   }, [nextPath, router, isDisabledAccount, queryClient]);
 
-  const title = isDisabledAccount ? 'ACCOUNT DISABLED' : 'WELCOME BACK!';
+  const title = isDisabledAccount ? 'Account disabled' : 'Welcome back';
 
   return (
-    <main ref={screenRef} className='relative flex min-h-screen items-center justify-center overflow-hidden bg-[#020611] px-4'>
-      <div data-shatter-root className='pointer-events-none absolute inset-0 opacity-55 [background-image:linear-gradient(rgba(37,99,235,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.12)_1px,transparent_1px)] [background-size:32px_32px]' />
+    <main ref={screenRef} className='relative flex min-h-screen items-center justify-center overflow-hidden bg-[#030303] px-4 text-white'>
+      <div data-shatter-root className='pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,#030303_0%,#111827_45%,#f8fafc_160%)]' />
       <div
         ref={backgroundRef}
         data-shatter-root
-        className='pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(14,165,233,0.22),transparent_45%),radial-gradient(circle_at_80%_75%,rgba(59,130,246,0.18),transparent_40%)]'
+        className='pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_24%_20%,rgba(255,255,255,0.16),transparent_34%),radial-gradient(circle_at_82%_78%,rgba(148,163,184,0.16),transparent_38%)]'
       />
       <div className='pointer-events-none absolute inset-0'>
         {shards.map((clipPath, index) => (
@@ -309,23 +309,23 @@ export function WelcomeScreen({ nextPath }: { nextPath: string }) {
             style={{
               clipPath,
               background:
-                'linear-gradient(130deg, rgba(125,211,252,0.22), rgba(30,64,175,0.08))',
+                'linear-gradient(130deg, rgba(255,255,255,0.22), rgba(148,163,184,0.08))',
               mixBlendMode: 'screen',
             }}
           />
         ))}
       </div>
-      <div ref={cardRef} data-shatter-root className='relative w-full max-w-3xl overflow-hidden rounded-2xl border border-[#1d4ed8]/40 bg-gradient-to-br from-[#050b1c] via-[#0a1631] to-[#070f23] p-8 text-center shadow-[0_30px_100px_rgba(8,47,135,0.55)] sm:p-12'>
+      <div ref={cardRef} data-shatter-root className='relative w-full max-w-2xl overflow-hidden rounded-xl border border-white/15 bg-gradient-to-br from-white/[0.14] via-white/[0.06] to-black/30 p-8 text-center shadow-[0_28px_80px_rgba(0,0,0,0.42)] backdrop-blur-xl sm:p-12'>
         <p
           data-welcome-content
-          className='[font-family:var(--font-rajdhani)] text-xs uppercase tracking-[0.42em] text-[#60a5fa]'
+          className='text-xs font-medium uppercase tracking-[0.16em] text-zinc-300'
         >
-          {isDisabledAccount ? 'Security Lock' : 'Auth Handshake'}
+          {isDisabledAccount ? 'Account locked' : 'Signed in'}
         </p>
         <h1
           ref={titleRef}
           data-welcome-content
-          className='[font-family:var(--font-orbitron)] mt-3 bg-gradient-to-r from-[#e2e8f0] via-[#7dd3fc] to-[#93c5fd] bg-clip-text text-3xl font-extrabold tracking-[0.24em] text-transparent sm:text-5xl'
+          className='mt-4 bg-gradient-to-r from-white via-zinc-200 to-zinc-500 bg-clip-text text-4xl font-semibold tracking-[-0.04em] text-transparent sm:text-6xl'
         >
           {title.split('').map((char, index) => (
             <span key={`${char}-${index}`} data-char className='inline-block'>
@@ -336,7 +336,7 @@ export function WelcomeScreen({ nextPath }: { nextPath: string }) {
         <p
           ref={nameRef}
           data-welcome-content
-          className='[font-family:var(--font-rajdhani)] mt-6 text-base text-[#bfdbfe] sm:text-lg'
+          className='mt-6 text-base text-zinc-200 sm:text-lg'
         >
           {displayName
             ? isDisabledAccount
@@ -347,7 +347,7 @@ export function WelcomeScreen({ nextPath }: { nextPath: string }) {
         <p
           ref={statusRef}
           data-welcome-content
-          className='[font-family:var(--font-rajdhani)] mt-3 text-xs uppercase tracking-[0.24em] text-[#7dd3fc]'
+          className='mt-4 text-sm text-zinc-400'
         >
           {statusText}
         </p>

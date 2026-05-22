@@ -16,7 +16,7 @@ import { createClient } from '@/lib/supabase/client';
 export function GoodbyeScreen() {
   const router = useRouter();
   const [displayName, setDisplayName] = useState('');
-  const [statusText, setStatusText] = useState('Clearing session...');
+  const [statusText, setStatusText] = useState('Ending your session...');
   const titleRef = useRef<HTMLHeadingElement | null>(null);
   const nameRef = useRef<HTMLParagraphElement | null>(null);
   const statusRef = useRef<HTMLParagraphElement | null>(null);
@@ -112,7 +112,7 @@ export function GoodbyeScreen() {
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
-      setStatusText('Revoking access token...');
+      setStatusText('Closing workspace...');
     }, MOTION_DELAY.short);
 
     return () => {
@@ -183,7 +183,7 @@ export function GoodbyeScreen() {
       if (hasNavigatedRef.current) return;
       hasNavigatedRef.current = true;
 
-      setStatusText('Goodbye. See you next time.');
+      setStatusText('See you next time.');
       await playFadeOutExit();
       router.replace('/login');
     };
@@ -196,26 +196,26 @@ export function GoodbyeScreen() {
   }, [router]);
 
   return (
-    <main ref={screenRef} className='relative flex min-h-screen items-center justify-center overflow-hidden bg-[#020611] px-4'>
-      <div data-shatter-root className='pointer-events-none absolute inset-0 opacity-55 [background-image:linear-gradient(rgba(37,99,235,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.12)_1px,transparent_1px)] [background-size:32px_32px]' />
+    <main ref={screenRef} className='relative flex min-h-screen items-center justify-center overflow-hidden bg-[#030303] px-4 text-white'>
+      <div data-shatter-root className='pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,#030303_0%,#18181b_48%,#f8fafc_165%)]' />
       <div
         ref={backgroundRef}
         data-shatter-root
-        className='pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(14,165,233,0.22),transparent_45%),radial-gradient(circle_at_80%_75%,rgba(59,130,246,0.18),transparent_40%)]'
+        className='pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_24%_20%,rgba(255,255,255,0.14),transparent_34%),radial-gradient(circle_at_82%_78%,rgba(148,163,184,0.16),transparent_38%)]'
       />
-      <div data-shatter-root className='relative w-full max-w-3xl overflow-hidden rounded-2xl border border-[#1d4ed8]/40 bg-gradient-to-br from-[#050b1c] via-[#0a1631] to-[#070f23] p-8 text-center shadow-[0_30px_100px_rgba(8,47,135,0.55)] sm:p-12'>
+      <div data-shatter-root className='relative w-full max-w-2xl overflow-hidden rounded-xl border border-white/15 bg-gradient-to-br from-white/[0.14] via-white/[0.06] to-black/30 p-8 text-center shadow-[0_28px_80px_rgba(0,0,0,0.42)] backdrop-blur-xl sm:p-12'>
         <p
           data-goodbye-content
-          className='[font-family:var(--font-rajdhani)] text-xs uppercase tracking-[0.42em] text-[#f87171]'
+          className='text-xs font-medium uppercase tracking-[0.16em] text-zinc-300'
         >
-          Session Termination
+          Signed out
         </p>
         <h1
           ref={titleRef}
           data-goodbye-content
-          className='[font-family:var(--font-orbitron)] mt-3 bg-gradient-to-r from-[#e2e8f0] via-[#fca5a5] to-[#f87171] bg-clip-text text-3xl font-extrabold tracking-[0.24em] text-transparent sm:text-5xl'
+          className='mt-4 bg-gradient-to-r from-white via-zinc-200 to-zinc-500 bg-clip-text text-4xl font-semibold tracking-[-0.04em] text-transparent sm:text-6xl'
         >
-          {'GOOD BYE!'.split('').map((char, index) => (
+          {'Goodbye'.split('').map((char, index) => (
             <span key={`${char}-${index}`} data-char className='inline-block'>
               {char === ' ' ? '\u00A0' : char}
             </span>
@@ -224,14 +224,14 @@ export function GoodbyeScreen() {
         <p
           ref={nameRef}
           data-goodbye-content
-          className='[font-family:var(--font-rajdhani)] mt-6 text-base text-[#fecaca] sm:text-lg'
+          className='mt-6 text-base text-zinc-200 sm:text-lg'
         >
           {displayName ? `See you later, ${displayName}` : 'Loading profile...'}
         </p>
         <p
           ref={statusRef}
           data-goodbye-content
-          className='[font-family:var(--font-rajdhani)] mt-3 text-xs uppercase tracking-[0.24em] text-[#f87171]'
+          className='mt-4 text-sm text-zinc-400'
         >
           {statusText}
         </p>

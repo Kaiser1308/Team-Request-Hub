@@ -43,3 +43,10 @@ export function updateUserActiveState(userId: string, payload: UserActiveUpdate)
     body: JSON.stringify(payload),
   });
 }
+
+export function updateMyLanguage(language: string) {
+  return apiFetch(`/users/me/language`, {
+    method: "PATCH",
+    body: JSON.stringify({ language }),
+  });
+}

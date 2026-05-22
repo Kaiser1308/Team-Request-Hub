@@ -52,8 +52,8 @@ export function AuthForm({ initialMode = "login" }: { initialMode?: Mode }) {
           type="button"
           className={
             mode === "login"
-              ? "rounded-md bg-white px-3 py-2 text-sm font-medium"
-              : "px-3 py-2 text-sm"
+              ? "rounded-md bg-white px-3 py-2 text-sm font-medium text-[#111827]"
+              : "px-3 py-2 text-sm text-[#6b7280]"
           }
           onClick={() => setMode("login")}
         >
@@ -63,8 +63,8 @@ export function AuthForm({ initialMode = "login" }: { initialMode?: Mode }) {
           type="button"
           className={
             mode === "register"
-              ? "rounded-md bg-white px-3 py-2 text-sm font-medium"
-              : "px-3 py-2 text-sm"
+              ? "rounded-md bg-white px-3 py-2 text-sm font-medium text-[#111827]"
+              : "px-3 py-2 text-sm text-[#6b7280]"
           }
           onClick={() => setMode("register")}
         >

@@ -22,7 +22,7 @@ export function LogoutButton({ className }: { className?: string }) {
       className={cn("gap-1", className)}
       onClick={handleLogout}
     >
-      <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
+      <LogOut className="h-3.5 w-3.5 text-current" aria-hidden="true" />
       {t("signOut")}
     </Button>
   );

@@ -12,6 +12,10 @@ The executable schema lives in `DB_SCHEMA_TEAM_REQUEST_HUB.sql` and targets Supa
 - `public.telegram_link_tokens`: one-time tokens for linking a user's Telegram account via deep link.
 - `public.notification_deliveries`: per-channel delivery tracking for notifications (e.g. Telegram).
 
+## Performance Indexes
+
+Request list and queue views use composite and partial indexes on `internal_requests` so filter + sort patterns by assignee, creator, status, and recent done requests stay fast. Notification processing uses a partial index on pending `notification_deliveries` to speed worker polling. Audit history tables keep `created_at desc` indexes so recent assignment and status activity can be retrieved efficiently.
+
 ## Enums
 
 - `user_role`: `fe`, `be`, `lead`.

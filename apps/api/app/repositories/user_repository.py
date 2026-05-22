@@ -73,9 +73,23 @@ def update_user_active_state(user_id: str, is_active: bool) -> dict:
     )
 
     if not result.data:
-        raise NotFoundError("User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
 
     return result.data[0]
+
+
+def update_user_language(user_id: str, language: str) -> dict:
+    result = (
+        get_supabase_admin()
+        .table("users")
+        .update({"preferred_language": language})
+        .eq("id", user_id)
+        .execute()
+    )
+    return result.data[0] if result.data else None
 
 
 def get_user_profile_or_404(user_id: str) -> dict:

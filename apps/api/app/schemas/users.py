@@ -11,6 +11,10 @@ class UserActiveUpdate(BaseModel):
     is_active: bool
 
 
+class UserLanguageUpdate(BaseModel):
+    language: str
+
+
 class CurrentUser(BaseModel):
     id: str
     email: EmailStr | None = None
