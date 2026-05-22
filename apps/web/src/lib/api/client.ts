@@ -2,6 +2,18 @@ import { createClient } from "@/lib/supabase/client";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL!;
 
+export class ApiError extends Error {
+  status: number;
+  detail: string;
+
+  constructor(status: number, detail: string) {
+    super(detail || `API error: ${status}`);
+    this.name = "ApiError";
+    this.status = status;
+    this.detail = detail;
+  }
+}
+
 async function getAuthHeaders() {
   const supabase = createClient();
   const {
@@ -9,7 +21,7 @@ async function getAuthHeaders() {
   } = await supabase.auth.getSession();
 
   if (!session?.access_token) {
-    throw new Error("Unauthorized");
+    throw new ApiError(401, "Unauthorized");
   }
 
   return {
@@ -29,7 +41,16 @@ export async function apiFetch<T>(
   });
 
   if (!res.ok) {
-    throw new Error(`API error: ${res.status}`);
+    let detail = `API error: ${res.status}`;
+    try {
+      const body = await res.json();
+      if (body?.detail) {
+        detail = body.detail;
+      }
+    } catch {
+      // response body is not JSON
+    }
+    throw new ApiError(res.status, detail);
   }
 
   return res.json() as Promise<T>;
