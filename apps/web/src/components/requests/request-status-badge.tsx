@@ -19,7 +19,7 @@ export function RequestStatusBadge({ status }: { status: RequestStatus }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-md border px-2 py-1 text-xs font-medium",
+        "inline-flex items-center rounded-md border px-2 py-1 text-caption-strong",
         statusClassName[status],
       )}
     >

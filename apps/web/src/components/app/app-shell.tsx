@@ -207,7 +207,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       <div className="lg:pl-[240px]">
-        <header className="sticky top-[-1px] z-20 flex h-14 items-center border-b border-[#1e293b]/80 border-t-0 bg-gradient-to-r from-[#080b12] via-[#091530] to-[#1e3a8a] outline-none px-4 sm:h-16 sm:px-6">
+        <header className="sticky top-[-1px] z-20 flex h-14 items-center border-b border-white/10 border-t-0 bg-gradient-to-r from-[#030303] via-[#111827] to-[#1e293b] outline-none px-4 sm:h-16 sm:px-6">
 
           <div className="flex min-w-0 flex-1 items-center gap-3">
             <Button

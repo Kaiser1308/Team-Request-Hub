@@ -22,7 +22,7 @@ export function RequestPriorityBadge({
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-md border px-2 py-1 text-xs font-medium",
+        "inline-flex items-center rounded-md border px-2 py-1 text-caption-strong",
         priorityClassName[priority],
       )}
     >

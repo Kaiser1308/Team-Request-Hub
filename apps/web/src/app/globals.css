@@ -130,12 +130,98 @@
   }
 }
 
+@layer utilities {
+  .text-page-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+
+  .text-section-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.008em;
+  }
+
+  .text-card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.006em;
+  }
+
+  .text-body {
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: 0;
+  }
+
+  .text-body-medium {
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.45;
+    letter-spacing: 0;
+  }
+
+  .text-caption {
+    font-size: 0.75rem;
+    font-weight: 400;
+    line-height: 1.35;
+    letter-spacing: 0;
+  }
+
+  .text-caption-strong {
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.35;
+    letter-spacing: -0.004em;
+  }
+
+  .text-button {
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: -0.004em;
+  }
+
+  .text-button-sm {
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: -0.004em;
+  }
+
+  .text-link {
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.45;
+    letter-spacing: -0.004em;
+  }
+
+  .text-stat-value {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.008em;
+  }
+
+  .text-stat-label {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: 0;
+  }
+}
+
 @layer components {
   #app-shell-navigation {
-    background-color: #080b12;
+    background-color: #030303;
     background-image:
-      radial-gradient(120% 80% at 100% 100%, rgb(37 99 235 / 18%) 0%, rgb(37 99 235 / 0%) 60%),
-      linear-gradient(180deg, #05070c 0%, #0a0f1a 45%, #131a27 100%);
+      radial-gradient(120% 80% at 100% 100%, rgba(148, 163, 184, 0.12) 0%, transparent 60%),
+      linear-gradient(180deg, #030303 0%, #111827 55%, #1e293b 100%);
     border-right: none !important;
     color: #ffffff;
   }
@@ -150,7 +236,7 @@
   }
 
   #app-shell-navigation a[aria-current="page"] {
-    background: #1f2937;
+    background: rgba(255, 255, 255, 0.1);
     color: #ffffff;
   }
 

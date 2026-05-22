@@ -53,7 +53,7 @@ export function RequestCard({ request }: { request: InternalRequest }) {
     <article className="rounded-lg border border-[#e5e7eb] bg-white p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-base font-semibold text-[#111827]">
+          <h3 className="truncate text-card-title text-[#111827]">
             {request.title}
           </h3>
         </div>
@@ -63,25 +63,25 @@ export function RequestCard({ request }: { request: InternalRequest }) {
         </div>
       </div>
 
-      <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-[#6b7280]">
+      <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-caption text-[#6b7280]">
         <span>{t("card.creator", { name: creatorLabel })}</span>
         <span>{t("card.assignee", { name: assigneeLabel })}</span>
         <span>{timestampLabel}</span>
       </div>
 
-      <p className="mt-2 line-clamp-2 text-sm leading-5 text-[#4b5563]">
+      <p className="mt-2 line-clamp-2 text-body text-[#4b5563]">
         {request.description}
       </p>
 
       <div className="mt-3 flex items-center justify-between gap-3 border-t border-[#f3f4f6] pt-3">
-        <div className="min-h-5 text-xs text-[#4b5563]">
+        <div className="min-h-5 text-caption text-[#4b5563]">
           {actionLabel
             ? t("card.nextAction", { action: actionLabel })
             : t("card.noFurtherAction")}
         </div>
         <Link
           href={`/requests/${request.id}`}
-          className="shrink-0 text-xs font-medium text-[#2563eb] hover:underline"
+          className="shrink-0 text-link text-[#2563eb] hover:underline"
         >
           {t("card.viewDetails")}
         </Link>

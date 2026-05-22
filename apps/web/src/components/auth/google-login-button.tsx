@@ -31,7 +31,7 @@ export function GoogleLoginButton() {
     <div className="w-full space-y-3">
       <button
         type="button"
-        className="relative flex h-11 w-full items-center justify-center gap-3 rounded-md border border-[#d1d5db] bg-white text-sm font-semibold text-[#111827] transition-colors hover:bg-[#f9fafb] disabled:cursor-not-allowed disabled:opacity-70"
+        className="relative flex h-11 w-full items-center justify-center gap-3 rounded-md border border-[#d1d5db] !bg-white text-sm font-semibold text-[#111827] transition-colors hover:bg-[#f9fafb] disabled:cursor-not-allowed disabled:opacity-70"
         onClick={handleLogin}
         disabled={isLoading}
       >

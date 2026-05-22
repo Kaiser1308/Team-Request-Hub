@@ -77,10 +77,10 @@ export default function DashboardPage() {
   return (
     <div className="space-y-5">
       <div className="space-y-3">
-        <h1 className="text-2xl font-semibold text-[#111827]">{t("title")}</h1>
+        <h1 className="text-page-title text-[#111827]">{t("title")}</h1>
         <div className="rounded-lg border border-[#e5e7eb] bg-white px-4 py-3">
-          <p className="text-sm font-medium text-[#111827]">{userName}</p>
-          <p className="text-xs text-[#6b7280]">
+          <p className="text-body-medium text-[#111827]">{userName}</p>
+          <p className="text-caption text-[#6b7280]">
             {role ? t("roleLabel", { role: role.toUpperCase() }) : t("rolePending")}
             {isLead ? ` - ${t("leadAccessEnabled")}` : ""}
           </p>
@@ -109,8 +109,8 @@ export default function DashboardPage() {
           { label: t("urgent"), value: counts?.urgent ?? 0 },
         ].map((item) => (
           <div key={item.label} className="rounded-lg border border-[#e5e7eb] bg-white px-3 py-2.5">
-            <p className="text-[11px] font-medium uppercase tracking-normal text-[#6b7280]">{item.label}</p>
-            <p className="mt-1 text-xl font-semibold text-[#111827]">{item.value}</p>
+            <p className="text-stat-label uppercase text-[#6b7280]">{item.label}</p>
+            <p className="mt-1 text-stat-value text-[#111827]">{item.value}</p>
           </div>
         ))}
       </section>
@@ -118,8 +118,8 @@ export default function DashboardPage() {
       <section className="grid gap-3 lg:grid-cols-2">
         <div className="rounded-lg border border-[#e5e7eb] bg-white">
           <div className="flex items-center justify-between border-b border-[#e5e7eb] px-4 py-3">
-            <h2 className="text-base font-semibold text-[#111827]">{t("recentRequests")}</h2>
-            <Link href="/assigned" className="text-xs font-medium text-[#2563eb] hover:underline">
+            <h2 className="text-section-title text-[#111827]">{t("recentRequests")}</h2>
+            <Link href="/assigned" className="text-link text-[#2563eb] hover:underline">
               {t("viewAssigned")}
             </Link>
           </div>
@@ -127,33 +127,33 @@ export default function DashboardPage() {
             <div className="divide-y divide-[#e5e7eb]">
               {recentRequestItems.map((request) => (
                 <div key={request.id} className="space-y-1 px-4 py-3">
-                  <Link href={`/requests/${request.id}`} className="line-clamp-1 text-sm font-medium text-[#111827] hover:text-[#2563eb]">
+                  <Link href={`/requests/${request.id}`} className="line-clamp-1 text-body-medium text-[#111827] hover:text-[#2563eb]">
                     {request.title}
                   </Link>
-                  <p className="text-xs text-[#6b7280]">
+                  <p className="text-caption text-[#6b7280]">
                     {translateStatus(t, request.status)} — {translatePriority(t, request.priority)} — {formatDate(request.updated_at, locale)}
                   </p>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="px-4 py-5 text-sm text-[#6b7280]">{t("noRecentRequests")}</p>
+            <p className="px-4 py-5 text-body text-[#6b7280]">{t("noRecentRequests")}</p>
           )}
         </div>
 
         <div className="rounded-lg border border-[#e5e7eb] bg-white">
           <div className="flex items-center justify-between border-b border-[#e5e7eb] px-4 py-3">
-            <h2 className="text-base font-semibold text-[#111827]">{t("recentActivity")}</h2>
-            <Link href="/notifications" className="text-xs font-medium text-[#2563eb] hover:underline">
+            <h2 className="text-section-title text-[#111827]">{t("recentActivity")}</h2>
+            <Link href="/notifications" className="text-link text-[#2563eb] hover:underline">
               {t("openNotifications")}
             </Link>
           </div>
           {notificationsUnread > 0 ? (
             <div className="px-4 py-3">
-              <p className="text-sm text-[#111827]">{t("unreadNotifications", { count: notificationsUnread })}</p>
+              <p className="text-body text-[#111827]">{t("unreadNotifications", { count: notificationsUnread })}</p>
             </div>
           ) : (
-            <p className="px-4 py-5 text-sm text-[#6b7280]">{t("noUnreadNotifications")}</p>
+            <p className="px-4 py-5 text-body text-[#6b7280]">{t("noUnreadNotifications")}</p>
           )}
         </div>
       </section>

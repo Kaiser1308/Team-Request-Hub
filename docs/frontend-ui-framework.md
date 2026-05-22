@@ -45,7 +45,7 @@ Adjust:
 - Remove decorative ambient blobs, image panels, and oversized marketing-style
   sections.
 - Use compact tool layouts instead of large editorial cards.
-- Use `letter-spacing: 0` for all text.
+- Keep `letter-spacing: 0` for body text; use light negative tracking only through typography tokens where it improves precision.
 - Keep card radius at `8px` or less unless a shadcn component requires its own
   token.
 
@@ -82,12 +82,24 @@ info:              #2563eb
 Typography:
 
 ```txt
-font family: Inter or the app default sans stack
-page title:  24-30px, 600 weight, letter-spacing 0
-section:     18-20px, 600 weight, letter-spacing 0
-body:        14-16px, 400 weight, letter-spacing 0
-label:       12-14px, 500-600 weight, letter-spacing 0
-caption:     12-13px, 400 weight, letter-spacing 0
+font family: Inter only, through next/font/google
+strategy:    centralized typography utilities in apps/web/src/app/globals.css
+body text:   keep letter-spacing 0 for Vietnamese readability
+precision:   use light negative tracking only on headings, buttons, links, badges, and compact metadata
+
+Token              Use
+text-page-title    page h1 headings
+text-section-title section/dialog headings
+text-card-title    request/card titles
+text-body          standard body copy
+text-body-medium   labels and emphasized text
+text-caption       timestamps and secondary metadata
+text-caption-strong badges and compact labels
+text-button        standard button labels
+text-button-sm     small button labels
+text-link          inline/action links
+text-stat-value    dashboard stat values
+text-stat-label    dashboard stat labels
 ```
 
 Spacing and shape:
