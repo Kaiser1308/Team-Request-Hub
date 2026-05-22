@@ -3,8 +3,16 @@ import logging
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.core.config import get_settings
+from app.core.exceptions import (
+    BadRequestError,
+    ConflictError,
+    DomainError,
+    ForbiddenError,
+    NotFoundError,
+)
 from app.routes import dashboard, health, notifications, requests, telegram, users
 
 settings = get_settings()
@@ -38,6 +46,26 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.exception_handler(NotFoundError)
+async def not_found_handler(_request: Request, exc: NotFoundError):
+    return JSONResponse(status_code=404, content={"detail": str(exc)})
+
+
+@app.exception_handler(ConflictError)
+async def conflict_handler(_request: Request, exc: ConflictError):
+    return JSONResponse(status_code=409, content={"detail": str(exc)})
+
+
+@app.exception_handler(ForbiddenError)
+async def forbidden_handler(_request: Request, exc: ForbiddenError):
+    return JSONResponse(status_code=403, content={"detail": str(exc)})
+
+
+@app.exception_handler(BadRequestError)
+async def bad_request_handler(_request: Request, exc: BadRequestError):
+    return JSONResponse(status_code=400, content={"detail": str(exc)})
+
 
 app.include_router(health.router, prefix="/health", tags=["health"])
 app.include_router(users.router, prefix="/users", tags=["users"])

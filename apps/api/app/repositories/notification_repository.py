@@ -1,4 +1,4 @@
-from fastapi import HTTPException, status
+from app.core.exceptions import NotFoundError
 
 from app.db.supabase import get_supabase_admin
 
@@ -53,10 +53,7 @@ def mark_notification_read(notification_id: str, user_id: str) -> dict:
     )
 
     if not result.data:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Notification not found",
-        )
+        raise NotFoundError("Notification not found")
 
     return result.data[0]
 

@@ -1,4 +1,4 @@
-from fastapi import HTTPException, status
+from app.core.exceptions import ConflictError, DomainError, NotFoundError
 
 from app.db.supabase import get_supabase_admin
 
@@ -16,10 +16,7 @@ def get_request_or_404(request_id: str) -> dict:
     )
 
     if not result.data:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Request not found",
-        )
+        raise NotFoundError("Request not found")
 
     return result.data[0]
 
@@ -98,10 +95,7 @@ def create_request(data: dict) -> dict:
     result = get_supabase_admin().table(REQUESTS_TABLE).insert(data).execute()
 
     if not result.data:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Request could not be created",
-        )
+        raise DomainError("Request could not be created")
 
     return result.data[0]
 
@@ -116,10 +110,7 @@ def update_request(request_id: str, data: dict) -> dict:
     )
 
     if not result.data:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Request not found",
-        )
+        raise NotFoundError("Request not found")
 
     return result.data[0]
 
@@ -135,10 +126,7 @@ def assign_if_unassigned(request_id: str, user_id: str) -> dict:
     )
 
     if not result.data:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Request was already assigned",
-        )
+        raise ConflictError("Request was already assigned")
 
     return result.data[0]
 
