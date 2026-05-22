@@ -41,6 +41,7 @@ def _mock_settings(**overrides):
         "supabase_jwt_secret": "secret",
         "telegram_bot_token": "bot-token",
         "telegram_bot_username": "testbot",
+        "telegram_webhook_secret": None,
     }
     defaults.update(overrides)
     return Settings(**defaults)
@@ -50,7 +51,7 @@ class TestTelegramProfileEndpoint(unittest.TestCase):
     @patch("app.routes.telegram.require_active_current_user")
     @patch("app.routes.telegram.get_current_user")
     @patch("app.core.auth.user_repository.get_user_profile_or_404")
-    @patch("app.routes.telegram.telegram_repository")
+    @patch("app.notification_module._store")
     def test_profile_returns_linked_false_when_no_chat_id(
         self, mock_repo, mock_user_repo, mock_get_user, mock_require_active
     ):
@@ -84,7 +85,7 @@ class TestTelegramProfileEndpoint(unittest.TestCase):
     @patch("app.routes.telegram.require_active_current_user")
     @patch("app.routes.telegram.get_current_user")
     @patch("app.core.auth.user_repository.get_user_profile_or_404")
-    @patch("app.routes.telegram.telegram_repository")
+    @patch("app.notification_module._store")
     def test_profile_returns_linked_true_when_chat_id_present(
         self, mock_repo, mock_user_repo, mock_get_user, mock_require_active
     ):
@@ -118,9 +119,62 @@ class TestTelegramProfileEndpoint(unittest.TestCase):
 
 
 class TestTelegramWebhookEndpoint(unittest.TestCase):
-    @patch("app.routes.telegram.get_settings")
-    @patch("app.routes.telegram.telegram")
-    @patch("app.routes.telegram.telegram_repository")
+    @patch("app.notification_module._webhook.get_settings")
+    @patch("app.notification_module._webhook._telegram")
+    @patch("app.notification_module._webhook._store")
+    def test_start_with_bot_username_links_user(
+        self, mock_repo, mock_telegram_svc, mock_get_settings
+    ):
+        mock_get_settings.return_value = _mock_settings()
+        mock_repo.get_valid_link_token.return_value = {
+            "id": "token-1",
+            "user_id": "user-1",
+        }
+        mock_repo.link_telegram_user.return_value = {"id": "user-1"}
+        mock_telegram_svc.send_telegram_message.return_value = "999"
+
+        response = client.post(
+            "/notifications/telegram/webhook",
+            json={
+                "message": {
+                    "chat": {"id": 123456, "username": "thien"},
+                    "text": "/start@testbot abc123",
+                }
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        mock_repo.link_telegram_user.assert_called_once()
+        mock_repo.mark_link_token_used.assert_called_once()
+
+    @patch("app.notification_module._webhook.get_settings")
+    @patch("app.notification_module._webhook._telegram")
+    @patch("app.notification_module._webhook._store")
+    def test_plain_start_without_link_code_sends_guidance(
+        self, mock_repo, mock_telegram_svc, mock_get_settings
+    ):
+        mock_get_settings.return_value = _mock_settings()
+        mock_telegram_svc.send_telegram_message.return_value = "999"
+
+        response = client.post(
+            "/notifications/telegram/webhook",
+            json={
+                "message": {
+                    "chat": {"id": 123456, "username": "thien"},
+                    "text": "/start",
+                }
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        mock_repo.get_valid_link_token.assert_not_called()
+        mock_telegram_svc.send_telegram_message.assert_called_once()
+        call_args = mock_telegram_svc.send_telegram_message.call_args
+        self.assertIn("ch\u01b0a c\u00f3 m\u00e3 li\u00ean k\u1ebft", call_args.kwargs["text"])
+
+    @patch("app.notification_module._webhook.get_settings")
+    @patch("app.notification_module._webhook._telegram")
+    @patch("app.notification_module._webhook._store")
     def test_valid_start_links_user(self, mock_repo, mock_telegram_svc, mock_get_settings):
         mock_get_settings.return_value = _mock_settings()
         mock_repo.get_valid_link_token.return_value = {
@@ -145,9 +199,9 @@ class TestTelegramWebhookEndpoint(unittest.TestCase):
         mock_repo.mark_link_token_used.assert_called_once()
         mock_telegram_svc.send_telegram_message.assert_called()
 
-    @patch("app.routes.telegram.get_settings")
-    @patch("app.routes.telegram.telegram")
-    @patch("app.routes.telegram.telegram_repository")
+    @patch("app.notification_module._webhook.get_settings")
+    @patch("app.notification_module._webhook._telegram")
+    @patch("app.notification_module._webhook._store")
     def test_invalid_code_sends_failure_message(self, mock_repo, mock_telegram_svc, mock_get_settings):
         mock_get_settings.return_value = _mock_settings()
         mock_repo.get_valid_link_token.return_value = None
@@ -169,8 +223,8 @@ class TestTelegramWebhookEndpoint(unittest.TestCase):
         call_args = mock_telegram_svc.send_telegram_message.call_args
         self.assertIn("không hợp lệ", call_args.kwargs["text"])
 
-    @patch("app.routes.telegram.get_settings")
-    @patch("app.routes.telegram.telegram_repository")
+    @patch("app.notification_module._webhook.get_settings")
+    @patch("app.notification_module._webhook._store")
     def test_non_start_message_returns_ok(self, mock_repo, mock_get_settings):
         mock_get_settings.return_value = _mock_settings()
 
@@ -187,9 +241,9 @@ class TestTelegramWebhookEndpoint(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         mock_repo.get_valid_link_token.assert_not_called()
 
-    @patch("app.routes.telegram.get_settings")
-    @patch("app.routes.telegram.telegram")
-    @patch("app.routes.telegram.telegram_repository")
+    @patch("app.notification_module._webhook.get_settings")
+    @patch("app.notification_module._webhook._telegram")
+    @patch("app.notification_module._webhook._store")
     def test_webhook_rejects_bad_secret(self, mock_repo, mock_telegram_svc, mock_get_settings):
         mock_get_settings.return_value = _mock_settings(telegram_webhook_secret="my-secret")
 

@@ -33,18 +33,19 @@ assignment history, and status logs belong in the backend.
 The backend uses a modular service architecture:
 
 ```txt
-routes -> services -> repositories -> Supabase
+routes -> services / notification_module -> repositories -> Supabase
 ```
 
 ```txt
 apps/api/app/
-  routes/          HTTP request/response layer
-  services/        business workflow and permission orchestration
-  repositories/    Supabase table access
-  core/            auth, config, permission helpers
-  schemas/         Pydantic request/response models
-  db/              Supabase client creation
-  utils/           shared utilities
+  routes/              HTTP request/response layer
+  services/            business workflow and permission orchestration
+  notification_module/ notification + Telegram channel (deep module)
+  repositories/        Supabase table access
+  core/                auth, config, permission helpers
+  schemas/             Pydantic request/response models
+  db/                  Supabase client creation
+  utils/               shared utilities
 ```
 
 Rules:
@@ -52,6 +53,7 @@ Rules:
 - Routes should not contain business workflows.
 - Services should own permission checks, status transitions, and side effects.
 - Repositories should not contain product permissions or workflow decisions.
+- `notification_module` owns notification records, Telegram delivery, and webhook handling. Its internal adapters (`_store`, `_telegram`, `_webhook`) are not part of the public API.
 - Backend tests live under `apps/api/tests` and run with `uv`.
 
 ## Auth And Roles

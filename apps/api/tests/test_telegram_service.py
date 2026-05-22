@@ -6,7 +6,7 @@ os.environ.setdefault("SUPABASE_ANON_KEY", "anon")
 os.environ.setdefault("SUPABASE_SERVICE_ROLE_KEY", "service")
 os.environ.setdefault("SUPABASE_JWT_SECRET", "secret")
 
-from app.services import telegram
+from app.notification_module import _telegram as telegram
 
 
 class TestBuildAssignmentMessage(unittest.TestCase):
@@ -22,6 +22,7 @@ class TestBuildAssignmentMessage(unittest.TestCase):
             request,
             reassigned=False,
             app_base_url="http://localhost:3000",
+            lang="vi",
         )
 
         self.assertIn("Bạn vừa được giao task mới", message)
@@ -42,10 +43,31 @@ class TestBuildAssignmentMessage(unittest.TestCase):
             request,
             reassigned=True,
             app_base_url="http://localhost:3000",
+            lang="vi",
         )
 
         self.assertIn("Bạn vừa được giao lại một task", message)
         self.assertIn("Độ ưu tiên: Cao", message)
+
+    def test_assigned_uses_english_labels(self):
+        request = {
+            "id": "req-2",
+            "title": "Fix login bug",
+            "priority": "urgent",
+            "status": "pending",
+        }
+
+        message = telegram.build_assignment_message(
+            request,
+            reassigned=False,
+            app_base_url="http://localhost:3000",
+            lang="en",
+        )
+
+        self.assertIn("You have been assigned a new task", message)
+        self.assertIn("Title: Fix login bug", message)
+        self.assertIn("Priority: Urgent", message)
+        self.assertIn("Status: Pending", message)
 
     def test_unknown_priority_falls_back_to_raw_value(self):
         request = {
@@ -59,6 +81,7 @@ class TestBuildAssignmentMessage(unittest.TestCase):
             request,
             reassigned=False,
             app_base_url="http://localhost:3000",
+            lang="vi",
         )
 
         self.assertIn("Độ ưu tiên: custom", message)

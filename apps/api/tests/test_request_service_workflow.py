@@ -33,7 +33,7 @@ class RequestServiceWorkflowTests(unittest.TestCase):
             patch("app.services.request_service.request_repository.update_request", return_value=updated_request),
             patch("app.services.request_service.assignment_repository.create_assignment_history") as record_assignment,
             patch("app.services.request_service.status_log_repository.create_status_log") as record_status_change,
-            patch("app.services.request_service.notifications.notify_reassigned") as notify_reassigned,
+            patch("app.services.request_service.notification_module.notify_reassigned") as notify_reassigned,
             patch("app.services.request_service.user_repository.list_user_summaries", return_value={}),
         ):
             result = request_service.reassign_request(
@@ -83,7 +83,7 @@ class RequestServiceWorkflowTests(unittest.TestCase):
             patch("app.services.request_service.request_repository.get_request_or_404", return_value=original_request),
             patch("app.services.request_service.request_repository.update_request", return_value=updated_request),
             patch("app.services.request_service.status_log_repository.create_status_log") as record_status_change,
-            patch("app.services.request_service.notifications.notify_status_changed") as notify_status_changed,
+            patch("app.services.request_service.notification_module.notify_status_changed") as notify_status_changed,
             patch("app.services.request_service.user_repository.list_user_summaries", return_value={}),
         ):
             result = request_service.update_status(
@@ -126,7 +126,7 @@ class RequestServiceWorkflowTests(unittest.TestCase):
             patch("app.services.request_service.request_repository.get_request_or_404", return_value=original_request),
             patch("app.services.request_service.request_repository.update_request", return_value=updated_request),
             patch("app.services.request_service.status_log_repository.create_status_log") as record_status_change,
-            patch("app.services.request_service.notifications.notify_done") as notify_done,
+            patch("app.services.request_service.notification_module.notify_done") as notify_done,
             patch("app.services.request_service.user_repository.list_user_summaries", return_value={}),
         ):
             result = request_service.mark_done(

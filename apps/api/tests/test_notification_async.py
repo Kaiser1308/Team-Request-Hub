@@ -7,17 +7,17 @@ os.environ.setdefault("SUPABASE_ANON_KEY", "anon")
 os.environ.setdefault("SUPABASE_SERVICE_ROLE_KEY", "service")
 os.environ.setdefault("SUPABASE_JWT_SECRET", "secret")
 
-from app.services import notifications
+from app import notification_module
 
 
 class NotificationAsyncTests(unittest.TestCase):
     def test_create_notification_does_not_dispatch_telegram(self):
         with patch(
-            "app.services.notifications.notification_repository.create_notification",
+            "app.notification_module._store.create_notification",
             return_value={"id": "notif-1", "user_id": "u1", "type": "assigned"},
         ):
-            with patch("app.services.notifications.dispatch_telegram_delivery") as dispatch:
-                notifications.create_notification(
+            with patch("app.notification_module.dispatch_telegram_delivery") as dispatch:
+                notification_module.create_notification(
                     user_id="u1",
                     request_id="req-1",
                     notification_type="assigned",
@@ -27,22 +27,22 @@ class NotificationAsyncTests(unittest.TestCase):
 
     def test_notify_assigned_returns_notification_dict(self):
         with patch(
-            "app.services.notifications.notification_repository.create_notification",
+            "app.notification_module._store.create_notification",
             return_value={"id": "notif-1", "user_id": "u1", "type": "assigned"},
         ):
-            result = notifications.notify_assigned("u1", {"id": "r1", "title": "T"})
+            result = notification_module.notify_assigned("u1", {"id": "r1", "title": "T"})
             self.assertEqual(result["id"], "notif-1")
 
     def test_dispatch_telegram_background_skips_when_no_bot_token(self):
         with patch(
-            "app.services.notifications.get_settings",
+            "app.notification_module.get_settings",
             return_value=type(
                 "Settings",
                 (),
                 {"telegram_bot_token": None, "app_base_url": "http://localhost"},
             )(),
         ):
-            result = notifications.dispatch_telegram_background(
+            result = notification_module.dispatch_telegram_background(
                 "u1", {"id": "r1", "title": "T", "priority": "medium", "status": "pending"}, False
             )
             self.assertIsNone(result)

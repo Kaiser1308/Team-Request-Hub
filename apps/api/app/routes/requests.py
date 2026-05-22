@@ -15,7 +15,8 @@ from app.schemas.requests import (
     StatusUpdateRequest,
 )
 from app.schemas.users import CurrentUser
-from app.services import notifications, request_service
+from app import notification_module
+from app.services import request_service
 
 router = APIRouter()
 
@@ -40,7 +41,7 @@ async def create_request(
     result = request_service.create_request(payload, current_user)
     if result.get("assigned_to"):
         background_tasks.add_task(
-            notifications.dispatch_telegram_background,
+            notification_module.dispatch_telegram_background,
             result["assigned_to"],
             result,
             False,
@@ -77,7 +78,7 @@ async def self_assign_request(
     result = request_service.self_assign_request(request_id, current_user)
     if result["created_by"] != current_user.id:
         background_tasks.add_task(
-            notifications.dispatch_telegram_background,
+            notification_module.dispatch_telegram_background,
             result["created_by"],
             result,
             False,
@@ -95,14 +96,14 @@ async def reassign_request(
     require_active_current_user(current_user)
     result = request_service.reassign_request(request_id, payload, current_user)
     background_tasks.add_task(
-        notifications.dispatch_telegram_background,
+        notification_module.dispatch_telegram_background,
         payload.assigned_to,
         result,
         True,
     )
     if result["created_by"] != current_user.id:
         background_tasks.add_task(
-            notifications.dispatch_telegram_background,
+            notification_module.dispatch_telegram_background,
             result["created_by"],
             result,
             True,

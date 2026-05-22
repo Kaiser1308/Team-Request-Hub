@@ -31,7 +31,7 @@ class DashboardServiceTests(unittest.TestCase):
                 return_value=[],
             ),
             patch(
-                "app.services.dashboard.notifications.list_notifications",
+                "app.services.dashboard.notification_module.list_notifications",
                 return_value=[],
             ),
         ):
@@ -77,7 +77,7 @@ class DashboardServiceTests(unittest.TestCase):
                 return_value=[mock_enriched],
             ) as enrich,
             patch(
-                "app.services.dashboard.notifications.list_notifications",
+                "app.services.dashboard.notification_module.list_notifications",
                 return_value=[],
             ),
         ):
@@ -149,7 +149,7 @@ class DashboardServiceTests(unittest.TestCase):
                 side_effect=noop_enrich,
             ),
             patch(
-                "app.services.dashboard.notifications.list_notifications",
+                "app.services.dashboard.notification_module.list_notifications",
                 return_value=[],
             ),
         ):
@@ -197,7 +197,7 @@ class DashboardServiceTests(unittest.TestCase):
                 side_effect=noop_enrich,
             ),
             patch(
-                "app.services.dashboard.notifications.list_notifications",
+                "app.services.dashboard.notification_module.list_notifications",
                 return_value=[],
             ),
         ):

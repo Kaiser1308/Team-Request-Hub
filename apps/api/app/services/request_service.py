@@ -17,7 +17,8 @@ from app.schemas.requests import (
 )
 from app.schemas.users import CurrentUser
 from app.repositories import assignment_repository, status_log_repository
-from app.services import notifications, users
+from app import notification_module
+from app.services import users
 from app.utils.time import utc_now_iso
 
 CLOSED_STATUSES = {"done", "cancelled"}
@@ -203,7 +204,7 @@ def create_request(payload: InternalRequestCreate, current_user: CurrentUser) ->
             assigned_by=current_user.id,
             reason="Assigned on create",
         )
-        notifications.notify_assigned(request["assigned_to"], request)
+        notification_module.notify_assigned(request["assigned_to"], request)
 
     return enrich_request_with_users(request)
 
@@ -250,7 +251,7 @@ def self_assign_request(request_id: str, current_user: CurrentUser) -> dict:
         reason=None,
     )
     if updated_request["created_by"] != current_user.id:
-        notifications.notify_request_picked_up(
+        notification_module.notify_request_picked_up(
             updated_request["created_by"],
             updated_request,
         )
@@ -293,9 +294,9 @@ def reassign_request(
             reason=payload.reason,
         )
 
-    notifications.notify_reassigned(payload.assigned_to, updated_request)
+    notification_module.notify_reassigned(payload.assigned_to, updated_request)
     if updated_request["created_by"] != current_user.id:
-        notifications.notify_reassigned(updated_request["created_by"], updated_request)
+        notification_module.notify_reassigned(updated_request["created_by"], updated_request)
 
     return enrich_request_with_users(updated_request)
 
@@ -328,7 +329,7 @@ def update_status(
     )
 
     if updated_request["created_by"] != current_user.id:
-        notifications.notify_status_changed(updated_request["created_by"], updated_request)
+        notification_module.notify_status_changed(updated_request["created_by"], updated_request)
 
     return enrich_request_with_users(updated_request)
 
@@ -356,7 +357,7 @@ def mark_done(
     )
 
     if updated_request["created_by"] != current_user.id:
-        notifications.notify_done(updated_request["created_by"], updated_request)
+        notification_module.notify_done(updated_request["created_by"], updated_request)
 
     return enrich_request_with_users(updated_request)
 
@@ -383,7 +384,7 @@ def cancel_request(
     )
 
     if updated_request.get("assigned_to") and updated_request["assigned_to"] != current_user.id:
-        notifications.notify_cancelled(updated_request["assigned_to"], updated_request)
+        notification_module.notify_cancelled(updated_request["assigned_to"], updated_request)
 
     return enrich_request_with_users(updated_request)
 

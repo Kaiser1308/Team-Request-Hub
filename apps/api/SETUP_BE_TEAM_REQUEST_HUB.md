@@ -38,7 +38,7 @@ make workflow decisions that belong to the backend.
 The backend uses this layering:
 
 ```txt
-routes -> services -> repositories -> Supabase
+routes -> services / notification_module -> repositories -> Supabase
 ```
 
 ```txt
@@ -50,27 +50,32 @@ apps/api/app/
     permissions.py
   db/
     supabase.py
+  notification_module/
+    __init__.py          public interface
+    _store.py            notification + delivery + telegram DB access
+    _telegram.py         message building + sending
+    _webhook.py          webhook /start handling
   repositories/
     assignment_repository.py
-    notification_repository.py
     request_repository.py
     status_log_repository.py
     user_repository.py
   routes/
+    dashboard.py
     health.py
     notifications.py
     requests.py
-    users.py
+    telegram.py
   schemas/
     common.py
+    dashboard.py
     notifications.py
     requests.py
+    telegram.py
     users.py
   services/
-    assignments.py
-    notifications.py
+    dashboard.py
     request_service.py
-    status_logs.py
     users.py
   utils/
     time.py

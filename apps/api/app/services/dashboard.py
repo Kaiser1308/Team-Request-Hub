@@ -1,7 +1,8 @@
 from app.core.permissions import is_lead
 from app.repositories import request_repository
 from app.schemas.users import CurrentUser
-from app.services import notifications, request_service
+from app import notification_module
+from app.services import request_service
 
 
 def get_dashboard_summary(current_user: CurrentUser) -> dict:
@@ -35,7 +36,7 @@ def get_dashboard_summary(current_user: CurrentUser) -> dict:
         if request.get("priority") == "urgent":
             urgent_ids.add(request.get("id"))
 
-    unread_notifications = notifications.list_notifications(
+    unread_notifications = notification_module.list_notifications(
         current_user.id,
         unread_only=True,
     )
