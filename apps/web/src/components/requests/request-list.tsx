@@ -5,14 +5,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { RequestCard } from "@/components/requests/request-card";
-import { findUserLabel } from "@/components/requests/user-display";
 import { Button } from "@/components/ui/button";
+import { ApiError } from "@/lib/api/client";
 import {
   translatePriority,
   translateStatus,
 } from "@/components/requests/translated-labels";
 import { useRequests } from "@/hooks/use-requests";
-import { useActiveUsers } from "@/hooks/use-users";
 import {
   MOTION_DURATION,
   MOTION_EASE,
@@ -84,15 +83,10 @@ export function RequestList({
   }
 
   if (isError) {
-    const isForbidden =
-      error instanceof Error &&
-      (error.message.includes("403") ||
-        error.message.toLowerCase().includes("forbidden"));
-
-    if (isForbidden) {
+    if (error instanceof ApiError && error.status === 403) {
       return (
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-          {forbiddenMessage ?? t("list.forbiddenDefault")}
+          {forbiddenMessage ?? error.detail}
         </div>
       );
     }
@@ -100,7 +94,7 @@ export function RequestList({
     return (
       <div className="rounded-lg border border-red-200 bg-red-50 p-4">
         <p className="text-sm font-medium text-red-700">
-          {error instanceof Error ? error.message : t("list.loadError")}
+          {error instanceof ApiError ? error.detail : (error instanceof Error ? error.message : t("list.loadError"))}
         </p>
         <Button
           type="button"
@@ -179,7 +173,6 @@ function RequestCards({
   isFetching: boolean;
   requests: InternalRequest[];
 }) {
-  const activeUsersQuery = useActiveUsers();
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -214,11 +207,7 @@ function RequestCards({
     <div ref={containerRef} className="grid gap-3" aria-busy={isFetching}>
       {requests.map((request) => (
         <div key={request.id} data-request-card>
-          <RequestCard
-            request={request}
-            creatorLabel={findUserLabel(activeUsersQuery.data, request.created_by)}
-            assigneeLabel={findUserLabel(activeUsersQuery.data, request.assigned_to)}
-          />
+          <RequestCard request={request} />
         </div>
       ))}
     </div>

@@ -6,14 +6,13 @@ import { RequestActions } from "@/components/requests/request-actions";
 import { RequestPriorityBadge } from "@/components/requests/request-priority-badge";
 import { RequestStatusBadge } from "@/components/requests/request-status-badge";
 import { RequestTimeline } from "@/components/requests/request-timeline";
-import { findUserLabel } from "@/components/requests/user-display";
+import { formatUserSummaryLabel } from "@/components/requests/user-display";
 import { Button } from "@/components/ui/button";
 import {
   useRequest,
   useRequestAssignmentHistory,
   useRequestStatusLogs,
 } from "@/hooks/use-requests";
-import { useActiveUsers } from "@/hooks/use-users";
 
 function formatDate(value: string | null | undefined, locale: string, notSet: string) {
   if (!value) {
@@ -41,7 +40,6 @@ export function RequestDetail({ requestId }: { requestId: string }) {
   const requestQuery = useRequest(requestId);
   const assignmentHistoryQuery = useRequestAssignmentHistory(requestId);
   const statusLogsQuery = useRequestStatusLogs(requestId);
-  const activeUsersQuery = useActiveUsers();
 
   if (requestQuery.isLoading) {
     return (
@@ -99,7 +97,7 @@ export function RequestDetail({ requestId }: { requestId: string }) {
         <div className="mt-5 grid gap-3 text-sm text-[#4b5563] sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <p className="text-xs text-[#6b7280]">{t("detail.creator")}</p>
-            <p>{findUserLabel(activeUsersQuery.data, request.created_by)}</p>
+            <p>{formatUserSummaryLabel(request.creator) ?? request.created_by}</p>
           </div>
           <div>
             <p className="text-xs text-[#6b7280]">{t("detail.created")}</p>
@@ -107,7 +105,7 @@ export function RequestDetail({ requestId }: { requestId: string }) {
           </div>
           <div>
             <p className="text-xs text-[#6b7280]">{t("detail.assigned")}</p>
-            <p>{findUserLabel(activeUsersQuery.data, request.assigned_to)}</p>
+            <p>{formatUserSummaryLabel(request.assignee) ?? request.assigned_to ?? tCommon("notSet")}</p>
           </div>
           <div>
             <p className="text-xs text-[#6b7280]">{t("detail.updated")}</p>

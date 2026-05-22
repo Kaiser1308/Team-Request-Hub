@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
-import { findUserLabel } from "@/components/requests/user-display";
-import { useActiveUsers } from "@/hooks/use-users";
+import { formatUserSummaryLabel } from "@/components/requests/user-display";
 import { RequestPriorityBadge } from "@/components/requests/request-priority-badge";
 import { RequestStatusBadge } from "@/components/requests/request-status-badge";
 import type { InternalRequest } from "@/types";
@@ -20,17 +19,11 @@ function formatDate(value: string, locale: string) {
 export function RequestCard({ request }: { request: InternalRequest }) {
   const t = useTranslations("requests");
   const locale = useLocale();
-  const activeUsersQuery = useActiveUsers();
 
-  const rawCreatorLabel = request.created_by
-    ? findUserLabel(activeUsersQuery.data, request.created_by)
-    : null;
-  const creatorLabel = rawCreatorLabel ?? t("card.unassigned");
-
-  const rawAssigneeLabel = request.assigned_to
-    ? findUserLabel(activeUsersQuery.data, request.assigned_to)
-    : null;
-  const assigneeLabel = rawAssigneeLabel ?? t("card.unassigned");
+  const creatorLabel =
+    formatUserSummaryLabel(request.creator) ?? t("card.unassigned");
+  const assigneeLabel =
+    formatUserSummaryLabel(request.assignee) ?? t("card.unassigned");
 
   let timestampLabel: string;
   if (request.done_at) {

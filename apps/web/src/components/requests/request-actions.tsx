@@ -7,6 +7,7 @@ import { CancelDialog } from "@/components/requests/cancel-dialog";
 import { DoneDialog } from "@/components/requests/done-dialog";
 import { ReassignDialog } from "@/components/requests/reassign-dialog";
 import { Button } from "@/components/ui/button";
+import { ApiError } from "@/lib/api/client";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useRequestActions } from "@/hooks/use-request-actions";
 import {
@@ -18,10 +19,12 @@ import {
 import type { InternalRequest } from "@/types";
 
 function getReadableError(error: unknown): string | null {
+  if (error instanceof ApiError && error.detail.trim()) {
+    return error.detail;
+  }
   if (error instanceof Error && error.message.trim()) {
     return error.message;
   }
-
   return null;
 }
 
