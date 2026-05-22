@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useUpdateUserActiveState, useUpdateUserRole, useUsers } from "@/hooks/use-users";
@@ -12,6 +13,10 @@ function roleLabel(role: Role) {
 }
 
 export function UserRoleTable() {
+  const t = useTranslations("admin");
+  const tCommon = useTranslations("common");
+  const tErrors = useTranslations("errors");
+  const locale = useLocale();
   const currentUserQuery = useCurrentUser();
   const usersQuery = useUsers();
   const updateRole = useUpdateUserRole();
@@ -30,9 +35,9 @@ export function UserRoleTable() {
   if (currentUserQuery.data?.role !== "lead") {
     return (
       <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
-        <p className="text-sm font-medium text-amber-900">Forbidden</p>
+        <p className="text-sm font-medium text-amber-900">{t("forbiddenTitle")}</p>
         <p className="mt-1 text-sm text-amber-800">
-          Only lead users can manage user roles and account access.
+          {t("forbiddenDescription")}
         </p>
       </div>
     );
@@ -41,11 +46,11 @@ export function UserRoleTable() {
   if (usersQuery.isError) {
     return (
       <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-        <p className="text-sm font-medium text-red-900">Could not load users</p>
+        <p className="text-sm font-medium text-red-900">{t("loadUsersErrorTitle")}</p>
         <p className="mt-1 text-sm text-red-700">
           {usersQuery.error instanceof Error
             ? usersQuery.error.message
-            : "The backend returned an unexpected response."}
+            : tErrors("generic")}
         </p>
         <Button
           type="button"
@@ -53,7 +58,7 @@ export function UserRoleTable() {
           className="mt-3"
           onClick={() => void usersQuery.refetch()}
         >
-          Retry
+          {tCommon("retry")}
         </Button>
       </div>
     );
@@ -62,7 +67,7 @@ export function UserRoleTable() {
   if (!usersQuery.data?.length) {
     return (
       <div className="rounded-lg border border-[#e5e7eb] bg-white p-4 text-sm text-[#6b7280]">
-        No users found.
+        {t("noUsers")}
       </div>
     );
   }
@@ -73,13 +78,13 @@ export function UserRoleTable() {
         {usersQuery.data.map((user) => (
           <div key={user.id} className="grid gap-3 p-3 text-sm">
             <div className="min-w-0">
-              <p className="font-medium text-[#111827]">{user.name ?? "Unnamed"}</p>
+              <p className="font-medium text-[#111827]">{user.name ?? t("unnamed")}</p>
               <p className="break-all text-[#4b5563]">{user.email}</p>
             </div>
 
             <div className="grid gap-1">
               <label className="text-xs font-medium text-[#6b7280]" htmlFor={`user-role-${user.id}`}>
-                Role
+                {t("role")}
               </label>
               <select
                 id={`user-role-${user.id}`}
@@ -100,13 +105,13 @@ export function UserRoleTable() {
                 ))}
               </select>
               {updateRole.isPending ? (
-                <p className="text-xs text-[#6b7280]">Saving role...</p>
+                <p className="text-xs text-[#6b7280]">{t("savingRole")}</p>
               ) : null}
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className={user.is_active ? "text-green-700" : "text-amber-700"}>
-                {user.is_active ? "Active account" : "Pending approval"}
+                {user.is_active ? t("activeAccount") : t("pendingApproval")}
               </span>
               <Button
                 type="button"
@@ -122,17 +127,17 @@ export function UserRoleTable() {
               >
                 {updateActive.isPending
                   ? user.is_active
-                    ? "Disabling..."
-                    : "Approving..."
+                    ? t("disabling")
+                    : t("approving")
                   : user.is_active
-                    ? "Disable"
-                    : "Approve"}
+                    ? t("disable")
+                    : t("approve")}
               </Button>
             </div>
 
             <p className="text-xs text-[#6b7280]">
-              Created{" "}
-              {new Intl.DateTimeFormat("en", {
+              {t("created")}{" "}
+              {new Intl.DateTimeFormat(locale, {
                 month: "short",
                 day: "2-digit",
                 year: "numeric",
@@ -146,19 +151,19 @@ export function UserRoleTable() {
         <table className="w-full min-w-[720px] text-left text-sm">
         <thead className="bg-[#f3f4f6] text-xs text-[#6b7280]">
           <tr>
-            <th className="px-3 py-2 font-medium">Name</th>
-            <th className="px-3 py-2 font-medium">Email</th>
-            <th className="px-3 py-2 font-medium">Role</th>
-            <th className="px-3 py-2 font-medium">State</th>
-            <th className="px-3 py-2 font-medium">Access</th>
-            <th className="px-3 py-2 font-medium">Created</th>
+            <th className="px-3 py-2 font-medium">{t("name")}</th>
+            <th className="px-3 py-2 font-medium">{t("email")}</th>
+            <th className="px-3 py-2 font-medium">{t("role")}</th>
+            <th className="px-3 py-2 font-medium">{t("state")}</th>
+            <th className="px-3 py-2 font-medium">{t("access")}</th>
+            <th className="px-3 py-2 font-medium">{t("created")}</th>
           </tr>
         </thead>
         <tbody>
           {usersQuery.data.map((user) => (
             <tr key={user.id} className="border-t border-[#e5e7eb]">
               <td className="px-3 py-2 text-[#111827]">
-                {user.name ?? "Unnamed"}
+                {user.name ?? t("unnamed")}
               </td>
               <td className="px-3 py-2 text-[#4b5563]">{user.email}</td>
               <td className="px-3 py-2">
@@ -180,12 +185,12 @@ export function UserRoleTable() {
                   ))}
                 </select>
                 {updateRole.isPending ? (
-                  <p className="mt-1 text-xs text-[#6b7280]">Saving role...</p>
+                  <p className="mt-1 text-xs text-[#6b7280]">{t("savingRole")}</p>
                 ) : null}
               </td>
               <td className="px-3 py-2">
                 <span className={user.is_active ? "text-green-700" : "text-amber-700"}>
-                  {user.is_active ? "Active account" : "Pending approval"}
+                  {user.is_active ? t("activeAccount") : t("pendingApproval")}
                 </span>
               </td>
               <td className="px-3 py-2">
@@ -203,15 +208,15 @@ export function UserRoleTable() {
                 >
                   {updateActive.isPending
                     ? user.is_active
-                      ? "Disabling..."
-                      : "Approving..."
+                      ? t("disabling")
+                      : t("approving")
                     : user.is_active
-                      ? "Disable"
-                      : "Approve"}
+                      ? t("disable")
+                      : t("approve")}
                 </Button>
               </td>
               <td className="px-3 py-2 text-[#6b7280]">
-                {new Intl.DateTimeFormat("en", {
+                {new Intl.DateTimeFormat(locale, {
                   month: "short",
                   day: "2-digit",
                   year: "numeric",
@@ -227,7 +232,7 @@ export function UserRoleTable() {
         <div className="border-t border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {updateRole.error instanceof Error
             ? updateRole.error.message
-            : "Could not update this user role."}
+            : t("roleUpdateError")}
         </div>
       ) : null}
 
@@ -235,7 +240,7 @@ export function UserRoleTable() {
         <div className="border-t border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {updateActive.error instanceof Error
             ? updateActive.error.message
-            : "Could not update user access state."}
+            : t("accessUpdateError")}
         </div>
       ) : null}
     </div>

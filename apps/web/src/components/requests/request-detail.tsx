@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
 import { RequestActions } from "@/components/requests/request-actions";
 import { RequestPriorityBadge } from "@/components/requests/request-priority-badge";
 import { RequestStatusBadge } from "@/components/requests/request-status-badge";
@@ -14,12 +15,12 @@ import {
 } from "@/hooks/use-requests";
 import { useActiveUsers } from "@/hooks/use-users";
 
-function formatDate(value?: string | null) {
+function formatDate(value: string | null | undefined, locale: string, notSet: string) {
   if (!value) {
-    return "Not set";
+    return notSet;
   }
 
-  return new Intl.DateTimeFormat("en", {
+  return new Intl.DateTimeFormat(locale, {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
@@ -34,6 +35,9 @@ function formatError(error: unknown, fallback: string) {
 }
 
 export function RequestDetail({ requestId }: { requestId: string }) {
+  const locale = useLocale();
+  const t = useTranslations("requests");
+  const tCommon = useTranslations("common");
   const requestQuery = useRequest(requestId);
   const assignmentHistoryQuery = useRequestAssignmentHistory(requestId);
   const statusLogsQuery = useRequestStatusLogs(requestId);
@@ -54,7 +58,7 @@ export function RequestDetail({ requestId }: { requestId: string }) {
         <p className="text-sm font-medium text-red-700">
           {requestQuery.error instanceof Error
             ? requestQuery.error.message
-            : "Could not load this request."}
+            : t("detail.loadError")}
         </p>
         <Button
           type="button"
@@ -62,7 +66,7 @@ export function RequestDetail({ requestId }: { requestId: string }) {
           className="mt-3"
           onClick={() => void requestQuery.refetch()}
         >
-          Retry
+          {tCommon("retry")}
         </Button>
       </div>
     );
@@ -73,7 +77,7 @@ export function RequestDetail({ requestId }: { requestId: string }) {
   return (
     <div className="space-y-5">
       <Button asChild variant="outline">
-        <Link href="/requests">Back to requests</Link>
+        <Link href="/requests">{t("detail.backToRequests")}</Link>
       </Button>
 
       <section className="rounded-lg border border-[#e5e7eb] bg-white p-5">
@@ -94,44 +98,44 @@ export function RequestDetail({ requestId }: { requestId: string }) {
 
         <div className="mt-5 grid gap-3 text-sm text-[#4b5563] sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <p className="text-xs text-[#6b7280]">Creator</p>
+            <p className="text-xs text-[#6b7280]">{t("detail.creator")}</p>
             <p>{findUserLabel(activeUsersQuery.data, request.created_by)}</p>
           </div>
           <div>
-            <p className="text-xs text-[#6b7280]">Created</p>
-            <p>{formatDate(request.created_at)}</p>
+            <p className="text-xs text-[#6b7280]">{t("detail.created")}</p>
+            <p>{formatDate(request.created_at, locale, tCommon("notSet"))}</p>
           </div>
           <div>
-            <p className="text-xs text-[#6b7280]">Assigned</p>
+            <p className="text-xs text-[#6b7280]">{t("detail.assigned")}</p>
             <p>{findUserLabel(activeUsersQuery.data, request.assigned_to)}</p>
           </div>
           <div>
-            <p className="text-xs text-[#6b7280]">Updated</p>
-            <p>{formatDate(request.updated_at)}</p>
+            <p className="text-xs text-[#6b7280]">{t("detail.updated")}</p>
+            <p>{formatDate(request.updated_at, locale, tCommon("notSet"))}</p>
           </div>
           <div>
-            <p className="text-xs text-[#6b7280]">Started</p>
-            <p>{formatDate(request.started_at)}</p>
+            <p className="text-xs text-[#6b7280]">{t("detail.started")}</p>
+            <p>{formatDate(request.started_at, locale, tCommon("notSet"))}</p>
           </div>
           <div>
-            <p className="text-xs text-[#6b7280]">Done</p>
-            <p>{formatDate(request.done_at)}</p>
+            <p className="text-xs text-[#6b7280]">{t("detail.done")}</p>
+            <p>{formatDate(request.done_at, locale, tCommon("notSet"))}</p>
           </div>
           <div>
-            <p className="text-xs text-[#6b7280]">Cancelled</p>
-            <p>{formatDate(request.cancelled_at)}</p>
+            <p className="text-xs text-[#6b7280]">{t("detail.cancelled")}</p>
+            <p>{formatDate(request.cancelled_at, locale, tCommon("notSet"))}</p>
           </div>
         </div>
 
         {request.reply ? (
           <div className="mt-5 rounded-lg border border-green-200 bg-green-50 p-4">
-            <p className="text-sm font-medium text-green-800">Done reply</p>
+            <p className="text-sm font-medium text-green-800">{t("detail.doneReply")}</p>
             <p className="mt-1 text-sm text-green-700">{request.reply}</p>
           </div>
         ) : null}
 
         <div className="mt-5 border-t border-[#e5e7eb] pt-4">
-          <h2 className="text-sm font-semibold text-[#111827]">Actions</h2>
+          <h2 className="text-sm font-semibold text-[#111827]">{t("detail.actions")}</h2>
           <RequestActions request={request} />
         </div>
       </section>
@@ -144,7 +148,7 @@ export function RequestDetail({ requestId }: { requestId: string }) {
           assignmentHistoryQuery.isError || statusLogsQuery.isError
             ? formatError(
                 assignmentHistoryQuery.error ?? statusLogsQuery.error,
-                "Could not load request history.",
+                t("detail.historyLoadError"),
               )
             : null
         }

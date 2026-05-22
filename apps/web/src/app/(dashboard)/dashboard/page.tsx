@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useDashboardSummary } from "@/hooks/use-dashboard-summary";
 import { TelegramSettings } from "@/components/settings/telegram-settings";
+import { translatePriority, translateStatus } from "@/components/requests/translated-labels";
 import type { InternalRequest } from "@/types";
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en", {
+function formatDate(value: string, locale: string) {
+  return new Intl.DateTimeFormat(locale, {
     month: "short",
     day: "2-digit",
     hour: "2-digit",
@@ -38,6 +40,8 @@ function recentRequests(items: InternalRequest[]) {
 }
 
 export default function DashboardPage() {
+  const t = useTranslations("dashboard");
+  const locale = useLocale();
   const currentUserQuery = useCurrentUser();
   const summaryQuery = useDashboardSummary();
 
@@ -54,7 +58,7 @@ export default function DashboardPage() {
 
   const firstError = currentUserQuery.error || summaryQuery.error;
 
-  const userName = currentUserQuery.data?.name ?? currentUserQuery.data?.email ?? "Team member";
+  const userName = currentUserQuery.data?.name ?? currentUserQuery.data?.email ?? t("teamMember");
   const role = currentUserQuery.data?.role;
   const isLead = role === "lead";
 
@@ -65,7 +69,7 @@ export default function DashboardPage() {
   if (firstError) {
     return (
       <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-        {firstError instanceof Error ? firstError.message : "Could not load dashboard data."}
+        {firstError instanceof Error ? firstError.message : t("loadError")}
       </div>
     );
   }
@@ -73,12 +77,12 @@ export default function DashboardPage() {
   return (
     <div className="space-y-5">
       <div className="space-y-3">
-        <h1 className="text-2xl font-semibold text-[#111827]">Dashboard</h1>
+        <h1 className="text-2xl font-semibold text-[#111827]">{t("title")}</h1>
         <div className="rounded-lg border border-[#e5e7eb] bg-white px-4 py-3">
           <p className="text-sm font-medium text-[#111827]">{userName}</p>
           <p className="text-xs text-[#6b7280]">
-            {role ? `Role: ${role.toUpperCase()}` : "Role pending"}
-            {isLead ? " - lead access enabled" : ""}
+            {role ? t("roleLabel", { role: role.toUpperCase() }) : t("rolePending")}
+            {isLead ? ` - ${t("leadAccessEnabled")}` : ""}
           </p>
         </div>
       </div>
@@ -88,21 +92,21 @@ export default function DashboardPage() {
       {isLead ? (
         <section className="flex flex-wrap gap-2 text-sm">
           <Link href="/all" className="rounded-md border border-[#d1d5db] bg-white px-3 py-2 text-[#111827] hover:bg-[#f9fafb]">
-            All requests
+            {t("allRequests")}
           </Link>
           <Link href="/admin/users" className="rounded-md border border-[#d1d5db] bg-white px-3 py-2 text-[#111827] hover:bg-[#f9fafb]">
-            User management
+            {t("userManagement")}
           </Link>
         </section>
       ) : null}
 
       <section className="grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
         {[
-          { label: "Assigned", value: counts?.assigned ?? assignedItems.length },
-          { label: "Created", value: counts?.created ?? createdItems.length },
-          { label: "Pool", value: counts?.pool ?? poolItems.length },
-          { label: "Done", value: counts?.done ?? 0 },
-          { label: "Urgent", value: counts?.urgent ?? 0 },
+          { label: t("assigned"), value: counts?.assigned ?? assignedItems.length },
+          { label: t("created"), value: counts?.created ?? createdItems.length },
+          { label: t("pool"), value: counts?.pool ?? poolItems.length },
+          { label: t("done"), value: counts?.done ?? 0 },
+          { label: t("urgent"), value: counts?.urgent ?? 0 },
         ].map((item) => (
           <div key={item.label} className="rounded-lg border border-[#e5e7eb] bg-white px-3 py-2.5">
             <p className="text-[11px] font-medium uppercase tracking-normal text-[#6b7280]">{item.label}</p>
@@ -114,9 +118,9 @@ export default function DashboardPage() {
       <section className="grid gap-3 lg:grid-cols-2">
         <div className="rounded-lg border border-[#e5e7eb] bg-white">
           <div className="flex items-center justify-between border-b border-[#e5e7eb] px-4 py-3">
-            <h2 className="text-base font-semibold text-[#111827]">Recent requests</h2>
+            <h2 className="text-base font-semibold text-[#111827]">{t("recentRequests")}</h2>
             <Link href="/assigned" className="text-xs font-medium text-[#2563eb] hover:underline">
-              View assigned
+              {t("viewAssigned")}
             </Link>
           </div>
           {recentRequestItems.length ? (
@@ -127,29 +131,29 @@ export default function DashboardPage() {
                     {request.title}
                   </Link>
                   <p className="text-xs text-[#6b7280]">
-                    {request.status.replaceAll("_", " ")} - {request.priority} - {formatDate(request.updated_at)}
+                    {translateStatus(t, request.status)} — {translatePriority(t, request.priority)} — {formatDate(request.updated_at, locale)}
                   </p>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="px-4 py-5 text-sm text-[#6b7280]">No recent requests yet.</p>
+            <p className="px-4 py-5 text-sm text-[#6b7280]">{t("noRecentRequests")}</p>
           )}
         </div>
 
         <div className="rounded-lg border border-[#e5e7eb] bg-white">
           <div className="flex items-center justify-between border-b border-[#e5e7eb] px-4 py-3">
-            <h2 className="text-base font-semibold text-[#111827]">Recent activity</h2>
+            <h2 className="text-base font-semibold text-[#111827]">{t("recentActivity")}</h2>
             <Link href="/notifications" className="text-xs font-medium text-[#2563eb] hover:underline">
-              Open notifications
+              {t("openNotifications")}
             </Link>
           </div>
           {notificationsUnread > 0 ? (
             <div className="px-4 py-3">
-              <p className="text-sm text-[#111827]">{notificationsUnread} unread notification{notificationsUnread !== 1 ? "s" : ""}</p>
+              <p className="text-sm text-[#111827]">{t("unreadNotifications", { count: notificationsUnread })}</p>
             </div>
           ) : (
-            <p className="px-4 py-5 text-sm text-[#6b7280]">No unread notifications.</p>
+            <p className="px-4 py-5 text-sm text-[#6b7280]">{t("noUnreadNotifications")}</p>
           )}
         </div>
       </section>

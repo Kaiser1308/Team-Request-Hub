@@ -2,8 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { formatUserLabel } from "@/components/requests/user-display";
+import { translatePriority } from "@/components/requests/translated-labels";
 import { useActiveUsers } from "@/hooks/use-users";
 import { useRequestActions } from "@/hooks/use-request-actions";
 import type { RequestPriority } from "@/types";
@@ -36,6 +38,8 @@ export function RequestForm() {
   const router = useRouter();
   const actions = useRequestActions();
   const activeUsersQuery = useActiveUsers();
+  const t = useTranslations("requests");
+  const tCommon = useTranslations("common");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<RequestPriority>("medium");
@@ -49,12 +53,12 @@ export function RequestForm() {
     setDescriptionError(null);
 
     if (!title.trim()) {
-      setTitleError("Enter a request title.");
+      setTitleError(t("form.titleRequired"));
       return;
     }
 
     if (!description.trim()) {
-      setDescriptionError("Enter a request description.");
+      setDescriptionError(t("form.descriptionRequired"));
       return;
     }
 
@@ -77,7 +81,7 @@ export function RequestForm() {
       className="grid gap-5 rounded-lg border border-[#e5e7eb] bg-white p-5"
     >
       <label className="grid gap-2 text-sm font-medium text-[#111827]">
-        Title
+        {t("form.title")}
         <input
           className="h-10 rounded-md border border-[#e5e7eb] bg-white px-3 text-sm font-normal"
           value={title}
@@ -95,7 +99,7 @@ export function RequestForm() {
       </label>
 
       <label className="grid gap-2 text-sm font-medium text-[#111827]">
-        Description
+        {t("form.description")}
         <textarea
           className="min-h-36 rounded-md border border-[#e5e7eb] bg-white px-3 py-2 text-sm font-normal"
           value={description}
@@ -115,7 +119,7 @@ export function RequestForm() {
       </label>
 
       <label className="grid gap-2 text-sm font-medium text-[#111827]">
-        Priority
+        {t("form.priority")}
         <select
           className="h-10 rounded-md border border-[#e5e7eb] bg-white px-3 text-sm font-normal"
           value={priority}
@@ -125,21 +129,21 @@ export function RequestForm() {
         >
           {priorities.map((item) => (
             <option key={item} value={item}>
-              {item.charAt(0).toUpperCase() + item.slice(1)}
+              {translatePriority(t, item)}
             </option>
           ))}
         </select>
       </label>
 
       <label className="grid gap-2 text-sm font-medium text-[#111827]">
-        Assignee
+        {t("form.assignee")}
         <select
           className="h-10 rounded-md border border-[#e5e7eb] bg-white px-3 text-sm font-normal"
           value={assignedTo}
           onChange={(event) => setAssignedTo(event.target.value)}
           disabled={activeUsersQuery.isLoading}
         >
-          <option value="">Leave in pool</option>
+          <option value="">{t("form.leaveInPool")}</option>
           {(activeUsersQuery.data ?? []).map((user) => (
             <option key={user.id} value={user.id}>
               {formatUserLabel(user)}
@@ -147,13 +151,13 @@ export function RequestForm() {
           ))}
         </select>
         <span className="text-xs font-normal text-[#6b7280]">
-          Optional. Leave empty to keep this request in the pool.
+          {t("form.assigneeHelp")}
         </span>
       </label>
 
       {actions.create.error ? (
         <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {normalizeError(actions.create.error, "Could not create the request.")}
+          {normalizeError(actions.create.error, t("form.createError"))}
         </p>
       ) : null}
 
@@ -163,10 +167,10 @@ export function RequestForm() {
           variant="outline"
           onClick={() => router.push("/requests")}
         >
-          Cancel
+          {tCommon("cancel")}
         </Button>
         <Button type="submit" disabled={actions.create.isPending}>
-          {actions.create.isPending ? "Creating..." : "Create request"}
+          {actions.create.isPending ? t("form.creating") : t("form.create")}
         </Button>
       </div>
     </form>

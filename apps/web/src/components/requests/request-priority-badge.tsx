@@ -1,12 +1,9 @@
-import { cn } from "@/lib/utils";
-import type { RequestPriority } from "@/types";
+"use client";
 
-const priorityLabel: Record<RequestPriority, string> = {
-  low: "Low",
-  medium: "Medium",
-  high: "High",
-  urgent: "Urgent",
-};
+import { useTranslations } from "next-intl";
+import { cn } from "@/lib/utils";
+import { translatePriority } from "@/components/requests/translated-labels";
+import type { RequestPriority } from "@/types";
 
 const priorityClassName: Record<RequestPriority, string> = {
   low: "border-[#e5e7eb] bg-[#f9fafb] text-[#6b7280]",
@@ -20,6 +17,8 @@ export function RequestPriorityBadge({
 }: {
   priority: RequestPriority;
 }) {
+  const t = useTranslations("requests");
+
   return (
     <span
       className={cn(
@@ -27,7 +26,7 @@ export function RequestPriorityBadge({
         priorityClassName[priority],
       )}
     >
-      {priorityLabel[priority]}
+      {translatePriority(t, priority)}
     </span>
   );
 }

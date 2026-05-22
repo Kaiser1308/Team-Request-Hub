@@ -2,6 +2,7 @@
 
 import { animate } from 'animejs';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslations } from "next-intl";
 import { Button } from '@/components/ui/button';
 import {
   MOTION_DURATION,
@@ -12,6 +13,8 @@ import {
 import { useRequestActions } from '@/hooks/use-request-actions';
 
 export function DoneDialog({ requestId }: { requestId: string }) {
+  const t = useTranslations("requests");
+  const tCommon = useTranslations("common");
   const actions = useRequestActions();
   const [isMounted, setIsMounted] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -65,7 +68,7 @@ export function DoneDialog({ requestId }: { requestId: string }) {
     setValidationError(null);
 
     if (!reply.trim()) {
-      setValidationError('Reply is required.');
+      setValidationError(t("actions.replyRequired"));
       return;
     }
 
@@ -128,7 +131,7 @@ export function DoneDialog({ requestId }: { requestId: string }) {
   if (!isMounted) {
     return (
       <Button type='button' onClick={openDialog}>
-        Mark done
+        {t("actions.markDone")}
       </Button>
     );
   }
@@ -151,18 +154,18 @@ export function DoneDialog({ requestId }: { requestId: string }) {
         aria-labelledby='done-dialog-title'
         className='w-full max-w-lg rounded-lg border border-[#e5e7eb] bg-white p-4'
       >
-        <h3 id='done-dialog-title' className='text-base font-semibold text-[#111827]'>
-          Mark request done
+        <h3 id="done-dialog-title" className="text-base font-semibold text-[#111827]">
+          {t("actions.markDoneTitle")}
         </h3>
-        <p className='mt-1 text-sm text-[#6b7280]'>A completion reply is required.</p>
+        <p className="mt-1 text-sm text-[#6b7280]">{t("actions.completionReplyRequired")}</p>
 
-        <label className='mt-3 grid gap-2 text-sm font-medium text-[#111827]'>
-          Done reply
+        <label className="mt-3 grid gap-2 text-sm font-medium text-[#111827]">
+          {t("actions.doneReply")}
           <textarea
             className='min-h-24 rounded-md border border-[#e5e7eb] px-3 py-2 text-sm font-normal'
             value={reply}
             onChange={(event) => setReply(event.target.value)}
-            placeholder='Describe what was completed'
+            placeholder={t("actions.doneReplyPlaceholder")}
             required
           />
         </label>
@@ -172,13 +175,13 @@ export function DoneDialog({ requestId }: { requestId: string }) {
             {validationError ??
               (actions.markDone.error instanceof Error
                 ? actions.markDone.error.message
-                : 'Could not mark this request done.')}
+                : t("actions.markDoneError"))}
           </p>
         ) : null}
 
-        <div className='mt-3 flex gap-2'>
-          <Button type='submit' disabled={actions.markDone.isPending || isClosing}>
-            {actions.markDone.isPending ? 'Submitting...' : 'Submit reply'}
+        <div className="mt-3 flex gap-2">
+          <Button type="submit" disabled={actions.markDone.isPending || isClosing}>
+            {actions.markDone.isPending ? t("actions.submitting") : t("actions.submitReply")}
           </Button>
           <Button
             type='button'
@@ -186,7 +189,7 @@ export function DoneDialog({ requestId }: { requestId: string }) {
             disabled={actions.markDone.isPending || isClosing}
             onClick={() => void closeDialog()}
           >
-            Close
+            {tCommon("close")}
           </Button>
         </div>
       </form>

@@ -2,6 +2,7 @@
 
 import { animate } from 'animejs';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslations } from "next-intl";
 import { formatUserLabel } from '@/components/requests/user-display';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,6 +15,8 @@ import { useActiveUsers } from '@/hooks/use-users';
 import { useRequestActions } from '@/hooks/use-request-actions';
 
 export function ReassignDialog({ requestId }: { requestId: string }) {
+  const t = useTranslations("requests");
+  const tCommon = useTranslations("common");
   const actions = useRequestActions();
   const activeUsersQuery = useActiveUsers();
   const [isMounted, setIsMounted] = useState(false);
@@ -69,7 +72,7 @@ export function ReassignDialog({ requestId }: { requestId: string }) {
     setValidationError(null);
 
     if (!assignedTo) {
-      setValidationError('Select a teammate before submitting.');
+      setValidationError(t("actions.selectTeammateError"));
       return;
     }
 
@@ -134,7 +137,7 @@ export function ReassignDialog({ requestId }: { requestId: string }) {
   if (!isMounted) {
     return (
       <Button type='button' variant='outline' onClick={openDialog}>
-        Reassign
+        {t("actions.reassign")}
       </Button>
     );
   }
@@ -161,11 +164,11 @@ export function ReassignDialog({ requestId }: { requestId: string }) {
           id='reassign-dialog-title'
           className='text-base font-semibold text-[#111827]'
         >
-          Reassign request
+          {t("actions.reassignTitle")}
         </h3>
-        <div className='mt-3 grid gap-3'>
-          <label className='grid gap-2 text-sm font-medium text-[#111827]'>
-            Assignee
+        <div className="mt-3 grid gap-3">
+          <label className="grid gap-2 text-sm font-medium text-[#111827]">
+            {t("actions.assignee")}
             <select
               className='h-10 rounded-md border border-[#e5e7eb] bg-white px-3 text-sm'
               value={assignedTo}
@@ -173,7 +176,7 @@ export function ReassignDialog({ requestId }: { requestId: string }) {
               disabled={activeUsersQuery.isLoading || actions.reassign.isPending}
               required
             >
-              <option value=''>Select teammate</option>
+              <option value="">{t("actions.selectTeammate")}</option>
               {(activeUsersQuery.data ?? []).map((user) => (
                 <option key={user.id} value={user.id}>
                   {formatUserLabel(user)}
@@ -181,13 +184,13 @@ export function ReassignDialog({ requestId }: { requestId: string }) {
               ))}
             </select>
           </label>
-          <label className='grid gap-2 text-sm font-medium text-[#111827]'>
-            Reason
+          <label className="grid gap-2 text-sm font-medium text-[#111827]">
+            {t("actions.reason")}
             <textarea
               className='min-h-20 rounded-md border border-[#e5e7eb] px-3 py-2 text-sm font-normal'
               value={reason}
               onChange={(event) => setReason(event.target.value)}
-              placeholder='Optional reason'
+              placeholder={t("actions.optionalReason")}
               disabled={actions.reassign.isPending}
             />
           </label>
@@ -198,13 +201,13 @@ export function ReassignDialog({ requestId }: { requestId: string }) {
             {validationError ??
               (actions.reassign.error instanceof Error
                 ? actions.reassign.error.message
-                : 'Could not reassign this request.')}
+                : t("actions.reassignError"))}
           </p>
         ) : null}
 
-        <div className='mt-3 flex gap-2'>
-          <Button type='submit' disabled={actions.reassign.isPending || isClosing}>
-            {actions.reassign.isPending ? 'Reassigning...' : 'Confirm reassign'}
+        <div className="mt-3 flex gap-2">
+          <Button type="submit" disabled={actions.reassign.isPending || isClosing}>
+            {actions.reassign.isPending ? t("actions.reassigning") : t("actions.confirmReassign")}
           </Button>
           <Button
             type='button'
@@ -212,7 +215,7 @@ export function ReassignDialog({ requestId }: { requestId: string }) {
             disabled={actions.reassign.isPending || isClosing}
             onClick={() => void closeDialog()}
           >
-            Close
+            {tCommon("close")}
           </Button>
         </div>
       </form>

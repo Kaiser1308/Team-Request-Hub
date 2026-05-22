@@ -2,6 +2,7 @@
 
 import { animate, stagger } from "animejs";
 import { useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { CancelDialog } from "@/components/requests/cancel-dialog";
 import { DoneDialog } from "@/components/requests/done-dialog";
 import { ReassignDialog } from "@/components/requests/reassign-dialog";
@@ -25,6 +26,7 @@ function getReadableError(error: unknown): string | null {
 }
 
 export function RequestActions({ request }: { request: InternalRequest }) {
+  const t = useTranslations("requests");
   const { data: currentUser } = useCurrentUser();
   const actions = useRequestActions();
   const actionRowRef = useRef<HTMLDivElement | null>(null);
@@ -97,7 +99,7 @@ export function RequestActions({ request }: { request: InternalRequest }) {
             disabled={actions.selfAssign.isPending}
             onClick={() => actions.selfAssign.mutate(request.id)}
           >
-            {actions.selfAssign.isPending ? "Assigning..." : "Self assign"}
+            {actions.selfAssign.isPending ? t("actions.assigning") : t("actions.selfAssign")}
           </Button>
         ) : null}
 
@@ -112,7 +114,7 @@ export function RequestActions({ request }: { request: InternalRequest }) {
               })
             }
           >
-            Acknowledge
+            {t("actions.acknowledge")}
           </Button>
         ) : null}
 
@@ -127,7 +129,7 @@ export function RequestActions({ request }: { request: InternalRequest }) {
               })
             }
           >
-            Start
+            {t("actions.start")}
           </Button>
         ) : null}
 
