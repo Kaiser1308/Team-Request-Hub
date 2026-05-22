@@ -4,28 +4,41 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bell, Menu, X } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { LogoutButton } from "@/components/auth/logout-button";
+import { LanguageSwitcher } from "@/components/app/language-switcher";
 import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useNotifications } from "@/hooks/use-notifications";
 import { cn } from "@/lib/utils";
 import type { Role } from "@/types";
+import { translateRole } from "@/components/requests/translated-labels";
+
+type NavLabelKey =
+  | "dashboard"
+  | "assigned"
+  | "created"
+  | "pool"
+  | "done"
+  | "all"
+  | "users"
+  | "newRequest";
 
 interface NavItem {
   href: string;
-  label: string;
+  labelKey: NavLabelKey;
   roles?: Role[];
 }
 
 const navItems: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/assigned", label: "Assigned to me", roles: ["be", "lead"] },
-  { href: "/requests", label: "Created by me" },
-  { href: "/pool", label: "Pool", roles: ["be", "lead"] },
-  { href: "/done", label: "Done" },
-  { href: "/all", label: "All requests", roles: ["lead"] },
-  { href: "/admin/users", label: "Users", roles: ["lead"] },
-  { href: "/requests/new", label: "New request" },
+  { href: "/dashboard", labelKey: "dashboard" },
+  { href: "/assigned", labelKey: "assigned", roles: ["be", "lead"] },
+  { href: "/requests", labelKey: "created" },
+  { href: "/pool", labelKey: "pool", roles: ["be", "lead"] },
+  { href: "/done", labelKey: "done" },
+  { href: "/all", labelKey: "all", roles: ["lead"] },
+  { href: "/admin/users", labelKey: "users", roles: ["lead"] },
+  { href: "/requests/new", labelKey: "newRequest" },
 ];
 
 function canSeeNavItem(item: NavItem, role?: Role) {
@@ -36,26 +49,31 @@ function isActivePath(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-function getPageTitle(pathname: string) {
+function getPageTitle(
+  pathname: string,
+  tNav: (key: string) => string,
+  tCommon: (key: string) => string,
+) {
   if (pathname.startsWith("/requests/new")) {
-    return "New request";
+    return tNav("newRequest");
   }
 
   if (pathname.startsWith("/requests/")) {
-    return "Request detail";
+    return tNav("requestDetail");
   }
 
-  const titleByPath: Record<string, string> = {
-    "/dashboard": "Dashboard",
-    "/assigned": "Assigned to me",
-    "/requests": "Created by me",
-    "/pool": "Pool",
-    "/done": "Done",
-    "/all": "All requests",
-    "/admin/users": "Users",
+  const titleByKey: Record<string, NavLabelKey> = {
+    "/dashboard": "dashboard",
+    "/assigned": "assigned",
+    "/requests": "created",
+    "/pool": "pool",
+    "/done": "done",
+    "/all": "all",
+    "/admin/users": "users",
   };
 
-  return titleByPath[pathname] ?? "Team Request Hub";
+  const key = titleByKey[pathname];
+  return key ? tNav(key) : tCommon("appName");
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -64,7 +82,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const notificationsQuery = useNotifications(true);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const unreadCount = notificationsQuery.data?.length ?? 0;
-  const pageTitle = useMemo(() => getPageTitle(pathname), [pathname]);
+
+  const tCommon = useTranslations("common");
+  const tNav = useTranslations("nav");
+  const tShell = useTranslations("appShell");
+
+  const pageTitle = useMemo(
+    () => getPageTitle(pathname, tNav, tCommon),
+    [pathname, tNav, tCommon],
+  );
   const visibleNavItems = navItems.filter((item) =>
     canSeeNavItem(item, currentUser?.role),
   );
@@ -73,8 +99,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#f9fafb] px-4">
         <div className="grid max-w-lg gap-4 rounded-lg border border-[#e5e7eb] bg-white p-8 text-center">
-          <h1 className="text-2xl font-semibold">Waiting for lead approval</h1>
-          <p className="text-sm text-[#4b5563]">A lead must approve your account before you can access requests.</p>
+          <h1 className="text-2xl font-semibold">{tShell("waitingApprovalTitle")}</h1>
+          <p className="text-sm text-[#4b5563]">{tShell("waitingApprovalDescription")}</p>
           <LogoutButton />
         </div>
       </div>
@@ -86,7 +112,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {isMobileNavOpen ? (
         <button
           type="button"
-          aria-label="Close navigation"
+          aria-label={tShell("closeNavigation")}
           onClick={() => setIsMobileNavOpen(false)}
           className="fixed inset-0 z-30 bg-[#111827]/30 lg:hidden"
         />
@@ -94,7 +120,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <aside
         id="app-shell-navigation"
-        aria-label="Primary"
+        aria-label={tShell("primaryNavigation")}
         className={cn(
           "fixed inset-y-0 left-0 z-40 w-[240px] border-r border-[#e5e7eb] bg-white px-3 py-4 transition-transform lg:translate-x-0",
           isMobileNavOpen ? "translate-x-0" : "-translate-x-full",
@@ -102,21 +128,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       >
         <div className="mb-4 flex items-center justify-between gap-2 px-2 lg:mb-6 lg:justify-start">
           <Link href="/dashboard" className="text-sm font-semibold" onClick={() => setIsMobileNavOpen(false)}>
-            Team Request Hub
+            {tCommon("appName")}
           </Link>
           <Button
             type="button"
             variant="ghost"
             size="icon"
             className="lg:hidden"
-            aria-label="Close navigation"
+            aria-label={tShell("closeNavigation")}
             onClick={() => setIsMobileNavOpen(false)}
           >
             <X className="h-4 w-4" aria-hidden="true" />
           </Button>
         </div>
 
-        <nav className="flex flex-col gap-1" aria-label="Main navigation">
+        <nav className="flex flex-col gap-1" aria-label={tShell("mainNavigation")}>
           {visibleNavItems.map((item) => (
             <Link
               key={item.href}
@@ -129,7 +155,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               )}
               aria-current={isActivePath(pathname, item.href) ? "page" : undefined}
             >
-              {item.label}
+              {tNav(item.labelKey)}
             </Link>
           ))}
         </nav>
@@ -145,7 +171,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               className="lg:hidden"
               aria-expanded={isMobileNavOpen}
               aria-controls="app-shell-navigation"
-              aria-label="Open navigation"
+              aria-label={tShell("openNavigation")}
               onClick={() => setIsMobileNavOpen(true)}
             >
               <Menu className="h-4 w-4" aria-hidden="true" />
@@ -156,17 +182,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-2 sm:gap-3">
             <Link
               href="/dashboard"
-              aria-label="Open notifications"
+              aria-label={tShell("openNotifications")}
               className="inline-flex items-center gap-1 rounded-md border border-[#e5e7eb] bg-white px-2 py-1.5 text-xs text-[#4b5563]"
             >
               <Bell className="h-3.5 w-3.5" aria-hidden="true" />
               <span>{unreadCount}</span>
             </Link>
+            <LanguageSwitcher />
             <div className="hidden text-right sm:block">
               <p className="max-w-[220px] truncate text-sm font-medium">
                 {isLoading
-                  ? "Loading user"
-                  : currentUser?.name ?? currentUser?.email ?? "User"}
+                  ? tCommon("loadingUser")
+                  : currentUser?.name ?? currentUser?.email ?? tCommon("user")}
               </p>
               {currentUser?.email && currentUser?.name ? (
                 <p className="max-w-[220px] truncate text-xs text-[#6b7280]">{currentUser.email}</p>
@@ -174,9 +201,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
             {currentUser?.role ? (
               <span className="rounded-md border border-[#e5e7eb] bg-white px-2 py-1 text-xs font-medium uppercase tracking-normal text-[#4b5563]">
-                {currentUser.role}
+                {tShell("roleLabel", { role: translateRole(currentUser.role) })}
+                {currentUser.role === "lead" ? ` — ${tShell("leadAccessEnabled")}` : ""}
               </span>
-            ) : null}
+            ) : (
+              <span className="rounded-md border border-[#e5e7eb] bg-white px-2 py-1 text-xs font-medium text-[#6b7280]">
+                {tShell("rolePending")}
+              </span>
+            )}
             <LogoutButton />
           </div>
         </header>
@@ -186,7 +218,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               {error instanceof Error
                 ? error.message
-                : "Unable to load the current user."}
+                : tShell("unableToLoadUser")}
             </div>
           ) : null}
           {children}

@@ -2,8 +2,13 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { RequestCard } from "@/components/requests/request-card";
 import { Button } from "@/components/ui/button";
+import {
+  translatePriority,
+  translateStatus,
+} from "@/components/requests/translated-labels";
 import { useRequests } from "@/hooks/use-requests";
 import type { RequestView } from "@/lib/api/requests";
 import type { RequestPriority, RequestStatus } from "@/types";
@@ -25,13 +30,6 @@ const priorityOptions: Array<"all" | RequestPriority> = [
   "urgent",
 ];
 
-function label(value: string) {
-  return value
-    .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
-
 export function RequestList({
   view,
   emptyMessage,
@@ -41,6 +39,7 @@ export function RequestList({
   emptyMessage: string;
   forbiddenMessage?: string;
 }) {
+  const t = useTranslations("requests");
   const [status, setStatus] = useState<"all" | RequestStatus>("all");
   const [priority, setPriority] = useState<"all" | RequestPriority>("all");
   const { data, isLoading, isError, error, refetch, isFetching } =
@@ -59,7 +58,10 @@ export function RequestList({
     return (
       <div className="grid gap-3">
         {Array.from({ length: 3 }).map((_, index) => (
-          <div key={index} className="rounded-lg border border-[#e5e7eb] bg-white p-4">
+          <div
+            key={index}
+            className="rounded-lg border border-[#e5e7eb] bg-white p-4"
+          >
             <div className="h-4 w-2/3 animate-pulse rounded bg-[#f3f4f6]" />
             <div className="mt-3 h-3 w-full animate-pulse rounded bg-[#f3f4f6]" />
             <div className="mt-2 h-3 w-5/6 animate-pulse rounded bg-[#f3f4f6]" />
@@ -73,12 +75,13 @@ export function RequestList({
   if (isError) {
     const isForbidden =
       error instanceof Error &&
-      (error.message.includes("403") || error.message.toLowerCase().includes("forbidden"));
+      (error.message.includes("403") ||
+        error.message.toLowerCase().includes("forbidden"));
 
     if (isForbidden) {
       return (
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-          {forbiddenMessage ?? "You do not have access to this request view."}
+          {forbiddenMessage ?? t("list.forbiddenDefault")}
         </div>
       );
     }
@@ -86,7 +89,7 @@ export function RequestList({
     return (
       <div className="rounded-lg border border-red-200 bg-red-50 p-4">
         <p className="text-sm font-medium text-red-700">
-          {error instanceof Error ? error.message : "Could not load requests."}
+          {error instanceof Error ? error.message : t("list.loadError")}
         </p>
         <Button
           type="button"
@@ -94,7 +97,7 @@ export function RequestList({
           className="mt-3"
           onClick={() => void refetch()}
         >
-          Retry
+          {t("list.retry")}
         </Button>
       </div>
     );
@@ -104,7 +107,7 @@ export function RequestList({
     <div className="space-y-4">
       <div className="flex flex-col gap-3 rounded-lg border border-[#e5e7eb] bg-white p-3 sm:flex-row">
         <label className="grid gap-1 text-sm text-[#4b5563]">
-          Status
+          {t("list.status")}
           <select
             className="h-10 rounded-md border border-[#e5e7eb] bg-white px-3 text-sm text-[#111827]"
             value={status}
@@ -114,14 +117,14 @@ export function RequestList({
           >
             {statusOptions.map((option) => (
               <option key={option} value={option}>
-                {label(option)}
+                {translateStatus(t, option)}
               </option>
             ))}
           </select>
         </label>
 
         <label className="grid gap-1 text-sm text-[#4b5563]">
-          Priority
+          {t("list.priority")}
           <select
             className="h-10 rounded-md border border-[#e5e7eb] bg-white px-3 text-sm text-[#111827]"
             value={priority}
@@ -131,7 +134,7 @@ export function RequestList({
           >
             {priorityOptions.map((option) => (
               <option key={option} value={option}>
-                {label(option)}
+                {translatePriority(t, option)}
               </option>
             ))}
           </select>
@@ -140,10 +143,14 @@ export function RequestList({
 
       {!filteredRequests.length ? (
         <div className="rounded-lg border border-[#e5e7eb] bg-white p-6 text-sm text-[#6b7280]">
-          <p>{data?.length ? "No requests match the selected filters." : emptyMessage}</p>
+          <p>
+            {data?.length
+              ? t("empty.filtered")
+              : emptyMessage}
+          </p>
           {view === "created" && !data?.length ? (
             <Button type="button" variant="outline" className="mt-3" asChild>
-              <Link href="/requests/new">Create a request</Link>
+              <Link href="/requests/new">{t("list.createRequest")}</Link>
             </Button>
           ) : null}
         </div>

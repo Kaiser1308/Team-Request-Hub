@@ -1,13 +1,9 @@
-import { cn } from "@/lib/utils";
-import type { RequestStatus } from "@/types";
+"use client";
 
-const statusLabel: Record<RequestStatus, string> = {
-  pending: "Pending",
-  acknowledged: "Acknowledged",
-  in_progress: "In progress",
-  done: "Done",
-  cancelled: "Cancelled",
-};
+import { useTranslations } from "next-intl";
+import { cn } from "@/lib/utils";
+import { translateStatus } from "@/components/requests/translated-labels";
+import type { RequestStatus } from "@/types";
 
 const statusClassName: Record<RequestStatus, string> = {
   pending: "border-[#d1d5db] bg-[#f3f4f6] text-[#374151]",
@@ -18,6 +14,8 @@ const statusClassName: Record<RequestStatus, string> = {
 };
 
 export function RequestStatusBadge({ status }: { status: RequestStatus }) {
+  const t = useTranslations("requests");
+
   return (
     <span
       className={cn(
@@ -25,7 +23,7 @@ export function RequestStatusBadge({ status }: { status: RequestStatus }) {
         statusClassName[status],
       )}
     >
-      {statusLabel[status]}
+      {translateStatus(t, status)}
     </span>
   );
 }

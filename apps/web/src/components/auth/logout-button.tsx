@@ -1,12 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 
 export function LogoutButton() {
   const router = useRouter();
+  const t = useTranslations("auth");
 
   async function handleLogout() {
     const supabase = createClient();
@@ -24,7 +26,7 @@ export function LogoutButton() {
       onClick={() => void handleLogout()}
     >
       <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
-      Sign out
+      {t("signOut")}
     </Button>
   );
 }

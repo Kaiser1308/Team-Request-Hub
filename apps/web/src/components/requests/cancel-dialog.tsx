@@ -1,10 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { useRequestActions } from "@/hooks/use-request-actions";
 
 export function CancelDialog({ requestId }: { requestId: string }) {
+  const t = useTranslations("requests");
+  const tCommon = useTranslations("common");
   const actions = useRequestActions();
   const [isOpen, setIsOpen] = useState(false);
   const [reason, setReason] = useState("");
@@ -42,7 +45,7 @@ export function CancelDialog({ requestId }: { requestId: string }) {
   if (!isOpen) {
     return (
       <Button type="button" variant="outline" onClick={() => setIsOpen(true)}>
-        Cancel request
+        {t("actions.cancelRequest")}
       </Button>
     );
   }
@@ -57,18 +60,18 @@ export function CancelDialog({ requestId }: { requestId: string }) {
         className="w-full max-w-lg rounded-lg border border-red-200 bg-red-50 p-4"
       >
         <h3 id="cancel-dialog-title" className="text-base font-semibold text-red-900">
-          Cancel request
+          {t("actions.cancelTitle")}
         </h3>
         <p className="mt-1 text-sm text-red-800">
-          Are you sure you want to cancel this request?
+          {t("actions.cancelDescription")}
         </p>
         <label className="mt-3 grid gap-2 text-sm font-medium text-red-900">
-          Cancel reason
+          {t("actions.cancelReason")}
           <textarea
             className="min-h-20 rounded-md border border-red-200 bg-white px-3 py-2 text-sm font-normal text-[#111827]"
             value={reason}
             onChange={(event) => setReason(event.target.value)}
-            placeholder="Optional reason"
+            placeholder={t("actions.cancelReasonPlaceholder")}
             disabled={actions.cancel.isPending}
           />
         </label>
@@ -76,12 +79,12 @@ export function CancelDialog({ requestId }: { requestId: string }) {
           <p className="mt-3 rounded-lg border border-red-200 bg-white px-3 py-2 text-sm text-red-700">
             {actions.cancel.error instanceof Error
               ? actions.cancel.error.message
-              : "Could not cancel this request."}
+              : t("actions.cancelError")}
           </p>
         ) : null}
         <div className="mt-3 flex gap-2">
           <Button type="submit" disabled={actions.cancel.isPending}>
-            {actions.cancel.isPending ? "Cancelling..." : "Confirm cancel"}
+            {actions.cancel.isPending ? t("actions.cancelling") : t("actions.confirmCancel")}
           </Button>
           <Button
             type="button"
@@ -89,7 +92,7 @@ export function CancelDialog({ requestId }: { requestId: string }) {
             disabled={actions.cancel.isPending}
             onClick={() => setIsOpen(false)}
           >
-            Keep request
+            {tCommon("close")}
           </Button>
         </div>
       </form>
