@@ -1,21 +1,43 @@
+from app.core.permissions import is_lead
+from app.repositories import request_repository
 from app.schemas.users import CurrentUser
 from app.services import notifications, request_service
 
 
 def get_dashboard_summary(current_user: CurrentUser) -> dict:
-    assigned_recent = request_service.list_requests("assigned", current_user, limit=10)
-    created_recent = request_service.list_requests("created", current_user, limit=10)
-    pool_recent = request_service.list_requests("pool", current_user, limit=10)
-    done_recent = request_service.list_requests("done", current_user, limit=10)
+    raw_requests = request_repository.get_dashboard_data(current_user.id)
+    enriched = request_service.enrich_requests_with_users(raw_requests)
+
+    assigned_recent = []
+    created_recent = []
+    pool_recent = []
+    done_recent = []
+
+    for request in enriched:
+        status = request.get("status")
+        assigned_to = request.get("assigned_to")
+        created_by = request.get("created_by")
+
+        if assigned_to == current_user.id and status != "done":
+            assigned_recent.append(request)
+        if created_by == current_user.id:
+            created_recent.append(request)
+        if assigned_to is None and status == "pending":
+            pool_recent.append(request)
+        if status == "done":
+            if is_lead(current_user):
+                done_recent.append(request)
+            elif created_by == current_user.id or assigned_to == current_user.id:
+                done_recent.append(request)
+
+    urgent_ids = set()
+    for request in assigned_recent + created_recent + pool_recent:
+        if request.get("priority") == "urgent":
+            urgent_ids.add(request.get("id"))
+
     unread_notifications = notifications.list_notifications(
         current_user.id,
         unread_only=True,
-    )
-
-    urgent = sum(
-        1
-        for request in [*assigned_recent, *created_recent, *pool_recent]
-        if request.get("priority") == "urgent"
     )
 
     return {
@@ -24,10 +46,10 @@ def get_dashboard_summary(current_user: CurrentUser) -> dict:
             "created": len(created_recent),
             "pool": len(pool_recent),
             "done": len(done_recent),
-            "urgent": urgent,
+            "urgent": len(urgent_ids),
         },
-        "assigned_recent": assigned_recent,
-        "created_recent": created_recent,
-        "pool_recent": pool_recent,
+        "assigned_recent": assigned_recent[:10],
+        "created_recent": created_recent[:10],
+        "pool_recent": pool_recent[:10],
         "notifications_unread": len(unread_notifications),
     }
