@@ -88,3 +88,7 @@ def update_user_active_state(user_id: str, is_active: bool) -> dict:
         )
 
     return result.data[0]
+
+
+def get_user_profile_or_404(user_id: str) -> dict:
+    return get_user_or_404(user_id)
