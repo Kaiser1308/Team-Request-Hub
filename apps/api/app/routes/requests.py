@@ -148,15 +148,17 @@ async def cancel_request(
 async def list_assignment_history(
     request_id: str,
     current_user: Annotated[CurrentUser, Depends(get_current_user)],
+    limit: int = 50,
 ):
     require_active_current_user(current_user)
-    return request_service.list_assignment_history(request_id, current_user)
+    return request_service.list_assignment_history(request_id, current_user, limit=limit)
 
 
 @router.get("/{request_id}/status-logs", response_model=list[RequestStatusLogOut])
 async def list_status_logs(
     request_id: str,
     current_user: Annotated[CurrentUser, Depends(get_current_user)],
+    limit: int = 50,
 ):
     require_active_current_user(current_user)
-    return request_service.list_status_logs(request_id, current_user)
+    return request_service.list_status_logs(request_id, current_user, limit=limit)

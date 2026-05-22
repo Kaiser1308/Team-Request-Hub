@@ -14,14 +14,14 @@ from app.main import app
 from app.schemas.users import CurrentUser
 
 
-class NotificationRoutesTests(unittest.TestCase):
+class RequestRoutesTests(unittest.TestCase):
     def setUp(self):
         app.dependency_overrides.clear()
 
     def tearDown(self):
         app.dependency_overrides.clear()
 
-    def test_list_notifications_forwards_unread_only_with_default_limit(self):
+    def test_assignment_history_forwards_limit(self):
         app.dependency_overrides[get_current_user] = lambda: CurrentUser(
             id="user-1",
             email="user@example.com",
@@ -29,15 +29,14 @@ class NotificationRoutesTests(unittest.TestCase):
             role="fe",
         )
 
-        with patch("app.routes.notifications.notification_module.list_notifications") as list_notifications:
-            list_notifications.return_value = []
-
-            response = TestClient(app).get("/notifications?unread_only=true")
+        with patch("app.routes.requests.request_service.list_assignment_history") as list_history:
+            list_history.return_value = []
+            response = TestClient(app).get("/requests/request-1/assignment-history?limit=25")
 
         self.assertEqual(response.status_code, 200)
-        list_notifications.assert_called_once_with("user-1", True, 50)
+        list_history.assert_called_once_with("request-1", unittest.mock.ANY, limit=25)
 
-    def test_list_notifications_forwards_limit(self):
+    def test_status_logs_forwards_limit(self):
         app.dependency_overrides[get_current_user] = lambda: CurrentUser(
             id="user-1",
             email="user@example.com",
@@ -45,13 +44,12 @@ class NotificationRoutesTests(unittest.TestCase):
             role="fe",
         )
 
-        with patch("app.routes.notifications.notification_module.list_notifications") as list_notifications:
-            list_notifications.return_value = []
-
-            response = TestClient(app).get("/notifications?limit=25")
+        with patch("app.routes.requests.request_service.list_status_logs") as list_logs:
+            list_logs.return_value = []
+            response = TestClient(app).get("/requests/request-1/status-logs?limit=25")
 
         self.assertEqual(response.status_code, 200)
-        list_notifications.assert_called_once_with("user-1", False, 25)
+        list_logs.assert_called_once_with("request-1", unittest.mock.ANY, limit=25)
 
 
 if __name__ == "__main__":

@@ -119,6 +119,53 @@ class RequestServiceRuleTests(unittest.TestCase):
             },
         )
 
+    def test_in_progress_can_transition_to_acknowledged(self):
+        ensure_status_transition_allowed("in_progress", "acknowledged")
+
+    def test_in_progress_can_transition_to_cancelled(self):
+        ensure_status_transition_allowed("in_progress", "cancelled")
+
+    def test_acknowledged_can_transition_to_in_progress(self):
+        ensure_status_transition_allowed("acknowledged", "in_progress")
+
+    def test_acknowledged_can_transition_to_cancelled(self):
+        ensure_status_transition_allowed("acknowledged", "cancelled")
+
+    def test_pending_can_transition_to_cancelled(self):
+        ensure_status_transition_allowed("pending", "cancelled")
+
+    def test_pending_cannot_transition_to_in_progress(self):
+        with self.assertRaises(HTTPException) as context:
+            ensure_status_transition_allowed("pending", "in_progress")
+        self.assertEqual(context.exception.status_code, 400)
+
+    def test_done_is_terminal_cannot_transition(self):
+        with self.assertRaises(HTTPException) as context:
+            ensure_status_transition_allowed("done", "pending")
+        self.assertEqual(context.exception.status_code, 400)
+
+    def test_cancelled_is_terminal_cannot_transition(self):
+        with self.assertRaises(HTTPException) as context:
+            ensure_status_transition_allowed("cancelled", "pending")
+        self.assertEqual(context.exception.status_code, 400)
+
+    def test_cancelled_cannot_transition_to_done(self):
+        with self.assertRaises(HTTPException) as context:
+            ensure_status_transition_allowed("cancelled", "done")
+        self.assertEqual(context.exception.status_code, 400)
+
+    def test_in_progress_status_sets_started_timestamp(self):
+        data = build_status_update_data("in_progress", now="2026-05-20T01:02:03+00:00")
+        self.assertEqual(data, {"status": "in_progress", "started_at": "2026-05-20T01:02:03+00:00"})
+
+    def test_cancelled_status_sets_cancelled_timestamp(self):
+        data = build_status_update_data("cancelled", now="2026-05-20T01:02:03+00:00")
+        self.assertEqual(data, {"status": "cancelled", "cancelled_at": "2026-05-20T01:02:03+00:00"})
+
+    def test_pending_status_has_no_timestamp(self):
+        data = build_status_update_data("pending")
+        self.assertEqual(data, {"status": "pending"})
+
 
 if __name__ == "__main__":
     unittest.main()

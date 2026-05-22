@@ -1,5 +1,6 @@
 from fastapi import HTTPException, status
 
+from app import notification_module
 from app.core.permissions import (
     ensure_can_cancel,
     ensure_can_reassign,
@@ -17,13 +18,14 @@ from app.schemas.requests import (
 )
 from app.schemas.users import CurrentUser
 from app.repositories import assignment_repository, status_log_repository
-from app import notification_module
 from app.services import users
 from app.utils.time import utc_now_iso
 
 CLOSED_STATUSES = {"done", "cancelled"}
 DEFAULT_REQUEST_LIST_LIMIT = 50
 MAX_REQUEST_LIST_LIMIT = 100
+DEFAULT_HISTORY_LIST_LIMIT = 50
+MAX_HISTORY_LIST_LIMIT = 100
 ALLOWED_STATUS_TRANSITIONS = {
     "pending": {"acknowledged", "cancelled"},
     "acknowledged": {"in_progress", "cancelled"},
@@ -125,6 +127,13 @@ def normalize_request_list_limit(limit: int | None) -> int:
         return DEFAULT_REQUEST_LIST_LIMIT
 
     return max(1, min(limit, MAX_REQUEST_LIST_LIMIT))
+
+
+def normalize_history_list_limit(limit: int | None) -> int:
+    if limit is None:
+        return DEFAULT_HISTORY_LIST_LIMIT
+
+    return max(1, min(limit, MAX_HISTORY_LIST_LIMIT))
 
 
 def enrich_requests_with_users(requests: list[dict]) -> list[dict]:
@@ -389,13 +398,23 @@ def cancel_request(
     return enrich_request_with_users(updated_request)
 
 
-def list_assignment_history(request_id: str, current_user: CurrentUser) -> list[dict]:
+def list_assignment_history(
+    request_id: str,
+    current_user: CurrentUser,
+    limit: int | None = None,
+) -> list[dict]:
     request = request_repository.get_request_or_404(request_id)
     ensure_can_view_request(current_user, request)
-    return assignment_repository.list_assignment_history(request_id)
+    normalized_limit = normalize_history_list_limit(limit)
+    return assignment_repository.list_assignment_history(request_id, limit=normalized_limit)
 
 
-def list_status_logs(request_id: str, current_user: CurrentUser) -> list[dict]:
+def list_status_logs(
+    request_id: str,
+    current_user: CurrentUser,
+    limit: int | None = None,
+) -> list[dict]:
     request = request_repository.get_request_or_404(request_id)
     ensure_can_view_request(current_user, request)
-    return status_log_repository.list_status_logs(request_id)
+    normalized_limit = normalize_history_list_limit(limit)
+    return status_log_repository.list_status_logs(request_id, limit=normalized_limit)

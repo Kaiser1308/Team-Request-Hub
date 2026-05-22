@@ -1,6 +1,8 @@
 import unittest
 from unittest.mock import patch
 
+from fastapi import HTTPException
+
 from app.schemas.requests import DoneRequest, ReassignRequest, StatusUpdateRequest
 from app.schemas.users import CurrentUser
 from app.services import request_service
@@ -174,6 +176,90 @@ class RequestServiceWorkflowTests(unittest.TestCase):
 
         self.assertEqual(result[0]["creator"]["email"], "creator@example.com")
         self.assertEqual(result[0]["assignee"]["email"], "assignee@example.com")
+
+    def test_list_assignment_history_normalizes_limit_and_forwards(self):
+        current_user = CurrentUser(
+            id="user-1",
+            email="user@example.com",
+            name="User",
+            role="fe",
+            is_active=True,
+        )
+        request = {"id": "request-1", "created_by": "user-1", "assigned_to": "user-1", "status": "pending"}
+
+        with (
+            patch("app.services.request_service.request_repository.get_request_or_404", return_value=request),
+            patch("app.services.request_service.assignment_repository.list_assignment_history", return_value=[]) as list_history,
+        ):
+            request_service.list_assignment_history("request-1", current_user)
+            request_service.list_assignment_history("request-1", current_user, limit=0)
+            request_service.list_assignment_history("request-1", current_user, limit=999)
+
+        self.assertEqual(list_history.call_args_list[0].kwargs["limit"], 50)
+        self.assertEqual(list_history.call_args_list[1].kwargs["limit"], 1)
+        self.assertEqual(list_history.call_args_list[2].kwargs["limit"], 100)
+
+    def test_list_status_logs_normalizes_limit_and_forwards(self):
+        current_user = CurrentUser(
+            id="user-1",
+            email="user@example.com",
+            name="User",
+            role="fe",
+            is_active=True,
+        )
+        request = {"id": "request-1", "created_by": "user-1", "assigned_to": "user-1", "status": "pending"}
+
+        with (
+            patch("app.services.request_service.request_repository.get_request_or_404", return_value=request),
+            patch("app.services.request_service.status_log_repository.list_status_logs", return_value=[]) as list_logs,
+        ):
+            request_service.list_status_logs("request-1", current_user)
+            request_service.list_status_logs("request-1", current_user, limit=-3)
+            request_service.list_status_logs("request-1", current_user, limit=1000)
+
+        self.assertEqual(list_logs.call_args_list[0].kwargs["limit"], 50)
+        self.assertEqual(list_logs.call_args_list[1].kwargs["limit"], 1)
+        self.assertEqual(list_logs.call_args_list[2].kwargs["limit"], 100)
+
+    def test_list_assignment_history_rejects_user_without_access(self):
+        current_user = CurrentUser(
+            id="user-1",
+            email="user@example.com",
+            name="User",
+            role="fe",
+            is_active=True,
+        )
+        request = {"id": "request-1", "created_by": "user-2", "assigned_to": "user-3", "status": "pending"}
+
+        with (
+            patch("app.services.request_service.request_repository.get_request_or_404", return_value=request),
+            patch("app.services.request_service.assignment_repository.list_assignment_history", return_value=[]) as list_history,
+        ):
+            with self.assertRaises(HTTPException) as ctx:
+                request_service.list_assignment_history("request-1", current_user, limit=25)
+
+        self.assertEqual(ctx.exception.status_code, 403)
+        list_history.assert_not_called()
+
+    def test_list_status_logs_rejects_user_without_access(self):
+        current_user = CurrentUser(
+            id="user-1",
+            email="user@example.com",
+            name="User",
+            role="fe",
+            is_active=True,
+        )
+        request = {"id": "request-1", "created_by": "user-2", "assigned_to": "user-3", "status": "pending"}
+
+        with (
+            patch("app.services.request_service.request_repository.get_request_or_404", return_value=request),
+            patch("app.services.request_service.status_log_repository.list_status_logs", return_value=[]) as list_logs,
+        ):
+            with self.assertRaises(HTTPException) as ctx:
+                request_service.list_status_logs("request-1", current_user, limit=25)
+
+        self.assertEqual(ctx.exception.status_code, 403)
+        list_logs.assert_not_called()
 
 
 if __name__ == "__main__":

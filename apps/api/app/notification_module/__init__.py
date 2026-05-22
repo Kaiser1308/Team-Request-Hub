@@ -29,8 +29,8 @@ def create_notification(
     )
 
 
-def list_notifications(user_id: str, unread_only: bool = False) -> list[dict]:
-    return _store.list_notifications(user_id, unread_only)
+def list_notifications(user_id: str, unread_only: bool = False, limit: int = 50) -> list[dict]:
+    return _store.list_notifications(user_id, unread_only, limit)
 
 
 def mark_notification_read(notification_id: str, user_id: str) -> dict:

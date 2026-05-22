@@ -27,7 +27,7 @@ def create_notification(
     return result.data[0] if result.data else None
 
 
-def list_notifications(user_id: str, unread_only: bool = False) -> list[dict]:
+def list_notifications(user_id: str, unread_only: bool = False, limit: int = 50) -> list[dict]:
     query = (
         get_supabase_admin()
         .table("notifications")
@@ -39,7 +39,7 @@ def list_notifications(user_id: str, unread_only: bool = False) -> list[dict]:
     if unread_only:
         query = query.eq("is_read", False)
 
-    result = query.execute()
+    result = query.limit(limit).execute()
     return result.data or []
 
 

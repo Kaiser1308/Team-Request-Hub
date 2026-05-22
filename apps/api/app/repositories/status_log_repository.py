@@ -1,5 +1,7 @@
 from app.db.supabase import get_supabase_admin
 
+STATUS_LOG_COLUMNS = "id,request_id,from_status,to_status,changed_by,reason,created_at"
+
 
 def create_status_log(
     *,
@@ -26,13 +28,14 @@ def create_status_log(
     return result.data[0] if result.data else None
 
 
-def list_status_logs(request_id: str) -> list[dict]:
+def list_status_logs(request_id: str, limit: int = 50) -> list[dict]:
     result = (
         get_supabase_admin()
         .table("request_status_logs")
-        .select("*")
+        .select(STATUS_LOG_COLUMNS)
         .eq("request_id", request_id)
         .order("created_at", desc=True)
+        .limit(limit)
         .execute()
     )
     return result.data or []

@@ -14,9 +14,10 @@ router = APIRouter()
 async def list_notifications(
     current_user: Annotated[CurrentUser, Depends(get_current_user)],
     unread_only: bool = False,
+    limit: int = 50,
 ):
     require_active_current_user(current_user)
-    return notification_module.list_notifications(current_user.id, unread_only)
+    return notification_module.list_notifications(current_user.id, unread_only, limit)
 
 
 @router.post("/read-all", response_model=NotificationsReadAllOut)
