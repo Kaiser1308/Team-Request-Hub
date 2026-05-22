@@ -6,7 +6,7 @@ export const queryKeys = {
   assignableUsers: ["users", "active"] as const,
   requests: {
     all: ["requests"] as const,
-    list: (view: RequestView) => ["requests", view] as const,
+    list: (view: RequestView, limit: number) => ["requests", view, { limit }] as const,
     detail: (requestId: string) => ["requests", "detail", requestId] as const,
     assignmentHistory: (requestId: string) =>
       ["requests", "assignment-history", requestId] as const,
@@ -14,4 +14,5 @@ export const queryKeys = {
       ["requests", "status-logs", requestId] as const,
   },
   notifications: ["notifications"] as const,
+  dashboardSummary: ["dashboard", "summary"] as const,
 };

@@ -107,3 +107,27 @@ POST /notifications/read-all
   "updated": 5
 }
 ```
+
+## Dashboard
+
+```txt
+GET /dashboard/summary
+```
+
+Returns bounded dashboard data for the current active user:
+
+```json
+{
+  "counts": {
+    "assigned": 3,
+    "created": 4,
+    "pool": 2,
+    "done": 5,
+    "urgent": 1
+  },
+  "assigned_recent": [],
+  "created_recent": [],
+  "pool_recent": [],
+  "notifications_unread": 0
+}
+```

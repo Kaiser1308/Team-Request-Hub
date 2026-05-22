@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_settings
-from app.routes import health, notifications, requests, users
+from app.routes import dashboard, health, notifications, requests, users
 
 settings = get_settings()
 
@@ -22,3 +22,4 @@ app.include_router(health.router, prefix="/health", tags=["health"])
 app.include_router(users.router, prefix="/users", tags=["users"])
 app.include_router(requests.router, prefix="/requests", tags=["requests"])
 app.include_router(notifications.router, prefix="/notifications", tags=["notifications"])
+app.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])

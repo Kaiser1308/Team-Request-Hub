@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { useCurrentUser } from "@/hooks/use-current-user";
-import { useNotifications } from "@/hooks/use-notifications";
-import { useRequests } from "@/hooks/use-requests";
-import type { InternalRequest, Notification } from "@/types";
+import { useDashboardSummary } from "@/hooks/use-dashboard-summary";
+import type { InternalRequest } from "@/types";
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en", {
@@ -37,54 +36,22 @@ function recentRequests(items: InternalRequest[]) {
     .slice(0, 6);
 }
 
-function recentNotifications(items: Notification[]) {
-  return [...items]
-    .sort(
-      (left, right) =>
-        new Date(right.created_at).getTime() - new Date(left.created_at).getTime(),
-    )
-    .slice(0, 6);
-}
-
 export default function DashboardPage() {
   const currentUserQuery = useCurrentUser();
-  const assignedQuery = useRequests("assigned");
-  const createdQuery = useRequests("created");
-  const poolQuery = useRequests("pool");
-  const doneQuery = useRequests("done");
-  const notificationsQuery = useNotifications(false);
+  const summaryQuery = useDashboardSummary();
 
-  const assignedItems = assignedQuery.data ?? [];
-  const createdItems = createdQuery.data ?? [];
-  const poolItems = poolQuery.data ?? [];
-  const doneItems = doneQuery.data ?? [];
-  const notifications = notificationsQuery.data ?? [];
+  const assignedItems = summaryQuery.data?.assigned_recent ?? [];
+  const createdItems = summaryQuery.data?.created_recent ?? [];
+  const poolItems = summaryQuery.data?.pool_recent ?? [];
+  const counts = summaryQuery.data?.counts;
+  const notificationsUnread = summaryQuery.data?.notifications_unread ?? 0;
 
-  const requestList = dedupeRequests([
-    ...assignedItems,
-    ...createdItems,
-    ...poolItems,
-    ...doneItems,
-  ]);
-  const urgentCount = requestList.filter((item) => item.priority === "urgent").length;
+  const requestList = dedupeRequests([...assignedItems, ...createdItems, ...poolItems]);
   const recentRequestItems = recentRequests(requestList);
-  const recentActivity = recentNotifications(notifications);
 
-  const isLoading =
-    currentUserQuery.isLoading ||
-    assignedQuery.isLoading ||
-    createdQuery.isLoading ||
-    poolQuery.isLoading ||
-    doneQuery.isLoading ||
-    notificationsQuery.isLoading;
+  const isLoading = currentUserQuery.isLoading || summaryQuery.isLoading;
 
-  const firstError =
-    currentUserQuery.error ||
-    assignedQuery.error ||
-    createdQuery.error ||
-    poolQuery.error ||
-    doneQuery.error ||
-    notificationsQuery.error;
+  const firstError = currentUserQuery.error || summaryQuery.error;
 
   const userName = currentUserQuery.data?.name ?? currentUserQuery.data?.email ?? "Team member";
   const role = currentUserQuery.data?.role;
@@ -128,11 +95,11 @@ export default function DashboardPage() {
 
       <section className="grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
         {[
-          { label: "Assigned", value: assignedItems.length },
-          { label: "Created", value: createdItems.length },
-          { label: "Pool", value: poolItems.length },
-          { label: "Done", value: doneItems.length },
-          { label: "Urgent", value: urgentCount },
+          { label: "Assigned", value: counts?.assigned ?? assignedItems.length },
+          { label: "Created", value: counts?.created ?? createdItems.length },
+          { label: "Pool", value: counts?.pool ?? poolItems.length },
+          { label: "Done", value: counts?.done ?? 0 },
+          { label: "Urgent", value: counts?.urgent ?? 0 },
         ].map((item) => (
           <div key={item.label} className="rounded-lg border border-[#e5e7eb] bg-white px-3 py-2.5">
             <p className="text-[11px] font-medium uppercase tracking-normal text-[#6b7280]">{item.label}</p>
@@ -174,17 +141,12 @@ export default function DashboardPage() {
               Open notifications
             </Link>
           </div>
-          {recentActivity.length ? (
-            <div className="divide-y divide-[#e5e7eb]">
-              {recentActivity.map((item) => (
-                <div key={item.id} className="space-y-1 px-4 py-3">
-                  <p className="text-sm text-[#111827]">{item.message}</p>
-                  <p className="text-xs text-[#6b7280]">{formatDate(item.created_at)}</p>
-                </div>
-              ))}
+          {notificationsUnread > 0 ? (
+            <div className="px-4 py-3">
+              <p className="text-sm text-[#111827]">{notificationsUnread} unread notification{notificationsUnread !== 1 ? "s" : ""}</p>
             </div>
           ) : (
-            <p className="px-4 py-5 text-sm text-[#6b7280]">No recent activity yet.</p>
+            <p className="px-4 py-5 text-sm text-[#6b7280]">No unread notifications.</p>
           )}
         </div>
       </section>
