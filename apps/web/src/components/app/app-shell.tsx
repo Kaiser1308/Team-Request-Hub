@@ -130,6 +130,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     };
   }, [unreadCount]);
 
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#f9fafb]">
+        <p className="text-sm text-[#6b7280]">{tCommon("loading")}</p>
+      </div>
+    );
+  }
+
   if (currentUser?.is_active === false) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#f9fafb] px-4">

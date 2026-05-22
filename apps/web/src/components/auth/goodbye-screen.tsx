@@ -2,6 +2,7 @@
 
 import { animate, stagger } from 'animejs';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import {
   MOTION_DELAY,
@@ -15,8 +16,9 @@ import { createClient } from '@/lib/supabase/client';
 
 export function GoodbyeScreen() {
   const router = useRouter();
+  const tAuth = useTranslations('auth');
   const [displayName, setDisplayName] = useState('');
-  const [statusText, setStatusText] = useState('Ending your session...');
+  const [statusKey, setStatusKey] = useState('goodbyeEndingSession');
   const titleRef = useRef<HTMLHeadingElement | null>(null);
   const nameRef = useRef<HTMLParagraphElement | null>(null);
   const statusRef = useRef<HTMLParagraphElement | null>(null);
@@ -112,7 +114,7 @@ export function GoodbyeScreen() {
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
-      setStatusText('Closing workspace...');
+      setStatusKey('goodbyeClosingWorkspace');
     }, MOTION_DELAY.short);
 
     return () => {
@@ -175,7 +177,7 @@ export function GoodbyeScreen() {
       if (isCancelled) return;
       if (hasNavigatedRef.current) return;
 
-      setStatusText('Signing out...');
+      setStatusKey('goodbyeSigningOut');
       const supabase = createClient();
       await supabase.auth.signOut();
 
@@ -183,7 +185,7 @@ export function GoodbyeScreen() {
       if (hasNavigatedRef.current) return;
       hasNavigatedRef.current = true;
 
-      setStatusText('See you next time.');
+      setStatusKey('goodbyeSeeYouNextTime');
       await playFadeOutExit();
       router.replace('/login');
     };
@@ -203,19 +205,19 @@ export function GoodbyeScreen() {
         data-shatter-root
         className='pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_24%_20%,rgba(255,255,255,0.14),transparent_34%),radial-gradient(circle_at_82%_78%,rgba(148,163,184,0.16),transparent_38%)]'
       />
-      <div data-shatter-root className='relative w-full max-w-2xl overflow-hidden rounded-xl border border-white/15 bg-gradient-to-br from-white/[0.14] via-white/[0.06] to-black/30 p-8 text-center shadow-[0_28px_80px_rgba(0,0,0,0.42)] backdrop-blur-xl sm:p-12'>
+      <div data-shatter-root className='relative w-full max-w-5xl overflow-hidden rounded-xl border border-white/15 bg-gradient-to-br from-white/[0.14] via-white/[0.06] to-black/30 p-12 text-center shadow-[0_28px_80px_rgba(0,0,0,0.42)] backdrop-blur-xl sm:p-16'>
         <p
           data-goodbye-content
-          className='text-xs font-medium uppercase tracking-[0.16em] text-zinc-300'
+          className='text-sm font-medium uppercase tracking-[0.16em] text-zinc-300'
         >
-          Signed out
+          {tAuth('goodbyeSignedOut')}
         </p>
         <h1
           ref={titleRef}
           data-goodbye-content
-          className='mt-4 bg-gradient-to-r from-white via-zinc-200 to-zinc-500 bg-clip-text text-4xl font-semibold tracking-[-0.04em] text-transparent sm:text-6xl'
+          className='mt-4 bg-gradient-to-r from-white via-zinc-200 to-zinc-500 bg-clip-text text-5xl font-semibold tracking-[-0.04em] text-transparent sm:text-7xl'
         >
-          {'Goodbye'.split('').map((char, index) => (
+                    {tAuth('goodbyeTitle').split('').map((char, index) => (
             <span key={`${char}-${index}`} data-char className='inline-block'>
               {char === ' ' ? '\u00A0' : char}
             </span>
@@ -224,16 +226,16 @@ export function GoodbyeScreen() {
         <p
           ref={nameRef}
           data-goodbye-content
-          className='mt-6 text-base text-zinc-200 sm:text-lg'
+          className='mt-6 text-lg text-zinc-200 sm:text-xl'
         >
-          {displayName ? `See you later, ${displayName}` : 'Loading profile...'}
+                    {displayName ? tAuth('goodbyeGreeting', { name: displayName }) : tAuth('goodbyeLoadingProfile')}
         </p>
         <p
           ref={statusRef}
           data-goodbye-content
-          className='mt-4 text-sm text-zinc-400'
+          className='mt-4 text-base text-zinc-400'
         >
-          {statusText}
+                    {tAuth(statusKey)}
         </p>
       </div>
     </main>

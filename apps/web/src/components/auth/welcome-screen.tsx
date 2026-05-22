@@ -2,6 +2,7 @@
 
 import { animate, stagger } from 'animejs';
 import { useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -19,8 +20,9 @@ import { createClient } from '@/lib/supabase/client';
 export function WelcomeScreen({ nextPath }: { nextPath: string }) {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const tAuth = useTranslations('auth');
   const [displayName, setDisplayName] = useState('');
-  const [statusText, setStatusText] = useState('Preparing your workspace...');
+  const [statusKey, setStatusKey] = useState('welcomePreparingWorkspace');
   const [isDisabledAccount, setIsDisabledAccount] = useState(false);
   const titleRef = useRef<HTMLHeadingElement | null>(null);
   const nameRef = useRef<HTMLParagraphElement | null>(null);
@@ -64,7 +66,7 @@ export function WelcomeScreen({ nextPath }: { nextPath: string }) {
         if (currentUser.is_active === false) {
           setIsDisabledAccount(true);
           setDisplayName(currentUser.name ?? currentUser.email ?? 'Unknown user');
-          setStatusText('Account access is currently disabled.');
+          setStatusKey('welcomeAccountDisabledStatus');
           return;
         }
 
@@ -76,19 +78,24 @@ export function WelcomeScreen({ nextPath }: { nextPath: string }) {
         );
         return;
       } catch {
-        // Fall back to Supabase profile metadata when backend profile is unavailable.
+        setIsDisabledAccount(true);
+        setDisplayName(user?.user_metadata?.full_name ?? user?.user_metadata?.name ?? user?.email?.split('@')[0] ?? 'Unknown user');
+        setStatusKey('welcomeAccountDisabledStatus');
+        return;
       }
 
-      const name =
-        user?.user_metadata?.full_name ??
-        user?.user_metadata?.name ??
-        user?.email?.split('@')[0] ??
-        'there';
-      setDisplayName(name);
     };
 
     void loadUser();
   }, []);
+
+  useEffect(() => {
+    if (!isDisabledAccount) return;
+    const timeout = window.setTimeout(() => {
+      router.replace('/pending-approval');
+    }, MOTION_DURATION.redirectDelay);
+    return () => window.clearTimeout(timeout);
+  }, [isDisabledAccount, router]);
 
   useEffect(() => {
     const titleEl = titleRef.current;
@@ -160,7 +167,7 @@ export function WelcomeScreen({ nextPath }: { nextPath: string }) {
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
-      setStatusText('Loading dashboard...');
+      setStatusKey('welcomeLoadingDashboard');
     }, MOTION_DELAY.short);
 
     return () => {
@@ -180,7 +187,7 @@ export function WelcomeScreen({ nextPath }: { nextPath: string }) {
 
     const preload = (async () => {
       router.prefetch(nextPath);
-      setStatusText('Loading dashboard...');
+      setStatusKey('welcomeLoadingDashboard');
       await Promise.all([
         queryClient.prefetchQuery({
           queryKey: queryKeys.currentUser,
@@ -191,7 +198,7 @@ export function WelcomeScreen({ nextPath }: { nextPath: string }) {
           queryFn: getDashboardSummary,
         }),
       ]);
-      setStatusText('Preparing your workspace...');
+      setStatusKey('welcomePreparingWorkspace');
       try {
         await fetch(nextPath, {
           method: 'GET',
@@ -280,7 +287,7 @@ export function WelcomeScreen({ nextPath }: { nextPath: string }) {
       }
       hasNavigatedRef.current = true;
 
-      setStatusText('Ready. Redirecting...');
+      setStatusKey('welcomeReadyRedirecting');
       await playShatterExit();
       router.replace(nextPath);
     });
@@ -290,7 +297,7 @@ export function WelcomeScreen({ nextPath }: { nextPath: string }) {
     };
   }, [nextPath, router, isDisabledAccount, queryClient]);
 
-  const title = isDisabledAccount ? 'Account disabled' : 'Welcome back';
+  const title = isDisabledAccount ? tAuth('welcomeAccountDisabledTitle') : tAuth('welcomeTitle');
 
   return (
     <main ref={screenRef} className='relative flex min-h-screen items-center justify-center overflow-hidden bg-[#030303] px-4 text-white'>
@@ -315,17 +322,17 @@ export function WelcomeScreen({ nextPath }: { nextPath: string }) {
           />
         ))}
       </div>
-      <div ref={cardRef} data-shatter-root className='relative w-full max-w-2xl overflow-hidden rounded-xl border border-white/15 bg-gradient-to-br from-white/[0.14] via-white/[0.06] to-black/30 p-8 text-center shadow-[0_28px_80px_rgba(0,0,0,0.42)] backdrop-blur-xl sm:p-12'>
+      <div ref={cardRef} data-shatter-root className='relative w-full max-w-5xl overflow-hidden rounded-xl border border-white/15 bg-gradient-to-br from-white/[0.14] via-white/[0.06] to-black/30 p-12 text-center shadow-[0_28px_80px_rgba(0,0,0,0.42)] backdrop-blur-xl sm:p-16'>
         <p
           data-welcome-content
-          className='text-xs font-medium uppercase tracking-[0.16em] text-zinc-300'
+          className='text-sm font-medium uppercase tracking-[0.16em] text-zinc-300'
         >
-          {isDisabledAccount ? 'Account locked' : 'Signed in'}
+          {isDisabledAccount ? tAuth('welcomeAccountLocked') : tAuth('welcomeSignedIn')}
         </p>
         <h1
           ref={titleRef}
           data-welcome-content
-          className='mt-4 bg-gradient-to-r from-white via-zinc-200 to-zinc-500 bg-clip-text text-4xl font-semibold tracking-[-0.04em] text-transparent sm:text-6xl'
+          className='mt-4 bg-gradient-to-r from-white via-zinc-200 to-zinc-500 bg-clip-text text-5xl font-semibold tracking-[-0.04em] text-transparent sm:text-7xl'
         >
           {title.split('').map((char, index) => (
             <span key={`${char}-${index}`} data-char className='inline-block'>
@@ -336,20 +343,20 @@ export function WelcomeScreen({ nextPath }: { nextPath: string }) {
         <p
           ref={nameRef}
           data-welcome-content
-          className='mt-6 text-base text-zinc-200 sm:text-lg'
+          className='mt-6 text-lg text-zinc-200 sm:text-xl'
         >
           {displayName
             ? isDisabledAccount
-              ? `Account: ${displayName}`
-              : `Hi, ${displayName}`
-            : 'Loading profile...'}
+              ? tAuth('welcomeAccountLabel', { name: displayName })
+              : tAuth('welcomeGreeting', { name: displayName })
+            : tAuth('welcomeLoadingProfile')}
         </p>
         <p
           ref={statusRef}
           data-welcome-content
-          className='mt-4 text-sm text-zinc-400'
+          className='mt-4 text-base text-zinc-400'
         >
-          {statusText}
+          {tAuth(statusKey)}
         </p>
       </div>
     </main>
