@@ -120,7 +120,6 @@ export function TeamFileExplorer() {
 
   async function openFile(file: CuboneFile) {
     if (file.isDirectory) {
-      router.push(`/files?path=${encodeURIComponent(file.path)}`);
       return;
     }
     const response = isPreviewable(file)
@@ -216,7 +215,12 @@ export function TeamFileExplorer() {
             rename: true,
             delete: isLead,
           }}
-          onFolderChange={(path) => router.push(`/files?path=${encodeURIComponent(path)}`)}
+          onFolderChange={(path) => {
+            const encoded = encodeURIComponent(path);
+            if (`/files?path=${encoded}` !== `/files?path=${encodeURIComponent(currentPath)}`) {
+              router.push(`/files?path=${encoded}`);
+            }
+          }}
           onFileOpen={(file) => void openFile(file as CuboneFile)}
           onCreateFolder={(name) =>
             void mutations.createFolder.mutateAsync({
