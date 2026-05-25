@@ -330,8 +330,10 @@ do $$
 begin
   if not exists (select 1 from pg_type where typname = 'team_file_status') then
     create type team_file_status as enum (
+      'pending_upload',
       'active',
-      'deleted'
+      'deleted',
+      'purged'
     );
   end if;
 end $$;
@@ -340,13 +342,16 @@ do $$
 begin
   if not exists (select 1 from pg_type where typname = 'team_file_action') then
     create type team_file_action as enum (
+      'create_folder',
       'upload',
+      'complete_upload',
       'rename',
       'move',
       'delete',
       'restore',
       'purge',
-      'create_folder'
+      'download',
+      'preview'
     );
   end if;
 end $$;
@@ -364,11 +369,11 @@ end $$;
 create table if not exists public.team_files (
   id uuid primary key default gen_random_uuid(),
   name text not null check (char_length(trim(name)) > 0),
-  path text not null check (char_length(trim(path)) > 0),
+  path text not null unique check (char_length(trim(path)) > 0),
   parent_path text not null default '/',
   is_directory boolean not null default false,
   object_key text,
-  size_bytes bigint,
+  size_bytes bigint not null default 0,
   content_type text,
   extension text,
   status team_file_status not null default 'active',
@@ -394,12 +399,12 @@ create index if not exists idx_team_files_lower_name
 create table if not exists public.file_activity_logs (
   id uuid primary key default gen_random_uuid(),
   actor_id uuid not null references public.users(id) on delete restrict,
-  file_id uuid not null references public.team_files(id) on delete cascade,
+  file_id uuid references public.team_files(id),
   action team_file_action not null,
   target_type team_file_target_type not null,
   old_path text,
   new_path text,
-  metadata jsonb,
+  metadata jsonb not null default '{}',
   created_at timestamptz not null default now()
 );
 

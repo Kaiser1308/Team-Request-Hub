@@ -26,8 +26,8 @@ Request list and queue views use composite and partial indexes on `internal_requ
 - `notification_type`: `assigned`, `reassigned`, `status_changed`, `pool_new`, `replied`, `done`, `cancelled`.
 - `notification_channel`: `telegram`.
 - `notification_delivery_status`: `pending`, `sent`, `failed`.
-- `team_file_status`: `active`, `deleted`.
-- `team_file_action`: `upload`, `rename`, `move`, `delete`, `restore`, `purge`, `create_folder`.
+- `team_file_status`: `pending_upload`, `active`, `deleted`, `purged`.
+- `team_file_action`: `create_folder`, `upload`, `complete_upload`, `rename`, `move`, `delete`, `restore`, `purge`, `download`, `preview`.
 - `team_file_target_type`: `file`, `folder`.
 
 ## Auth Profile Trigger
