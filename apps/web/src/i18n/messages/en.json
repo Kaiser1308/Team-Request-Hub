@@ -34,7 +34,8 @@
     "users": "User management",
     "newRequest": "New request",
     "requestDetail": "Request detail",
-    "files": "Files"
+    "files": "Files",
+    "notifications": "Notifications"
   },
   "appShell": {
     "waitingApprovalTitle": "Waiting for lead approval",
@@ -117,6 +118,8 @@
     "loadError": "Could not load dashboard data."
   },
   "notifications": {
+    "title": "Notifications",
+    "description": "Track request updates and assignment activity in one place.",
     "loadError": "Could not load notifications.",
     "empty": "No notifications yet. New request activity and status updates will appear here.",
     "unreadCount": "{count} unread",

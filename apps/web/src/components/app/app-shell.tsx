@@ -39,7 +39,8 @@ type NavLabelKey =
   | "all"
   | "users"
   | "newRequest"
-  | "files";
+  | "files"
+  | "notifications";
 
 interface NavItem {
   href: string;
@@ -90,6 +91,7 @@ function getPageTitle(
     "/all": "all",
     "/files": "files",
     "/admin/users": "users",
+    "/notifications": "notifications",
   };
 
   const key = titleByKey[pathname];
@@ -253,7 +255,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
           <div className="flex items-center gap-2 sm:gap-3">
             <Link
-              href="/dashboard"
+              href="/notifications"
               aria-label={tShell("openNotifications")}
               className="inline-flex items-center gap-1 rounded-md border border-slate-700 bg-slate-800/80 px-2 py-1.5 text-xs text-slate-200 transition-colors hover:bg-slate-700/80 hover:text-white"
             >

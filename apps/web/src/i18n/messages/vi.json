@@ -34,7 +34,8 @@
     "users": "Quản lý người dùng",
     "newRequest": "Tạo yêu cầu mới",
     "requestDetail": "Chi tiết yêu cầu",
-    "files": "Tệp"
+    "files": "Tệp",
+    "notifications": "Thông báo"
   },
   "appShell": {
     "waitingApprovalTitle": "Đang chờ lead duyệt",
@@ -117,6 +118,8 @@
     "loadError": "Không thể tải dữ liệu tổng quan."
   },
   "notifications": {
+    "title": "Thông báo",
+    "description": "Theo dõi cập nhật yêu cầu và hoạt động phân công tại một nơi.",
     "loadError": "Không thể tải thông báo.",
     "empty": "Chưa có thông báo. Hoạt động yêu cầu và cập nhật trạng thái sẽ xuất hiện ở đây.",
     "unreadCount": "{count} chưa đọc",
