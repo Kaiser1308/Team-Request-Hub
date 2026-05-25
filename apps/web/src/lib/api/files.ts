@@ -25,6 +25,16 @@ export interface MoveFilePayload {
   parent_path: string;
 }
 
+export interface BatchCopyPayload {
+  file_ids: string[];
+  parent_path: string;
+}
+
+export interface BatchMovePayload {
+  file_ids: string[];
+  parent_path: string;
+}
+
 export interface PresignedUrlResponse {
   url: string;
   expires_in_seconds: number;
@@ -100,6 +110,20 @@ export function renameFile(fileId: string, payload: RenameFilePayload) {
 export function moveFile(fileId: string, payload: MoveFilePayload) {
   return apiFetch<TeamFile>(`/files/${fileId}/move`, {
     method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function batchCopyFiles(payload: BatchCopyPayload) {
+  return apiFetch<TeamFile[]>("/files/batch-copy", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function batchMoveFiles(payload: BatchMovePayload) {
+  return apiFetch<TeamFile[]>("/files/batch-move", {
+    method: "POST",
     body: JSON.stringify(payload),
   });
 }

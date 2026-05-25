@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { FileManager } from "@cubone/react-file-manager";
 import "@cubone/react-file-manager/dist/style.css";
 import { Upload } from "lucide-react";
@@ -53,6 +53,22 @@ export function TeamFileExplorer() {
   const managerFiles = files.map(toCuboneFile);
   const isLoading = filesQuery.isLoading || searchQuery.isLoading;
   const error = filesQuery.error || searchQuery.error;
+
+  const clipboardRef = useRef<{ files: CuboneFile[]; type: "copy" | "move" } | null>(null);
+
+  const handlePaste = useCallback(
+    async (pastedFiles: CuboneFile[], destination: CuboneFile, operationType: "copy" | "move") => {
+      const destPath = destination.isDirectory ? destination.path : "/";
+      const ids = pastedFiles.map((f) => f.id);
+      if (operationType === "copy") {
+        await mutations.batchCopyFiles.mutateAsync({ file_ids: ids, parent_path: destPath });
+      } else {
+        await mutations.batchMoveFiles.mutateAsync({ file_ids: ids, parent_path: destPath });
+      }
+      clipboardRef.current = null;
+    },
+    [mutations],
+  );
 
   async function uploadFiles(fileList: FileList | null) {
     if (!fileList) return;
@@ -148,7 +164,7 @@ export function TeamFileExplorer() {
             create: true,
             upload: false,
             download: true,
-            copy: false,
+            copy: isLead,
             move: isLead,
             rename: isLead,
             delete: isLead,
@@ -160,6 +176,15 @@ export function TeamFileExplorer() {
               parent_path: currentPath,
               name,
             })
+          }
+          onCopy={(files) => {
+            clipboardRef.current = { files: files as CuboneFile[], type: "copy" };
+          }}
+          onCut={(files) => {
+            clipboardRef.current = { files: files as CuboneFile[], type: "move" };
+          }}
+          onPaste={(files, destination, operationType) =>
+            void handlePaste(files as CuboneFile[], destination as CuboneFile, operationType)
           }
           onRename={(file, name) =>
             void mutations.renameFile.mutateAsync({

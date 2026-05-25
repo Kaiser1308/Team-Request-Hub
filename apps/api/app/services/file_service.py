@@ -5,7 +5,7 @@ from uuid import uuid4
 
 from app.core.exceptions import BadRequestError, ConflictError, ForbiddenError, GoneError, NotFoundError
 from app.repositories import file_activity_repository, file_repository
-from app.schemas.files import CompleteUploadRequest, CreateFolderRequest, MoveFileRequest, RenameFileRequest, UploadUrlRequest
+from app.schemas.files import CompleteUploadRequest, CreateFolderRequest, MoveFileRequest, RenameFileRequest, UploadUrlRequest, BatchCopyFilesRequest, BatchMoveFilesRequest, CopyFileRequest
 from app.schemas.users import CurrentUser
 from app.services import minio_storage
 from app.utils.time import utc_now_iso
@@ -378,3 +378,78 @@ def purge_expired(current_user: CurrentUser) -> dict:
 
 def list_activity(file_id: str | None = None, limit: int = 50) -> list[dict]:
     return file_activity_repository.list_activity(file_id=file_id, limit=limit)
+
+
+def batch_copy_files(payload: BatchCopyFilesRequest, current_user: CurrentUser) -> list[dict]:
+    ensure_lead(current_user)
+    dest = normalize_path(payload.parent_path)
+    now = utc_now_iso()
+    results: list[dict] = []
+
+    for file_id in payload.file_ids:
+        src = file_repository.get_file_or_404(file_id)
+        if src.get("status") != "active":
+            continue
+
+        new_name = src["name"]
+        new_path = build_child_path(dest, new_name)
+
+        counter = 1
+        base, ext = (new_name.rsplit(".", 1) if "." in new_name else (new_name, None))
+        while file_repository.get_by_path(new_path) and file_repository.get_by_path(new_path).get("status") != "purged":
+            new_name = f"{base} - Copy ({counter})" + (f".{ext}" if ext else "")
+            new_path = build_child_path(dest, new_name)
+            counter += 1
+
+        new_object_key = None
+        if not src.get("is_directory") and src.get("object_key"):
+            new_object_key = f"team-files/{uuid4()}-{new_name}"
+            minio_storage.copy_object(src["object_key"], new_object_key)
+
+        copied = file_repository.create_file({
+            "name": new_name,
+            "path": new_path,
+            "parent_path": dest,
+            "is_directory": src.get("is_directory", False),
+            "object_key": new_object_key,
+            "size_bytes": src.get("size_bytes", 0),
+            "content_type": src.get("content_type"),
+            "extension": src.get("extension"),
+            "status": "active",
+            "created_by": current_user.id,
+            "created_at": now,
+            "updated_at": now,
+        })
+        activity(current_user.id, copied, "move", old_path=src["path"], new_path=new_path,
+                 metadata={"operation": "copy"})
+        results.append(copied)
+
+    return results
+
+
+def batch_move_files(payload: BatchMoveFilesRequest, current_user: CurrentUser) -> list[dict]:
+    ensure_lead(current_user)
+    dest = normalize_path(payload.parent_path)
+    results: list[dict] = []
+
+    for file_id in payload.file_ids:
+        file = file_repository.get_file_or_404(file_id)
+        if file.get("status") != "active":
+            continue
+        old_path = file["path"]
+        new_path = build_child_path(dest, file["name"])
+        if new_path == old_path:
+            results.append(file)
+            continue
+        ensure_available_path(new_path)
+        updated = file_repository.update_file(file_id, {
+            "parent_path": dest,
+            "path": new_path,
+            "updated_by": current_user.id,
+        })
+        if file.get("is_directory"):
+            file_repository.update_descendants(old_path, {"updated_by": current_user.id})
+        activity(current_user.id, updated, "move", old_path=old_path, new_path=new_path)
+        results.append(updated)
+
+    return results

@@ -2,6 +2,8 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  batchCopyFiles,
+  batchMoveFiles,
   completeUpload,
   createFolder,
   createUploadUrl,
@@ -15,6 +17,8 @@ import {
   renameFile,
   restoreFile,
   searchFiles,
+  type BatchCopyPayload,
+  type BatchMovePayload,
   type CompleteUploadPayload,
   type CreateFolderPayload,
   type MoveFilePayload,
@@ -98,6 +102,14 @@ export function useFileMutations() {
         fileId: string;
         payload: MoveFilePayload;
       }) => moveFile(fileId, payload),
+      onSuccess: invalidate,
+    }),
+    batchCopyFiles: useMutation({
+      mutationFn: (payload: BatchCopyPayload) => batchCopyFiles(payload),
+      onSuccess: invalidate,
+    }),
+    batchMoveFiles: useMutation({
+      mutationFn: (payload: BatchMovePayload) => batchMoveFiles(payload),
       onSuccess: invalidate,
     }),
     deleteFile: useMutation({

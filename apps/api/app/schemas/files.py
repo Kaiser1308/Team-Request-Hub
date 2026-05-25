@@ -88,3 +88,17 @@ class PresignedUrlResponse(BaseModel):
 
 class PurgeExpiredResponse(BaseModel):
     purged: int
+
+
+class CopyFileRequest(BaseModel):
+    parent_path: str
+
+
+class BatchCopyFilesRequest(BaseModel):
+    file_ids: list[str] = Field(min_length=1)
+    parent_path: str
+
+
+class BatchMoveFilesRequest(BaseModel):
+    file_ids: list[str] = Field(min_length=1)
+    parent_path: str

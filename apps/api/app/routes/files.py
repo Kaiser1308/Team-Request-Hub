@@ -4,6 +4,8 @@ from fastapi import APIRouter, Depends, status
 
 from app.core.auth import get_current_user, require_active_current_user
 from app.schemas.files import (
+    BatchCopyFilesRequest,
+    BatchMoveFilesRequest,
     CompleteUploadRequest,
     CreateFolderRequest,
     FileActivityOut,
@@ -69,6 +71,16 @@ async def rename_file(file_id: str, payload: RenameFileRequest, current_user: Cu
 @router.patch("/{file_id}/move", response_model=TeamFileOut)
 async def move_file(file_id: str, payload: MoveFileRequest, current_user: CurrentUser = Depends(active_user)):
     return file_service.move_file(file_id, payload, current_user)
+
+
+@router.post("/batch-copy", response_model=list[TeamFileOut], status_code=status.HTTP_201_CREATED)
+async def batch_copy_files(payload: BatchCopyFilesRequest, current_user: CurrentUser = Depends(active_user)):
+    return file_service.batch_copy_files(payload, current_user)
+
+
+@router.post("/batch-move", response_model=list[TeamFileOut])
+async def batch_move_files(payload: BatchMoveFilesRequest, current_user: CurrentUser = Depends(active_user)):
+    return file_service.batch_move_files(payload, current_user)
 
 
 @router.post("/{file_id}/delete", response_model=TeamFileOut)
