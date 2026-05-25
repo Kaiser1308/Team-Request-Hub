@@ -40,8 +40,8 @@ declare module "@cubone/react-file-manager" {
     onRefresh?: () => void;
     onCopy?: (files: FileItem[]) => void;
     onCut?: (files: FileItem[]) => void;
-    onPaste?: (files: FileItem[], destination: FileItem, type: "copy" | "move") => void;
-    onDrop?: (files: FileItem[], destination: FileItem, type: "copy" | "move") => void;
+    onPaste?: (files: FileItem[], destination: FileItem | null, type: "copy" | "move") => void;
+    onDrop?: (files: FileItem[], destination: FileItem | null, type: "copy" | "move") => void;
     onSelectionChange?: (files: FileItem[]) => void;
     onLayoutChange?: (layout: "list" | "grid") => void;
     onError?: (error: { type: string; message: string }, file?: FileItem) => void;

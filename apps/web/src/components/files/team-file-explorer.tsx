@@ -55,6 +55,8 @@ export function TeamFileExplorer() {
   const error = filesQuery.error || searchQuery.error;
 
   const clipboardRef = useRef<{ files: CuboneFile[]; type: "copy" | "move" } | null>(null);
+  const currentPathRef = useRef(currentPath);
+  currentPathRef.current = currentPath;
   const [isDragOver, setIsDragOver] = useState(false);
 
   function handleNativeDrop(e: DragEvent<HTMLDivElement>) {
@@ -69,8 +71,8 @@ export function TeamFileExplorer() {
   }
 
   const handlePaste = useCallback(
-    async (pastedFiles: CuboneFile[], destination: CuboneFile, operationType: "copy" | "move") => {
-      const destPath = destination.isDirectory ? destination.path : "/";
+    async (pastedFiles: CuboneFile[], destination: CuboneFile | null, operationType: "copy" | "move") => {
+      const destPath = destination?.isDirectory ? destination.path : currentPathRef.current;
       const ids = pastedFiles.map((f) => f.id);
       if (operationType === "copy") {
         await mutations.batchCopyFiles.mutateAsync({ file_ids: ids, parent_path: destPath });
