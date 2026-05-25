@@ -85,3 +85,49 @@ export interface Notification {
   is_read: boolean;
   created_at: string;
 }
+
+export type TeamFileStatus = "pending_upload" | "active" | "deleted" | "purged";
+
+export type TeamFileAction =
+  | "create_folder"
+  | "upload"
+  | "complete_upload"
+  | "rename"
+  | "move"
+  | "delete"
+  | "restore"
+  | "purge"
+  | "download"
+  | "preview";
+
+export interface TeamFile {
+  id: string;
+  name: string;
+  path: string;
+  parent_path: string;
+  is_directory: boolean;
+  size_bytes: number;
+  content_type?: string | null;
+  extension?: string | null;
+  status: TeamFileStatus;
+  uploaded_by?: string | null;
+  created_by: string;
+  updated_by?: string | null;
+  deleted_by?: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at?: string | null;
+  purge_after?: string | null;
+}
+
+export interface FileActivityLog {
+  id: string;
+  actor_id: string;
+  file_id?: string | null;
+  action: TeamFileAction;
+  target_type: "file" | "folder";
+  old_path?: string | null;
+  new_path?: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+}
