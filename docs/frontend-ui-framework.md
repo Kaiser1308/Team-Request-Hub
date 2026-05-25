@@ -138,7 +138,7 @@ Implement routes inside `apps/web/src/app`.
 
 /(dashboard)/pool
   Source: ui-frameware/pool_team_request_hub
-  Purpose: unassigned requests available for BE users and leads.
+  Purpose: unassigned requests available for all active users to self-assign.
 
 /(dashboard)/done
   Source: no direct mockup
@@ -298,13 +298,13 @@ Create request:
   fe, be, lead
 
 View assigned requests:
-  be, lead
+  fe, be, lead
 
 View created requests:
   fe, be, lead
 
 View pool:
-  be, lead
+  fe, be, lead
 
 View all requests:
   lead
@@ -317,22 +317,22 @@ Request actions:
 
 ```txt
 Self assign:
-  be or lead, only unassigned pool requests.
+  fe, be, or lead, only unassigned pool requests.
 
 Acknowledge:
-  assigned be or lead, when status is pending.
+  assigned fe, be, or lead, when status is pending.
 
 Start:
-  assigned be or lead, when status is acknowledged.
+  assigned fe, be, or lead, when status is acknowledged.
 
 Done with reply:
-  assigned be or lead, when status is in_progress.
+  assigned fe, be, or lead, when status is in_progress.
 
 Cancel:
   creator or lead, when request is not done/cancelled.
 
 Reassign:
-  lead, or future backend-approved assignee flow.
+  lead (any request), creator, or assignee.
 ```
 
 Render disabled or hidden states consistently. If an action is hidden because of
