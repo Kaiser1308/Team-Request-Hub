@@ -58,6 +58,7 @@ export function TeamFileExplorer() {
   const currentPathRef = useRef(currentPath);
   currentPathRef.current = currentPath;
   const [isDragOver, setIsDragOver] = useState(false);
+  const dragCounterRef = useRef(0);
   const fileManagerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -67,6 +68,7 @@ export function TeamFileExplorer() {
   function handleNativeDrop(e: DragEvent<HTMLDivElement>) {
     e.preventDefault();
     setIsDragOver(false);
+    dragCounterRef.current = 0;
     void uploadFiles(e.dataTransfer.files);
   }
 
@@ -176,9 +178,13 @@ export function TeamFileExplorer() {
         className="relative rounded-lg border border-[#e5e7eb] bg-white p-2 outline-none"
         onDrop={handleNativeDrop}
         onDragOver={handleNativeDragOver}
-        onDragEnter={() => setIsDragOver(true)}
-        onDragLeave={(e) => {
-          if (e.currentTarget === e.target) setIsDragOver(false);
+        onDragEnter={() => {
+          dragCounterRef.current += 1;
+          setIsDragOver(true);
+        }}
+        onDragLeave={() => {
+          dragCounterRef.current -= 1;
+          if (dragCounterRef.current === 0) setIsDragOver(false);
         }}
       >
         {isDragOver ? (
