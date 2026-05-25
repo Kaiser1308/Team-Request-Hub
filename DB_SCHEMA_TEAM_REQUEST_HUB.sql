@@ -399,7 +399,7 @@ create index if not exists idx_team_files_lower_name
 create table if not exists public.file_activity_logs (
   id uuid primary key default gen_random_uuid(),
   actor_id uuid not null references public.users(id) on delete restrict,
-  file_id uuid references public.team_files(id),
+  file_id uuid references public.team_files(id) on delete set null,
   action team_file_action not null,
   target_type team_file_target_type not null,
   old_path text,

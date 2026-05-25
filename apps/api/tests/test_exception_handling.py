@@ -10,6 +10,7 @@ from app.core.exceptions import (
     BadRequestError,
     ConflictError,
     ForbiddenError,
+    GoneError,
     NotFoundError,
     DomainError,
 )
@@ -32,6 +33,15 @@ class DomainExceptionTests(unittest.TestCase):
     def test_bad_request_error_is_domain_error(self):
         error = BadRequestError("Invalid input")
         self.assertIsInstance(error, DomainError)
+
+    def test_gone_error_is_domain_error(self):
+        error = GoneError("Resource is gone")
+        self.assertIsInstance(error, DomainError)
+        self.assertEqual(str(error), "Resource is gone")
+
+    def test_gone_error_default_message(self):
+        error = GoneError()
+        self.assertEqual(str(error), "Resource is gone")
 
     def test_domain_errors_are_not_http_exceptions(self):
         from fastapi import HTTPException
