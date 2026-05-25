@@ -33,7 +33,8 @@
     "all": "Tất cả yêu cầu",
     "users": "Quản lý người dùng",
     "newRequest": "Tạo yêu cầu mới",
-    "requestDetail": "Chi tiết yêu cầu"
+    "requestDetail": "Chi tiết yêu cầu",
+    "files": "Tệp"
   },
   "appShell": {
     "waitingApprovalTitle": "Đang chờ lead duyệt",

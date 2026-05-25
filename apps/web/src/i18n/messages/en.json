@@ -33,7 +33,8 @@
     "all": "All requests",
     "users": "User management",
     "newRequest": "New request",
-    "requestDetail": "Request detail"
+    "requestDetail": "Request detail",
+    "files": "Files"
   },
   "appShell": {
     "waitingApprovalTitle": "Waiting for lead approval",

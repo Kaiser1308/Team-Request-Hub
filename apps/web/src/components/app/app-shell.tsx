@@ -15,6 +15,7 @@ import {
   Database,
   Users,
   PlusCircle,
+  FolderOpen,
   type LucideIcon,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -37,7 +38,8 @@ type NavLabelKey =
   | "done"
   | "all"
   | "users"
-  | "newRequest";
+  | "newRequest"
+  | "files";
 
 interface NavItem {
   href: string;
@@ -48,11 +50,12 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { href: "/dashboard", labelKey: "dashboard", icon: LayoutDashboard },
-  { href: "/assigned", labelKey: "assigned", roles: ["be", "lead"], icon: UserCheck },
+  { href: "/assigned", labelKey: "assigned", icon: UserCheck },
   { href: "/requests", labelKey: "created", icon: FileText },
-  { href: "/pool", labelKey: "pool", roles: ["be", "lead"], icon: Inbox },
+  { href: "/pool", labelKey: "pool", icon: Inbox },
   { href: "/done", labelKey: "done", icon: CheckCircle2 },
   { href: "/all", labelKey: "all", roles: ["lead"], icon: Database },
+  { href: "/files", labelKey: "files", icon: FolderOpen },
   { href: "/admin/users", labelKey: "users", roles: ["lead"], icon: Users },
   { href: "/requests/new", labelKey: "newRequest", icon: PlusCircle },
 ];
@@ -85,6 +88,7 @@ function getPageTitle(
     "/pool": "pool",
     "/done": "done",
     "/all": "all",
+    "/files": "files",
     "/admin/users": "users",
   };
 
@@ -134,6 +138,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#f9fafb]">
         <p className="text-sm text-[#6b7280]">{tCommon("loading")}</p>
+      </div>
+    );
+  }
+
+  if (isError || !currentUser) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#f9fafb] px-4">
+        <div className="grid max-w-lg gap-4 rounded-lg border border-[#e5e7eb] bg-white p-8 text-center">
+          <h1 className="text-2xl font-semibold">{tShell("unableToLoadUser")}</h1>
+          <p className="text-sm text-[#4b5563]">
+            {error instanceof Error ? error.message : tShell("unableToLoadUser")}
+          </p>
+          <LogoutButton />
+        </div>
       </div>
     );
   }
@@ -270,8 +288,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <main className="min-w-0 px-4 py-5 sm:px-6 sm:py-6">
           {isError ? (
             <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {error instanceof Error
-                ? error.message
+              {(error as Error) instanceof Error
+                ? (error as Error).message
                 : tShell("unableToLoadUser")}
             </div>
           ) : null}
