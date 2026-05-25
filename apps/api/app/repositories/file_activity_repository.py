@@ -1,5 +1,3 @@
-from app.core.exceptions import DomainError
-
 from app.db.supabase import get_supabase_admin
 
 TABLE = "file_activity_logs"
@@ -10,7 +8,7 @@ def create_activity(data: dict) -> dict | None:
     result = get_supabase_admin().table(TABLE).insert(data).execute()
 
     if not result.data:
-        raise DomainError("Activity log could not be created")
+        return None
 
     return result.data[0]
 

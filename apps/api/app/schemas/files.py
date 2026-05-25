@@ -24,7 +24,6 @@ class TeamFileOut(BaseModel):
     path: str
     parent_path: str
     is_directory: bool
-    object_key: str | None = None
     size_bytes: int = 0
     content_type: str | None = None
     extension: str | None = None
@@ -42,7 +41,7 @@ class TeamFileOut(BaseModel):
 class FileActivityOut(BaseModel):
     id: str
     actor_id: str
-    file_id: str | None = None
+    file_id: str | None
     action: FileAction
     target_type: TargetType
     old_path: str | None = None
@@ -64,30 +63,28 @@ class UploadUrlRequest(BaseModel):
 
 
 class UploadUrlResponse(BaseModel):
+    file: TeamFileOut
     upload_url: str
-    object_key: str
-    file_id: str
+    method: str
+    expires_in_seconds: int
 
 
 class CompleteUploadRequest(BaseModel):
-    file_id: str
     size_bytes: int = Field(ge=1, le=209_715_200)
-    content_type: str | None = None
 
 
 class RenameFileRequest(BaseModel):
-    new_name: str = Field(min_length=1, max_length=255)
+    name: str = Field(min_length=1, max_length=255)
 
 
 class MoveFileRequest(BaseModel):
-    new_parent_path: str
+    parent_path: str
 
 
 class PresignedUrlResponse(BaseModel):
     url: str
-    expires_in: int
+    expires_in_seconds: int
 
 
 class PurgeExpiredResponse(BaseModel):
-    purged_count: int
-    purged_ids: list[str]
+    purged: int
