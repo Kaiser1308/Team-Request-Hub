@@ -165,8 +165,8 @@ export function TeamFileExplorer() {
             upload: false,
             download: true,
             copy: isLead,
-            move: isLead,
-            rename: isLead,
+            move: true,
+            rename: true,
             delete: isLead,
           }}
           onFolderChange={setCurrentPath}

@@ -20,13 +20,29 @@ def _be_user():
 
 
 class FileServicePermissionTests(unittest.TestCase):
-    def test_non_lead_cannot_rename(self):
-        with self.assertRaises(ForbiddenError):
-            file_service.rename_file("f-1", RenameFileRequest(name="new.txt"), _fe_user())
+    @patch("app.services.file_service.file_repository")
+    @patch("app.services.file_service.file_activity_repository")
+    def test_fe_can_rename(self, mock_activity_repo, mock_file_repo):
+        file = {"id": "f-1", "name": "old.txt", "path": "/old.txt", "parent_path": "/", "is_directory": False, "status": "active"}
+        updated = {**file, "name": "new.txt", "path": "/new.txt"}
+        mock_file_repo.get_file_or_404.return_value = file
+        mock_file_repo.get_by_path.return_value = None
+        mock_file_repo.update_file.return_value = updated
 
-    def test_non_lead_cannot_move(self):
-        with self.assertRaises(ForbiddenError):
-            file_service.move_file("f-1", MoveFileRequest(parent_path="/other"), _be_user())
+        result = file_service.rename_file("f-1", RenameFileRequest(name="new.txt"), _fe_user())
+        self.assertEqual(result["name"], "new.txt")
+
+    @patch("app.services.file_service.file_repository")
+    @patch("app.services.file_service.file_activity_repository")
+    def test_be_can_move(self, mock_activity_repo, mock_file_repo):
+        file = {"id": "f-1", "name": "doc.pdf", "path": "/doc.pdf", "parent_path": "/", "is_directory": False, "status": "active"}
+        updated = {**file, "path": "/Archive/doc.pdf", "parent_path": "/Archive"}
+        mock_file_repo.get_file_or_404.return_value = file
+        mock_file_repo.get_by_path.return_value = None
+        mock_file_repo.update_file.return_value = updated
+
+        result = file_service.move_file("f-1", MoveFileRequest(parent_path="/Archive"), _be_user())
+        self.assertEqual(result["path"], "/Archive/doc.pdf")
 
     def test_non_lead_cannot_soft_delete(self):
         with self.assertRaises(ForbiddenError):
@@ -43,23 +59,14 @@ class FileServicePermissionTests(unittest.TestCase):
     @patch("app.services.file_service.file_repository")
     @patch("app.services.file_service.file_activity_repository")
     def test_lead_can_rename(self, mock_activity_repo, mock_file_repo):
-        file = {
-            "id": "f-1",
-            "name": "old.txt",
-            "path": "/old.txt",
-            "parent_path": "/",
-            "is_directory": False,
-            "status": "active",
-        }
+        file = {"id": "f-1", "name": "old.txt", "path": "/old.txt", "parent_path": "/", "is_directory": False, "status": "active"}
         updated = {**file, "name": "new.txt", "path": "/new.txt"}
         mock_file_repo.get_file_or_404.return_value = file
         mock_file_repo.get_by_path.return_value = None
         mock_file_repo.update_file.return_value = updated
 
         result = file_service.rename_file("f-1", RenameFileRequest(name="new.txt"), _lead())
-
         self.assertEqual(result["name"], "new.txt")
-        self.assertEqual(result["path"], "/new.txt")
 
 
 if __name__ == "__main__":

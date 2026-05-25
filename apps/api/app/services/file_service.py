@@ -203,7 +203,6 @@ def search_files(q: str, include_deleted: bool = False) -> list[dict]:
 
 
 def rename_file(file_id: str, payload: RenameFileRequest, current_user: CurrentUser) -> dict:
-    ensure_lead(current_user)
     file = file_repository.get_file_or_404(file_id)
     if file.get("status") != "active":
         raise NotFoundError("File not found")
@@ -230,7 +229,6 @@ def rename_file(file_id: str, payload: RenameFileRequest, current_user: CurrentU
 
 
 def move_file(file_id: str, payload: MoveFileRequest, current_user: CurrentUser) -> dict:
-    ensure_lead(current_user)
     file = file_repository.get_file_or_404(file_id)
     if file.get("status") != "active":
         raise NotFoundError("File not found")
@@ -428,7 +426,6 @@ def batch_copy_files(payload: BatchCopyFilesRequest, current_user: CurrentUser) 
 
 
 def batch_move_files(payload: BatchMoveFilesRequest, current_user: CurrentUser) -> list[dict]:
-    ensure_lead(current_user)
     dest = normalize_path(payload.parent_path)
     results: list[dict] = []
 
