@@ -326,15 +326,17 @@ Browser                          FastAPI                        MinIO
 <tr><td>Download / Preview</td><td>✅</td><td>✅</td><td>✅</td></tr>
 <tr><td>Rename file/folder</td><td>✅</td><td>✅</td><td>✅</td></tr>
 <tr><td>Move (kéo thả) file/folder</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td>Batch-move (kéo thả nhiều file)</td><td>✅</td><td>✅</td><td>✅</td></tr>
 <tr><td>Copy file/folder</td><td>❌</td><td>❌</td><td>✅</td></tr>
 <tr><td>Xóa file/folder</td><td>❌</td><td>❌</td><td>✅</td></tr>
 <tr><td>Khôi phục từ trash</td><td>❌</td><td>❌</td><td>✅</td></tr>
 <tr><td>Purge vĩnh viễn</td><td>❌</td><td>❌</td><td>✅</td></tr>
 <tr><td>Xem/Xử lý request</td><td>✅</td><td>✅</td><td>✅</td></tr>
 <tr><td>Tạo request</td><td>✅</td><td>✅</td><td>✅</td></tr>
-<tr><td>Reassign request</td><td>❌</td><td>❌</td><td>✅</td></tr>
+<tr><td>Reassign request</td><td>✅*</td><td>✅*</td><td>✅</td></tr>
 <tr><td>Quản lý user roles</td><td>❌</td><td>❌</td><td>✅</td></tr>
 </table>
+<p class="sub">*fe/be được reassign request do mình tạo hoặc được assign; lead được reassign mọi request.</p>
 
 <!-- ============================================================ -->
 <h2>9. Frontend — Kiến Trúc</h2>
@@ -365,7 +367,12 @@ Page (server component)
   │     ├── onCopy → ghi clipboard
   │     ├── onCut → ghi clipboard
   │     ├── onPaste → POST /files/batch-copy hoặc /files/batch-move
+  │     ├── onDrop → POST /files/batch-move (drag-drop between folders)
   │     └── onFileOpen → folder: navigate, file: download/preview URL
+  │
+  ├── Native Drag-Drop Upload
+  │     └── onDragOver/onDrop (HTML5) → uploadFiles()
+  │           └── POST /files/upload-url → PUT presigned → POST /files/{id}/complete
   │
   └── Custom Upload Button
         └── POST /files/upload-url → PUT presigned URL → POST /files/{id}/complete-upload</code></pre>

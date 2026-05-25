@@ -159,6 +159,10 @@ Implement routes inside `apps/web/src/app`.
 /(dashboard)/admin/users
   Source: no direct mockup
   Purpose: lead-only role management.
+
+/(dashboard)/files
+  Source: no direct mockup
+  Purpose: shared team file explorer with MinIO presigned URLs, drag-drop, copy/paste.
 ```
 
 ## Frontend Architecture
