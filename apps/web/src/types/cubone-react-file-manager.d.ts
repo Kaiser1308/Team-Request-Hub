@@ -30,6 +30,8 @@ declare module "@cubone/react-file-manager" {
     language?: string;
     maxFileSize?: number;
     enableFilePreview?: boolean;
+    collapsibleNav?: boolean;
+    defaultNavExpanded?: boolean;
     permissions?: Permissions;
     onFolderChange?: (path: string) => void;
     onFileOpen?: (file: FileItem) => void;

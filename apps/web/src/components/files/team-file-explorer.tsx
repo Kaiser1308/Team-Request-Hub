@@ -200,6 +200,8 @@ export function TeamFileExplorer() {
           language="vi-VN"
           maxFileSize={209_715_200}
           enableFilePreview={false}
+          collapsibleNav
+          defaultNavExpanded
           permissions={{
             create: true,
             upload: false,
