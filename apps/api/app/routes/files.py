@@ -101,3 +101,8 @@ async def purge_expired(current_user: CurrentUser = Depends(active_user)):
 @router.get("/activity", response_model=list[FileActivityOut])
 async def list_activity(file_id: str | None = None, limit: int = 50, current_user: CurrentUser = Depends(active_user)):
     return file_service.list_activity(file_id=file_id, limit=limit)
+
+
+@router.get("/tree", response_model=list[TeamFileOut])
+async def list_tree(include_deleted: bool = False, current_user: CurrentUser = Depends(active_user)):
+    return file_service.list_tree(include_deleted=include_deleted and current_user.role == "lead")

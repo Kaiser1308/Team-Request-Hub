@@ -123,3 +123,13 @@ def list_deleted_ready_for_purge(now_iso: str | None = None) -> list[dict]:
         .execute()
     )
     return result.data or []
+
+
+def list_all(include_deleted: bool = False) -> list[dict]:
+    query = get_supabase_admin().table(TABLE).select(COLUMNS).order("path")
+    if include_deleted:
+        query = query.in_("status", ["active", "deleted"])
+    else:
+        query = query.eq("status", "active")
+    result = query.execute()
+    return result.data or []

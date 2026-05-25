@@ -12,6 +12,7 @@ import {
   getPreviewUrl,
   listFileActivity,
   listFiles,
+  listAllFiles,
   moveFile,
   purgeExpiredFiles,
   renameFile,
@@ -51,6 +52,15 @@ export function useFileActivity(fileId?: string) {
     queryKey: queryKeys.files.activity(fileId),
     queryFn: () => listFileActivity(fileId),
     staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useFileTree(includeDeleted = false) {
+  return useQuery({
+    queryKey: [...queryKeys.files.all, "tree", { includeDeleted }] as const,
+    queryFn: () => listAllFiles(includeDeleted),
+    staleTime: 30 * 1000,
     refetchOnWindowFocus: false,
   });
 }

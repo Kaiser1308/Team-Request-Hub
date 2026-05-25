@@ -378,6 +378,10 @@ def list_activity(file_id: str | None = None, limit: int = 50) -> list[dict]:
     return file_activity_repository.list_activity(file_id=file_id, limit=limit)
 
 
+def list_tree(include_deleted: bool = False) -> list[dict]:
+    return file_repository.list_all(include_deleted=include_deleted)
+
+
 def batch_copy_files(payload: BatchCopyFilesRequest, current_user: CurrentUser) -> list[dict]:
     ensure_lead(current_user)
     dest = normalize_path(payload.parent_path)

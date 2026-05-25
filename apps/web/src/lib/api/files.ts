@@ -67,6 +67,13 @@ export function searchFiles(query: string, includeDeleted = false) {
   return apiFetch<TeamFile[]>(`/files/search?${params.toString()}`);
 }
 
+export function listAllFiles(includeDeleted = false) {
+  const params = new URLSearchParams({
+    include_deleted: String(includeDeleted),
+  });
+  return apiFetch<TeamFile[]>(`/files/tree?${params.toString()}`);
+}
+
 export function createFolder(payload: CreateFolderPayload) {
   return apiFetch<TeamFile>("/files/folders", {
     method: "POST",

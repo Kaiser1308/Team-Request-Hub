@@ -6,7 +6,7 @@ import "@cubone/react-file-manager/dist/style.css";
 import { Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/hooks/use-current-user";
-import { useFileMutations, useFileSearch, useFiles } from "@/hooks/use-files";
+import { useFileMutations, useFileSearch, useFiles, useFileTree } from "@/hooks/use-files";
 import type { TeamFile } from "@/types";
 
 type CuboneFile = {
@@ -48,11 +48,13 @@ export function TeamFileExplorer() {
   const isLead = currentUser.data?.role === "lead";
   const filesQuery = useFiles(currentPath, includeDeleted && isLead);
   const searchQuery = useFileSearch(search, includeDeleted && isLead);
+  const treeQuery = useFileTree(includeDeleted && isLead);
   const mutations = useFileMutations();
   const files = (search.trim() ? searchQuery.data : filesQuery.data) ?? [];
+  const treeFiles = (treeQuery.data ?? []).map(toCuboneFile);
   const managerFiles = files.map(toCuboneFile);
-  const isLoading = filesQuery.isLoading || searchQuery.isLoading;
-  const error = filesQuery.error || searchQuery.error;
+  const isLoading = filesQuery.isLoading || searchQuery.isLoading || treeQuery.isLoading;
+  const error = filesQuery.error || searchQuery.error || treeQuery.error;
 
   const clipboardRef = useRef<{ files: CuboneFile[]; type: "copy" | "move" } | null>(null);
   const currentPathRef = useRef(currentPath);
@@ -193,7 +195,7 @@ export function TeamFileExplorer() {
           </div>
         ) : null}
         <FileManager
-          files={managerFiles}
+          files={treeFiles}
           isLoading={isLoading}
           initialPath={currentPath}
           layout="list"
@@ -245,7 +247,7 @@ export function TeamFileExplorer() {
           onDownload={(selected) =>
             selected.forEach((file) => void openFile(file as CuboneFile))
           }
-          onRefresh={() => void filesQuery.refetch()}
+          onRefresh={() => { void filesQuery.refetch(); void treeQuery.refetch(); }}
         />
       </div>
     </div>
