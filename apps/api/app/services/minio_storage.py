@@ -28,19 +28,25 @@ def _bucket_name() -> str:
 
 
 def presigned_put_url(object_key: str, expires_seconds: int = DEFAULT_PRESIGNED_EXPIRY_SECONDS) -> str:
-    return _get_client().presigned_put_object(
-        _bucket_name(),
-        object_key,
-        expires=timedelta(seconds=expires_seconds),
-    )
+    try:
+        return _get_client().presigned_put_object(
+            _bucket_name(),
+            object_key,
+            expires=timedelta(seconds=expires_seconds),
+        )
+    except Exception as exc:
+        raise DomainError("MinIO presigned URL generation failed") from exc
 
 
 def presigned_get_url(object_key: str, expires_seconds: int = DEFAULT_PRESIGNED_EXPIRY_SECONDS) -> str:
-    return _get_client().presigned_get_object(
-        _bucket_name(),
-        object_key,
-        expires=timedelta(seconds=expires_seconds),
-    )
+    try:
+        return _get_client().presigned_get_object(
+            _bucket_name(),
+            object_key,
+            expires=timedelta(seconds=expires_seconds),
+        )
+    except Exception as exc:
+        raise DomainError("MinIO presigned URL generation failed") from exc
 
 
 def copy_object(source_key: str, destination_key: str) -> None:

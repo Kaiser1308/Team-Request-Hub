@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from app.core.exceptions import DomainError, NotFoundError
 
 from app.db.supabase import get_supabase_admin
@@ -108,14 +110,16 @@ def update_descendants(path_prefix: str, data: dict) -> list[dict]:
     return result.data or []
 
 
-def list_deleted_ready_for_purge() -> list[dict]:
+def list_deleted_ready_for_purge(now_iso: str | None = None) -> list[dict]:
+    if now_iso is None:
+        now_iso = datetime.now(timezone.utc).isoformat()
     result = (
         get_supabase_admin()
         .table(TABLE)
         .select(COLUMNS)
         .eq("status", "deleted")
         .not_.is_("purge_after", "null")
-        .lte("purge_after", "now()")
+        .lte("purge_after", now_iso)
         .execute()
     )
     return result.data or []
