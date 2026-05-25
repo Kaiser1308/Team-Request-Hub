@@ -1,5 +1,5 @@
 declare module "@cubone/react-file-manager" {
-  import type { ComponentType, ReactNode } from "react";
+  import type { ComponentType } from "react";
 
   interface FileItem {
     id?: string;
