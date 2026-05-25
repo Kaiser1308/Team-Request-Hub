@@ -186,6 +186,9 @@ export function TeamFileExplorer() {
           onPaste={(files, destination, operationType) =>
             void handlePaste(files as CuboneFile[], destination as CuboneFile, operationType)
           }
+          onDrop={(files, destination, operationType) =>
+            void handlePaste(files as CuboneFile[], destination as CuboneFile, operationType || "move")
+          }
           onRename={(file, name) =>
             void mutations.renameFile.mutateAsync({
               fileId: (file as CuboneFile).id,
