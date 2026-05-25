@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, type DragEvent } from "react";
 import { FileManager } from "@cubone/react-file-manager";
 import "@cubone/react-file-manager/dist/style.css";
 import { Upload } from "lucide-react";
@@ -55,6 +55,18 @@ export function TeamFileExplorer() {
   const error = filesQuery.error || searchQuery.error;
 
   const clipboardRef = useRef<{ files: CuboneFile[]; type: "copy" | "move" } | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
+
+  function handleNativeDrop(e: DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    setIsDragOver(false);
+    void uploadFiles(e.dataTransfer.files);
+  }
+
+  function handleNativeDragOver(e: DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+  }
 
   const handlePaste = useCallback(
     async (pastedFiles: CuboneFile[], destination: CuboneFile, operationType: "copy" | "move") => {
@@ -151,7 +163,20 @@ export function TeamFileExplorer() {
         </div>
       </div>
 
-      <div className="rounded-lg border border-[#e5e7eb] bg-white p-2">
+      <div
+        className="rounded-lg border border-[#e5e7eb] bg-white p-2"
+        onDrop={handleNativeDrop}
+        onDragOver={handleNativeDragOver}
+        onDragEnter={() => setIsDragOver(true)}
+        onDragLeave={(e) => {
+          if (e.currentTarget === e.target) setIsDragOver(false);
+        }}
+      >
+        {isDragOver ? (
+          <div className="flex h-40 items-center justify-center rounded-md border-2 border-dashed border-[#2563eb] bg-[#eff6ff] text-sm text-[#2563eb]">
+            Drop files to upload
+          </div>
+        ) : null}
         <FileManager
           files={managerFiles}
           isLoading={isLoading}
