@@ -19,6 +19,14 @@ class Settings(BaseSettings):
     telegram_webhook_secret: str | None = None
     app_base_url: str = "http://localhost:3000"
 
+    minio_endpoint: str | None = None
+    minio_region: str = "us-east-1"
+    minio_bucket: str = "team-files"
+    minio_access_key: str | None = None
+    minio_secret_key: str | None = None
+    minio_secure: bool = True
+    minio_public_endpoint: str | None = None
+
     class Config:
         env_file = ".env"
 

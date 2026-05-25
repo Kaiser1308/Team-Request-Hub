@@ -323,7 +323,94 @@ create index if not exists idx_notification_deliveries_pending_created_at
   where status = 'pending';
 
 -- =========================================================
--- 10. Updated_at Trigger
+-- 10. Team Files
+-- =========================================================
+
+do $$
+begin
+  if not exists (select 1 from pg_type where typname = 'team_file_status') then
+    create type team_file_status as enum (
+      'active',
+      'deleted'
+    );
+  end if;
+end $$;
+
+do $$
+begin
+  if not exists (select 1 from pg_type where typname = 'team_file_action') then
+    create type team_file_action as enum (
+      'upload',
+      'rename',
+      'move',
+      'delete',
+      'restore',
+      'purge',
+      'create_folder'
+    );
+  end if;
+end $$;
+
+do $$
+begin
+  if not exists (select 1 from pg_type where typname = 'team_file_target_type') then
+    create type team_file_target_type as enum (
+      'file',
+      'folder'
+    );
+  end if;
+end $$;
+
+create table if not exists public.team_files (
+  id uuid primary key default gen_random_uuid(),
+  name text not null check (char_length(trim(name)) > 0),
+  path text not null check (char_length(trim(path)) > 0),
+  parent_path text not null default '/',
+  is_directory boolean not null default false,
+  object_key text,
+  size_bytes bigint,
+  content_type text,
+  extension text,
+  status team_file_status not null default 'active',
+  uploaded_by uuid references public.users(id) on delete set null,
+  created_by uuid not null references public.users(id) on delete restrict,
+  updated_by uuid references public.users(id) on delete set null,
+  deleted_by uuid references public.users(id) on delete set null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  deleted_at timestamptz,
+  purge_after timestamptz
+);
+
+create index if not exists idx_team_files_parent_status_name
+  on public.team_files(parent_path, status, name);
+
+create index if not exists idx_team_files_status_purge_after
+  on public.team_files(status, purge_after);
+
+create index if not exists idx_team_files_lower_name
+  on public.team_files(lower(name));
+
+create table if not exists public.file_activity_logs (
+  id uuid primary key default gen_random_uuid(),
+  actor_id uuid not null references public.users(id) on delete restrict,
+  file_id uuid not null references public.team_files(id) on delete cascade,
+  action team_file_action not null,
+  target_type team_file_target_type not null,
+  old_path text,
+  new_path text,
+  metadata jsonb,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_file_activity_logs_file_created_at
+  on public.file_activity_logs(file_id, created_at desc);
+
+create index if not exists idx_file_activity_logs_actor_created_at
+  on public.file_activity_logs(actor_id, created_at desc);
+
+-- =========================================================
+-- 11. Updated_at Trigger
 -- =========================================================
 
 create or replace function public.set_updated_at()
@@ -348,8 +435,14 @@ before update on public.internal_requests
 for each row
 execute function public.set_updated_at();
 
+drop trigger if exists trg_team_files_set_updated_at on public.team_files;
+create trigger trg_team_files_set_updated_at
+before update on public.team_files
+for each row
+execute function public.set_updated_at();
+
 -- =========================================================
--- 11. Auto-create user profile after Supabase Auth signup
+-- 12. Auto-create user profile after Supabase Auth signup
 -- =========================================================
 -- New signups start inactive. A lead must approve the profile by setting is_active = true.
 -- This creates a default profile with role = fe.
@@ -384,7 +477,7 @@ for each row
 execute function public.handle_new_auth_user();
 
 -- =========================================================
--- 12. Row Level Security
+-- 13. Row Level Security
 -- =========================================================
 -- Architecture rule:
 -- FE must NOT query DB directly.
@@ -400,6 +493,8 @@ alter table public.request_status_logs enable row level security;
 alter table public.notifications enable row level security;
 alter table public.telegram_link_tokens enable row level security;
 alter table public.notification_deliveries enable row level security;
+alter table public.team_files enable row level security;
+alter table public.file_activity_logs enable row level security;
 
 -- Users can read their own profile if direct client access is ever used.
 drop policy if exists "users can read own profile" on public.users;
@@ -430,7 +525,7 @@ with check (auth.uid() = user_id);
 -- Keep business logic in FastAPI.
 
 -- =========================================================
--- 13. Realtime
+-- 14. Realtime
 -- =========================================================
 -- In Supabase dashboard, enable Realtime for:
 -- - notifications
@@ -444,7 +539,7 @@ with check (auth.uid() = user_id);
 -- Use dashboard toggle if unsure.
 
 -- =========================================================
--- 14. Seed examples
+-- 15. Seed examples
 -- =========================================================
 -- Do not run this blindly in production.
 -- Replace UUIDs with real auth.users IDs after login.
@@ -462,7 +557,7 @@ with check (auth.uid() = user_id);
 -- where email = 'frontend@example.com';
 
 -- =========================================================
--- 15. MVP Tables Summary
+-- 16. MVP Tables Summary
 -- =========================================================
 -- public.users
 -- public.internal_requests
@@ -471,3 +566,5 @@ with check (auth.uid() = user_id);
 -- public.notifications
 -- public.telegram_link_tokens
 -- public.notification_deliveries
+-- public.team_files
+-- public.file_activity_logs

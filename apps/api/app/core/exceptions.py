@@ -20,3 +20,8 @@ class ForbiddenError(DomainError):
 class BadRequestError(DomainError):
     def __init__(self, message: str = "Bad request"):
         super().__init__(message)
+
+
+class GoneError(DomainError):
+    def __init__(self, message: str = "Resource is gone"):
+        super().__init__(message)

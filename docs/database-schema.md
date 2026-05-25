@@ -11,6 +11,8 @@ The executable schema lives in `DB_SCHEMA_TEAM_REQUEST_HUB.sql` and targets Supa
 - `public.notifications`: user-facing notification records tied to request workflow events.
 - `public.telegram_link_tokens`: one-time tokens for linking a user's Telegram account via deep link.
 - `public.notification_deliveries`: per-channel delivery tracking for notifications (e.g. Telegram).
+- `public.team_files`: team file explorer records with directory hierarchy, MinIO object references, soft-delete, and purge scheduling.
+- `public.file_activity_logs`: audit trail for file operations including upload, rename, move, delete, restore, and purge events.
 
 ## Performance Indexes
 
@@ -24,6 +26,9 @@ Request list and queue views use composite and partial indexes on `internal_requ
 - `notification_type`: `assigned`, `reassigned`, `status_changed`, `pool_new`, `replied`, `done`, `cancelled`.
 - `notification_channel`: `telegram`.
 - `notification_delivery_status`: `pending`, `sent`, `failed`.
+- `team_file_status`: `active`, `deleted`.
+- `team_file_action`: `upload`, `rename`, `move`, `delete`, `restore`, `purge`, `create_folder`.
+- `team_file_target_type`: `file`, `folder`.
 
 ## Auth Profile Trigger
 
