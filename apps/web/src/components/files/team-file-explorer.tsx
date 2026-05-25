@@ -173,7 +173,7 @@ export function TeamFileExplorer() {
       <div
         ref={fileManagerRef}
         tabIndex={-1}
-        className="rounded-lg border border-[#e5e7eb] bg-white p-2 outline-none"
+        className="relative rounded-lg border border-[#e5e7eb] bg-white p-2 outline-none"
         onDrop={handleNativeDrop}
         onDragOver={handleNativeDragOver}
         onDragEnter={() => setIsDragOver(true)}
@@ -182,7 +182,7 @@ export function TeamFileExplorer() {
         }}
       >
         {isDragOver ? (
-          <div className="flex h-40 items-center justify-center rounded-md border-2 border-dashed border-[#2563eb] bg-[#eff6ff] text-sm text-[#2563eb]">
+          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg border-2 border-dashed border-[#2563eb] bg-[#eff6ff]/90 text-sm font-medium text-[#2563eb]">
             Drop files to upload
           </div>
         ) : null}
