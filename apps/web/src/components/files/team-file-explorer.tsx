@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, type DragEvent } from "react";
+import { useState, useRef, useCallback, useEffect, type DragEvent } from "react";
 import { FileManager } from "@cubone/react-file-manager";
 import "@cubone/react-file-manager/dist/style.css";
 import { Upload } from "lucide-react";
@@ -58,6 +58,11 @@ export function TeamFileExplorer() {
   const currentPathRef = useRef(currentPath);
   currentPathRef.current = currentPath;
   const [isDragOver, setIsDragOver] = useState(false);
+  const fileManagerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    fileManagerRef.current?.focus();
+  }, [currentPath]);
 
   function handleNativeDrop(e: DragEvent<HTMLDivElement>) {
     e.preventDefault();
@@ -166,7 +171,9 @@ export function TeamFileExplorer() {
       </div>
 
       <div
-        className="rounded-lg border border-[#e5e7eb] bg-white p-2"
+        ref={fileManagerRef}
+        tabIndex={-1}
+        className="rounded-lg border border-[#e5e7eb] bg-white p-2 outline-none"
         onDrop={handleNativeDrop}
         onDragOver={handleNativeDragOver}
         onDragEnter={() => setIsDragOver(true)}
