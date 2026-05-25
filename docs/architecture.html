@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team Request Hub — Kiến Trúc Hệ Thống</title>
+<style>
+  :root {
+    --bg: #f9fafb; --surface: #fff; --border: #e5e7eb;
+    --text: #111827; --muted: #6b7280; --accent: #2563eb;
+    --danger: #dc2626; --success: #16a34a; --warn: #f59e0b;
+    --code-bg: #1e293b; --code-text: #e2e8f0;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: Inter, system-ui, sans-serif; background: var(--bg); color: var(--text); line-height:1.7; }
+  .container { max-width: 1000px; margin: 0 auto; padding: 40px 24px; }
+  h1 { font-size: 2rem; margin-bottom: 8px; letter-spacing:-0.02em; }
+  h2 { font-size: 1.4rem; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--border); }
+  h3 { font-size: 1.1rem; margin: 28px 0 10px; }
+  h4 { font-size: 0.95rem; margin: 18px 0 6px; color: var(--accent); }
+  p, li { color: var(--text); }
+  .sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 32px; }
+  pre { background: var(--code-bg); color: var(--code-text); padding: 14px 18px; border-radius: 8px; overflow-x: auto; font-size: 0.85rem; line-height:1.6; margin: 12px 0; }
+  code { background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-size:0.9em; }
+  pre code { background: none; padding:0; }
+  table { width:100%; border-collapse:collapse; margin:16px 0; font-size:0.9rem; }
+  th, td { border:1px solid var(--border); padding:10px 14px; text-align:left; }
+  th { background:#f3f4f6; font-weight:600; }
+  .diagram { background: var(--surface); border: 2px solid var(--border); border-radius: 10px; padding: 20px 24px; margin: 20px 0; font-family: monospace; white-space: pre; overflow-x: auto; font-size:0.82rem; line-height:1.8; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size:0.78rem; font-weight:600; }
+  .tag-fe { background:#dbeafe; color:#1e40af; }
+  .tag-be { background:#dcfce7; color:#166534; }
+  .tag-lead { background:#fef3c7; color:#92400e; }
+  .tag-all { background:#f3f4f6; color:#374151; }
+  .note { background:#eff6ff; border-left:4px solid var(--accent); padding:12px 16px; border-radius:0 8px 8px 0; margin:16px 0; font-size:0.9rem; }
+  .warn { background:#fef2f2; border-left:4px solid var(--danger); }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>Team Request Hub — Kiến Trúc Hệ Thống</h1>
+<p class="sub">Tài liệu dành cho developer mới — hiểu toàn bộ hệ thống từ tổng quan đến chi tiết từng module.</p>
+
+<!-- ============================================================ -->
+<h2>1. Tổng Quan</h2>
+
+<p>Team Request Hub là công cụ quản lý yêu cầu nội bộ cho team FE, BE, Lead. Ngoài request workflow, hệ thống còn có <strong>kho file chung</strong> (Team Files) cho toàn team.</p>
+
+<div class="diagram">
+┌──────────────────────────────────────────────────────────┐
+│                      Browser / Next.js                    │
+│  ┌──────────┐  ┌──────────────┐  ┌────────────────────┐  │
+│  │  Login   │  │  Dashboard   │  │   Team Files        │  │
+│  │  Google  │  │  Requests    │  │   (File Explorer)   │  │
+│  │  OAuth   │  │  Workflow    │  │                     │  │
+│  └────┬─────┘  └──────┬───────┘  └─────────┬───────────┘  │
+└───────┼────────────────┼───────────────────┼──────────────┘
+        │                │                   │
+        ▼                ▼                   ▼
+┌──────────────────────────────────────────────────────────┐
+│                FastAPI Backend (:8000)                     │
+│  ┌──────────┐  ┌──────────────┐  ┌────────────────────┐  │
+│  │  Auth    │  │  Requests    │  │  Files             │  │
+│  │  Middle  │  │  Service     │  │  Service           │  │
+│  │  ware    │  │              │  │                    │  │
+│  └────┬─────┘  └──────┬───────┘  └─────────┬───────────┘  │
+└───────┼────────────────┼───────────────────┼──────────────┘
+        │                │                   │
+        ▼                ▼                   ▼
+┌───────────────────┐   ┌───────────────────────────────────┐
+│   Supabase Auth   │   │     Supabase PostgreSQL            │
+│   (JWT verify)    │   │  users, internal_requests,         │
+└───────────────────┘   │  notifications, team_files,        │
+                        │  file_activity_logs, ...           │
+                        └───────────────────────────────────┘
+                                    │
+                        ┌───────────┴───────────┐
+                        ▼                       ▼
+                ┌──────────────┐      ┌──────────────────┐
+                │  Supabase    │      │  MinIO Storage   │
+                │  Realtime    │      │  (file bytes)    │
+                │  (websocket) │      │  self-hosted     │
+                └──────────────┘      └──────────────────┘
+</div>
+
+<div class="note">
+  <strong>Nguyên tắc:</strong> Frontend chỉ dùng Supabase cho Auth/session. Tất cả business logic, permission, database query đều qua FastAPI. Frontend không bao giờ nhận MinIO credentials.
+</div>
+
+<!-- ============================================================ -->
+<h2>2. Công Nghệ (Tech Stack)</h2>
+
+<table>
+<tr><th>Lớp</th><th>Công nghệ</th></tr>
+<tr><td>Frontend</td><td>Next.js 15 App Router, React 19, TypeScript strict, Tailwind CSS v4, shadcn/ui (Slate theme), TanStack Query v5</td></tr>
+<tr><td>Backend</td><td>FastAPI, Pydantic v2, Supabase Python client, MinIO Python SDK</td></tr>
+<tr><td>Auth</td><td>Supabase Auth (Google OAuth), JWT verify ở backend</td></tr>
+<tr><td>Database</td><td>Supabase PostgreSQL (managed), RLS defense-in-depth</td></tr>
+<tr><td>Storage</td><td>MinIO (self-hosted S3-compatible), presigned URLs</td></tr>
+<tr><td>Realtime</td><td>Supabase Realtime (WebSocket)</td></tr>
+<tr><td>File Explorer UI</td><td>@cubone/react-file-manager (MIT)</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<h2>3. Cấu Trúc Thư Mục</h2>
+
+<div class="diagram">
+team-request-hub/
+├── apps/
+│   ├── api/                          # FastAPI backend
+│   │   ├── app/
+│   │   │   ├── main.py               # App entry, middleware, router mount
+│   │   │   ├── core/                 # auth, config, exceptions, permissions
+│   │   │   ├── db/                   # Supabase client (service role)
+│   │   │   ├── routes/               # HTTP layer (thin)
+│   │   │   ├── services/             # Business rules + permission checks
+│   │   │   ├── notification_module/  # Notifications + Telegram
+│   │   │   ├── repositories/         # Supabase table access only
+│   │   │   ├── schemas/              # Pydantic request/response
+│   │   │   └── utils/                # Shared helpers (time, etc.)
+│   │   └── tests/                    # Unit tests (unittest)
+│   │
+│   └── web/                          # Next.js frontend
+│       └── src/
+│           ├── app/                  # Route files (App Router)
+│           │   ├── (auth)/           # Login, callback, welcome
+│           │   └── (dashboard)/      # Protected pages
+│           ├── components/
+│           │   ├── app/              # AppShell, AppSidebar, AppTopbar
+│           │   ├── requests/         # Request cards, forms, actions
+│           │   ├── files/            # Team file explorer
+│           │   ├── auth/             # Login/logout buttons
+│           │   └── ui/               # shadcn/ui primitives
+│           ├── hooks/                # TanStack Query hooks
+│           ├── lib/
+│           │   ├── api/              # API client + query keys
+│           │   └── supabase/         # Supabase SSR/browser clients
+│           └── types/                # Shared TypeScript types
+│
+├── docs/                             # Architecture, API, DB docs
+├── DB_SCHEMA_TEAM_REQUEST_HUB.sql    # Executable Supabase schema
+└── ui-frameware/                     # Visual reference only (static HTML)
+</div>
+
+<!-- ============================================================ -->
+<h2>4. Luồng Xác Thực (Auth Flow)</h2>
+
+<div class="diagram">
+1. User → /login → Google OAuth → Supabase Auth
+2. Supabase → redirect /auth/callback → set session cookie
+3. /auth/welcome → GET /users/me (FastAPI)
+   ├── is_active=true  → redirect vào dashboard
+   └── is_active=false → hiện "ACCOUNT DISABLED", không cho vào
+4. Mọi API call → Bearer JWT → FastAPI verify JWT → load user từ DB
+</div>
+
+<div class="note">
+  <strong>Role mặc định:</strong> User mới luôn có <code>role=fe</code>, <code>is_active=false</code>.
+  Lead phải duyệt (set <code>is_active=true</code>) trước khi user dùng được app.
+</div>
+
+<!-- ============================================================ -->
+<h2>5. Backend — Kiến Trúc Lớp (Layered Architecture)</h2>
+
+<div class="diagram">
+routes/          ← HTTP request/response, parse input, gọi service
+    │
+    ▼
+services/        ← Business rules, permission checks, workflow, audit
+    │
+    ├── repositories/   ← Supabase table access (SELECT, INSERT, UPDATE)
+    ├── notification_module/  ← Notifications, Telegram delivery
+    └── minio_storage/       ← MinIO presigned URLs, object copy/delete
+</div>
+
+<h3>5.1 Routes (routes/)</h3>
+<p>File mỏng, chỉ parse request → gọi service → trả response. Không chứa business logic.</p>
+<pre><code># apps/api/app/routes/requests.py
+@router.post("", response_model=InternalRequestOut, status_code=201)
+async def create_request(
+    payload: InternalRequestCreate,
+    current_user: Annotated[CurrentUser, Depends(get_current_user)],
+):
+    require_active_current_user(current_user)
+    return request_service.create_request(payload, current_user)</code></pre>
+
+<h3>5.2 Services (services/)</h3>
+<p>Nơi chứa toàn bộ business rules, permission checks, workflow transitions, side effects (audit log, notification).</p>
+
+<h4>Request Service (request_service.py)</h4>
+<table>
+<tr><th>Function</th><th>Mô tả</th></tr>
+<tr><td><code>list_requests(view, user)</code></td><td>List request theo view: assigned, created, pool, done, all</td></tr>
+<tr><td><code>create_request(payload, user)</code></td><td>Tạo request mới, nếu có assignee thì ghi assignment history + notify</td></tr>
+<tr><td><code>self_assign_request(id, user)</code></td><td>Tự nhận request từ pool, báo cho creator</td></tr>
+<tr><td><code>reassign_request(id, payload, user)</code></td><td>Lead/assignee chuyển request cho người khác, reset status về pending</td></tr>
+<tr><td><code>update_status(id, payload, user)</code></td><td>Cập nhật status (pending→acknowledged→in_progress), ghi status log</td></tr>
+<tr><td><code>mark_done(id, payload, user)</code></td><td>Đánh dấu done với reply, ghi status log + notify creator</td></tr>
+<tr><td><code>cancel_request(id, payload, user)</code></td><td>Lead/creator cancel request, ghi status log + notify assignee</td></tr>
+</table>
+
+<h4>File Service (file_service.py)</h4>
+<table>
+<tr><th>Function</th><th>Permission</th><th>Mô tả</th></tr>
+<tr><td><code>list_files(path)</code></td><td><span class="tag tag-all">all</span></td><td>Liệt kê file/folder trong thư mục</td></tr>
+<tr><td><code>search_files(q)</code></td><td><span class="tag tag-all">all</span></td><td>Tìm file theo tên</td></tr>
+<tr><td><code>create_folder(payload, user)</code></td><td><span class="tag tag-all">all</span></td><td>Tạo folder mới</td></tr>
+<tr><td><code>create_upload_url(payload, user)</code></td><td><span class="tag tag-all">all</span></td><td>Nhận presigned PUT URL để upload lên MinIO (max 200MB)</td></tr>
+<tr><td><code>complete_upload(id, payload, user)</code></td><td><span class="tag tag-all">all</span></td><td>Xác nhận upload hoàn tất, mark file active</td></tr>
+<tr><td><code>rename_file(id, payload, user)</code></td><td><span class="tag tag-all">all</span></td><td>Đổi tên file/folder</td></tr>
+<tr><td><code>move_file(id, payload, user)</code></td><td><span class="tag tag-all">all</span></td><td>Di chuyển file/folder sang thư mục khác</td></tr>
+<tr><td><code>create_download_url(id, user)</code></td><td><span class="tag tag-all">all</span></td><td>Nhận presigned GET URL để tải file</td></tr>
+<tr><td><code>create_preview_url(id, user)</code></td><td><span class="tag tag-all">all</span></td><td>Nhận presigned GET URL để preview (chỉ ảnh + PDF)</td></tr>
+<tr><td><code>batch_copy_files(payload, user)</code></td><td><span class="tag tag-lead">lead</span></td><td>Copy nhiều file/folder (MinIO copy object + DB row mới)</td></tr>
+<tr><td><code>batch_move_files(payload, user)</code></td><td><span class="tag tag-all">all</span></td><td>Di chuyển nhiều file/folder cùng lúc</td></tr>
+<tr><td><code>soft_delete_file(id, user)</code></td><td><span class="tag tag-lead">lead</span></td><td>Xóa mềm, giữ trong trash 7 ngày</td></tr>
+<tr><td><code>restore_file(id, user)</code></td><td><span class="tag tag-lead">lead</span></td><td>Khôi phục từ trash</td></tr>
+<tr><td><code>purge_expired(user)</code></td><td><span class="tag tag-lead">lead</span></td><td>Xóa vĩnh viễn file đã hết hạn trash khỏi MinIO + DB</td></tr>
+</table>
+
+<h3>5.3 Repositories (repositories/)</h3>
+<p>Chỉ chứa code truy cập Supabase table. Không có business logic, không có permission check.</p>
+<pre><code># apps/api/app/repositories/request_repository.py
+REQUESTS_TABLE = "internal_requests"
+REQUEST_LIST_COLUMNS = "id,title,description,tags,priority,status,..."
+
+def get_request_or_404(request_id: str) -> dict:
+    result = get_supabase_admin().table(REQUESTS_TABLE)\
+        .select(REQUEST_DETAIL_COLUMNS).eq("id", request_id).limit(1).execute()
+    if not result.data:
+        raise NotFoundError("Request not found")
+    return result.data[0]</code></pre>
+
+<h3>5.4 Auth & Permission (core/)</h3>
+<table>
+<tr><th>File</th><th>Nhiệm vụ</th></tr>
+<tr><td><code>core/auth.py</code></td><td>Verify Supabase JWT, decode, load user profile từ DB → <code>CurrentUser</code></td></tr>
+<tr><td><code>core/permissions.py</code></td><td>Helper functions: <code>ensure_can_view_request</code>, <code>ensure_can_reassign</code>, <code>ensure_is_assignee_or_lead</code>, <code>is_lead</code></td></tr>
+<tr><td><code>core/exceptions.py</code></td><td>Domain exceptions: <code>NotFoundError</code>, <code>ConflictError</code>, <code>ForbiddenError</code>, <code>BadRequestError</code>, <code>GoneError</code></td></tr>
+<tr><td><code>core/config.py</code></td><td>Pydantic Settings, load từ <code>.env</code>: Supabase keys, MinIO config, Telegram</td></tr>
+</table>
+
+<h3>5.5 MinIO Storage Adapter (services/minio_storage.py)</h3>
+<p>Module độc lập, wrap MinIO Python SDK. Backend không bao giờ gửi MinIO credentials cho frontend — chỉ trả về presigned URLs ngắn hạn (300s).</p>
+<pre><code>def presigned_put_url(object_key, expires_seconds=300) -> str:
+    """Tạo URL cho browser upload thẳng lên MinIO"""
+
+def presigned_get_url(object_key, expires_seconds=300) -> str:
+    """Tạo URL cho browser download/preview từ MinIO"""
+
+def copy_object(source_key, destination_key) -> None:
+    """Copy object trong MinIO (dùng cho copy file)"""
+
+def delete_object(object_key) -> None:
+    """Xóa object khỏi MinIO (dùng khi purge)"""</code></pre>
+
+<!-- ============================================================ -->
+<h2>6. Database Schema</h2>
+
+<h3>Bảng chính</h3>
+<table>
+<tr><th>Bảng</th><th>Mục đích</th></tr>
+<tr><td><code>public.users</code></td><td>Profile ứng dụng (id = auth.users.id), role (fe/be/lead), is_active, Telegram link</td></tr>
+<tr><td><code>public.internal_requests</code></td><td>Request: title, description, tags, priority, status, creator, assignee, reply, timestamps</td></tr>
+<tr><td><code>public.assignment_history</code></td><td>Audit: ai gán request cho ai, khi nào, lý do</td></tr>
+<tr><td><code>public.request_status_logs</code></td><td>Audit: mỗi lần status thay đổi (pending→acknowledged→in_progress→done/cancelled)</td></tr>
+<tr><td><code>public.notifications</code></td><td>Thông báo cho user: assigned, reassigned, status_changed, done, cancelled</td></tr>
+<tr><td><code>public.telegram_link_tokens</code></td><td>Token một lần để link Telegram account</td></tr>
+<tr><td><code>public.notification_deliveries</code></td><td>Theo dõi trạng thái gửi notification qua Telegram</td></tr>
+<tr><td><code>public.team_files</code></td><td>Metadata file/folder: path, object_key (MinIO), status, soft-delete timestamps</td></tr>
+<tr><td><code>public.file_activity_logs</code></td><td>Audit thao tác file: upload, rename, move, copy, delete, restore, purge, download, preview</td></tr>
+</table>
+
+<h3>Status Flow của File</h3>
+<div class="diagram">
+pending_upload  ──(complete_upload)──►  active
+                                           │
+                              (rename)      │      (soft_delete)
+                              (move)        │
+                              (copy)   ◄────┘
+                                           │
+                                           ▼
+                                        deleted  ──(restore)──► active
+                                           │
+                                    (7 ngày)
+                                           │
+                                           ▼
+                                        purged   (xóa khỏi MinIO, giữ metadata)
+</div>
+
+<!-- ============================================================ -->
+<h2>7. Luồng Upload File (Presigned URL Flow)</h2>
+
+<div class="diagram">
+Browser                          FastAPI                        MinIO
+  │                                │                              │
+  │── POST /files/upload-url ─────►│                              │
+  │   {name, size, content_type}   │── validate user + size      │
+  │                                │── INSERT team_files          │
+  │                                │   (status=pending_upload)    │
+  │                                │── presigned_put_url() ──────►│
+  │◄── {file, upload_url, method}──│◄─────────────────────────────│
+  │                                │                              │
+  │── PUT upload_url (binary) ───────────────────────────────────►│
+  │◄── 200 OK ────────────────────────────────────────────────────│
+  │                                │                              │
+  │── POST /files/{id}/complete───►│                              │
+  │   {size_bytes}                 │── UPDATE status=active       │
+  │                                │── log activity               │
+  │◄── {file} ─────────────────────│                              │
+</div>
+
+<div class="note warn">
+  <strong>VibeSec:</strong> MinIO access key/secret chỉ tồn tại trong backend env. Presigned URL có TTL 300s. Frontend không bao giờ thấy credential thật.
+</div>
+
+<!-- ============================================================ -->
+<h2>8. Permission Matrix</h2>
+
+<table>
+<tr><th>Hành động</th><th>fe</th><th>be</th><th>lead</th></tr>
+<tr><td>Xem/browse file</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td>Tạo folder</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td>Upload file</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td>Download / Preview</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td>Rename file/folder</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td>Move (kéo thả) file/folder</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td>Copy file/folder</td><td>❌</td><td>❌</td><td>✅</td></tr>
+<tr><td>Xóa file/folder</td><td>❌</td><td>❌</td><td>✅</td></tr>
+<tr><td>Khôi phục từ trash</td><td>❌</td><td>❌</td><td>✅</td></tr>
+<tr><td>Purge vĩnh viễn</td><td>❌</td><td>❌</td><td>✅</td></tr>
+<tr><td>Xem/Xử lý request</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td>Tạo request</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td>Reassign request</td><td>❌</td><td>❌</td><td>✅</td></tr>
+<tr><td>Quản lý user roles</td><td>❌</td><td>❌</td><td>✅</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<h2>9. Frontend — Kiến Trúc</h2>
+
+<h3>Luồng dữ liệu</h3>
+<div class="diagram">
+Page (server component)
+  └── Client Component
+        ├── useFiles(path)          ← TanStack Query
+        │     └── listFiles(path)   ← apiFetch("/files?path=...")
+        │           └── Bearer JWT  ← Supabase session
+        │
+        ├── useFileMutations()      ← mutations (create, rename, move, delete...)
+        │     └── invalidate queries.files.all sau mỗi mutation
+        │
+        └── useCurrentUser()        ← GET /users/me → role, is_active
+</div>
+
+<h3>File Explorer Component</h3>
+<pre><code>TeamFileExplorer (client component)
+  ├── FileManager (@cubone/react-file-manager)
+  │     ├── files       ← API /files → TeamFile[] → map to CuboneFile
+  │     ├── permissions ← { create:true, rename:true, move:true, delete:isLead, ... }
+  │     ├── onFolderChange → setCurrentPath
+  │     ├── onCreateFolder → POST /files/folders
+  │     ├── onRename → PATCH /files/{id}/rename
+  │     ├── onDelete → POST /files/{id}/delete
+  │     ├── onCopy → ghi clipboard
+  │     ├── onCut → ghi clipboard
+  │     ├── onPaste → POST /files/batch-copy hoặc /files/batch-move
+  │     └── onFileOpen → folder: navigate, file: download/preview URL
+  │
+  └── Custom Upload Button
+        └── POST /files/upload-url → PUT presigned URL → POST /files/{id}/complete-upload</code></pre>
+
+<!-- ============================================================ -->
+<h2>10. Các Lệnh Thường Dùng</h2>
+
+<table>
+<tr><th>Mục đích</th><th>Lệnh</th></tr>
+<tr><td>Backend dev</td><td><code>cd apps/api && uv --cache-dir .uv-cache run uvicorn app.main:app --reload --port 8000</code></td></tr>
+<tr><td>Backend test</td><td><code>cd apps/api && uv --cache-dir .uv-cache run python -m unittest discover tests</code></td></tr>
+<tr><td>Frontend dev</td><td><code>cd apps/web && npm run dev</code></td></tr>
+<tr><td>Frontend lint</td><td><code>cd apps/web && npm run lint</code></td></tr>
+<tr><td>Frontend build</td><td><code>cd apps/web && npm run build</code></td></tr>
+<tr><td>MinIO start</td><td><code>docker run -d -p 9002:9000 -p 9003:9001 -e MINIO_ROOT_USER=minioadmin -e MINIO_ROOT_PASSWORD=minioadmin --name team-files-minio minio/minio server /data --console-address ":9001"</code></td></tr>
+<tr><td>MinIO create bucket</td><td><code>docker exec team-files-minio mc mb local/team-files</code></td></tr>
+<tr><td>GitNexus analyze</td><td><code>npx gitnexus analyze</code></td></tr>
+</table>
+
+<!-- ============================================================ -->
+<h2>11. Môi Trường (Environment Variables)</h2>
+
+<h4>Backend (apps/api/.env)</h4>
+<pre><code>SUPABASE_URL=https://xxx.supabase.co
+SUPABASE_ANON_KEY=eyJ...
+SUPABASE_SERVICE_ROLE_KEY=eyJ...
+SUPABASE_JWT_SECRET=...
+MINIO_ENDPOINT=localhost:9002
+MINIO_BUCKET=team-files
+MINIO_ACCESS_KEY=minioadmin
+MINIO_SECRET_KEY=minioadmin
+MINIO_SECURE=false</code></pre>
+
+<h4>Frontend (apps/web/.env.local)</h4>
+<pre><code>NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+NEXT_PUBLIC_API_URL=http://localhost:8000</code></pre>
+
+<div class="note">
+  <strong>Lưu ý:</strong> <code>NEXT_PUBLIC_*</code> được bundle vào browser code. Không bao giờ đặt service role key hay MinIO secret vào đây.
+</div>
+
+</div>
+</body>
+</html>
