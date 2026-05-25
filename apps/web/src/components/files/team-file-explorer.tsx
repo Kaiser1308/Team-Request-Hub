@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect, type DragEvent } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { FileManager } from "@cubone/react-file-manager";
 import "@cubone/react-file-manager/dist/style.css";
 import { Upload } from "lucide-react";
@@ -41,7 +42,9 @@ function isPreviewable(file: CuboneFile) {
 }
 
 export function TeamFileExplorer() {
-  const [currentPath, setCurrentPath] = useState("/");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const currentPath = searchParams.get("path") || "/";
   const [search, setSearch] = useState("");
   const [includeDeleted, setIncludeDeleted] = useState(false);
   const currentUser = useCurrentUser();
@@ -117,7 +120,7 @@ export function TeamFileExplorer() {
 
   async function openFile(file: CuboneFile) {
     if (file.isDirectory) {
-      setCurrentPath(file.path);
+      router.push(`/files?path=${encodeURIComponent(file.path)}`);
       return;
     }
     const response = isPreviewable(file)
@@ -213,7 +216,7 @@ export function TeamFileExplorer() {
             rename: true,
             delete: isLead,
           }}
-          onFolderChange={setCurrentPath}
+          onFolderChange={(path) => router.push(`/files?path=${encodeURIComponent(path)}`)}
           onFileOpen={(file) => void openFile(file as CuboneFile)}
           onCreateFolder={(name) =>
             void mutations.createFolder.mutateAsync({
