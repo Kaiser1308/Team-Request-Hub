@@ -1,7 +1,6 @@
 import posixpath
 import re
 from datetime import datetime, timedelta, timezone
-from pathlib import PurePosixPath
 from uuid import uuid4
 
 from app.core.exceptions import BadRequestError, ConflictError, ForbiddenError, GoneError, NotFoundError
@@ -9,6 +8,7 @@ from app.repositories import file_activity_repository, file_repository
 from app.schemas.files import CompleteUploadRequest, CreateFolderRequest, MoveFileRequest, RenameFileRequest, UploadUrlRequest
 from app.schemas.users import CurrentUser
 from app.services import minio_storage
+from app.utils.time import utc_now_iso
 
 MAX_FILE_SIZE_BYTES = 209_715_200
 PRESIGNED_EXPIRY_SECONDS = 300
@@ -120,7 +120,7 @@ def create_folder(payload: CreateFolderRequest, current_user: CurrentUser) -> di
     path = build_child_path(parent_path, name)
     ensure_available_path(path)
 
-    now = datetime.now(timezone.utc).isoformat()
+    now = utc_now_iso()
     file = file_repository.create_file({
         "name": name,
         "path": path,
@@ -147,7 +147,7 @@ def create_upload_url(payload: UploadUrlRequest, current_user: CurrentUser) -> d
 
     ext = get_extension(name)
     object_key = f"team-files/{uuid4()}-{name}"
-    now = datetime.now(timezone.utc).isoformat()
+    now = utc_now_iso()
 
     file = file_repository.create_file({
         "name": name,
@@ -179,11 +179,12 @@ def complete_upload(file_id: str, payload: CompleteUploadRequest, current_user: 
     if file.get("status") != "pending_upload":
         raise BadRequestError("File is not in pending_upload status")
 
-    now = datetime.now(timezone.utc).isoformat()
+    now = utc_now_iso()
     updated = file_repository.update_file(file_id, {
         "status": "active",
         "size_bytes": payload.size_bytes,
         "uploaded_by": current_user.id,
+        "updated_by": current_user.id,
         "updated_at": now,
     })
     activity(current_user.id, updated, "complete_upload")
@@ -204,6 +205,8 @@ def search_files(q: str, include_deleted: bool = False) -> list[dict]:
 def rename_file(file_id: str, payload: RenameFileRequest, current_user: CurrentUser) -> dict:
     ensure_lead(current_user)
     file = file_repository.get_file_or_404(file_id)
+    if file.get("status") != "active":
+        raise NotFoundError("File not found")
     name = validate_name(payload.name)
     old_path = file["path"]
     parent_path = file["parent_path"]
@@ -212,26 +215,15 @@ def rename_file(file_id: str, payload: RenameFileRequest, current_user: CurrentU
     if new_path != old_path:
         ensure_available_path(new_path)
 
-    now = datetime.now(timezone.utc).isoformat()
     updated = file_repository.update_file(file_id, {
         "name": name,
         "path": new_path,
+        "extension": get_extension(name),
         "updated_by": current_user.id,
-        "updated_at": now,
     })
 
     if file.get("is_directory") and new_path != old_path:
-        prefix_old = old_path.rstrip("/") + "/"
-        prefix_new = new_path.rstrip("/") + "/"
-        descendants = file_repository.list_children(old_path, include_deleted=True)
-        for desc in descendants:
-            desc_old_path = desc["path"]
-            desc_new_path = desc_old_path.replace(prefix_old, prefix_new, 1)
-            file_repository.update_file(desc["id"], {
-                "path": desc_new_path,
-                "parent_path": desc_new_path.rsplit("/", 1)[0] or "/",
-                "updated_at": now,
-            })
+        file_repository.update_descendants(old_path, {"updated_by": current_user.id})
 
     activity(current_user.id, updated, "rename", old_path=old_path, new_path=new_path)
     return updated
@@ -240,6 +232,8 @@ def rename_file(file_id: str, payload: RenameFileRequest, current_user: CurrentU
 def move_file(file_id: str, payload: MoveFileRequest, current_user: CurrentUser) -> dict:
     ensure_lead(current_user)
     file = file_repository.get_file_or_404(file_id)
+    if file.get("status") != "active":
+        raise NotFoundError("File not found")
     new_parent = normalize_path(payload.parent_path)
     name = file["name"]
     old_path = file["path"]
@@ -250,26 +244,14 @@ def move_file(file_id: str, payload: MoveFileRequest, current_user: CurrentUser)
 
     ensure_available_path(new_path)
 
-    now = datetime.now(timezone.utc).isoformat()
     updated = file_repository.update_file(file_id, {
         "parent_path": new_parent,
         "path": new_path,
         "updated_by": current_user.id,
-        "updated_at": now,
     })
 
     if file.get("is_directory"):
-        prefix_old = old_path.rstrip("/") + "/"
-        prefix_new = new_path.rstrip("/") + "/"
-        descendants = file_repository.list_children(old_path, include_deleted=True)
-        for desc in descendants:
-            desc_old_path = desc["path"]
-            desc_new_path = desc_old_path.replace(prefix_old, prefix_new, 1)
-            file_repository.update_file(desc["id"], {
-                "path": desc_new_path,
-                "parent_path": desc_new_path.rsplit("/", 1)[0] or "/",
-                "updated_at": now,
-            })
+        file_repository.update_descendants(old_path, {"updated_by": current_user.id})
 
     activity(current_user.id, updated, "move", old_path=old_path, new_path=new_path)
     return updated
@@ -279,7 +261,7 @@ def soft_delete_file(file_id: str, current_user: CurrentUser) -> dict:
     ensure_lead(current_user)
     file = file_repository.get_file_or_404(file_id)
 
-    now = datetime.now(timezone.utc).isoformat()
+    now = utc_now_iso()
     purge_after = (datetime.now(timezone.utc) + timedelta(days=PURGE_AFTER_DAYS)).isoformat()
 
     updated = file_repository.update_file(file_id, {
@@ -316,7 +298,7 @@ def restore_file(file_id: str, current_user: CurrentUser) -> dict:
     if existing and existing.get("id") != file_id and existing.get("status") != "purged":
         raise ConflictError(f"Cannot restore: path already exists: {path}")
 
-    now = datetime.now(timezone.utc).isoformat()
+    now = utc_now_iso()
     updated = file_repository.update_file(file_id, {
         "status": "active",
         "deleted_by": None,
@@ -375,7 +357,7 @@ def create_preview_url(file_id: str, current_user: CurrentUser) -> dict:
 
 def purge_expired(current_user: CurrentUser) -> dict:
     ensure_lead(current_user)
-    now_iso = datetime.now(timezone.utc).isoformat()
+    now_iso = utc_now_iso()
     expired = file_repository.list_deleted_ready_for_purge(now_iso)
 
     purged_count = 0
