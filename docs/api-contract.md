@@ -176,44 +176,50 @@ Response:
 
 ```txt
 GET    /files?path=/
+GET    /files/search?q=logo
 POST   /files/folders
-POST   /files/upload
-GET    /files/{file_id}
-GET    /files/{file_id}/download
-GET    /files/{file_id}/preview
+POST   /files/upload-url
+POST   /files/{file_id}/complete-upload
+POST   /files/{file_id}/download-url
+POST   /files/{file_id}/preview-url
 PATCH  /files/{file_id}/rename
 PATCH  /files/{file_id}/move
+POST   /files/batch-copy
+POST   /files/batch-move
 POST   /files/{file_id}/delete
 POST   /files/{file_id}/restore
-DELETE /files/{file_id}/purge
-GET    /files/{file_id}/activity
-GET    /files/search?q=
+POST   /files/purge-expired
+GET    /files/activity?file_id=...
 ```
 
-Active `fe`, `be`, and `lead` users can browse, search, create folders, upload, download, and preview. Only `lead` users can rename, move, delete, restore, and purge.
+All active users can browse, search, create folders, upload, download, and preview supported files (images, PDF). Only `lead` users can rename, move, copy, delete, restore, and purge files or folders. Deleted files are retained for 7 days in trash before permanent purge.
 
-`GET /files?path=/` — list directory contents. Returns files and folders at the given path.
+Uploads use two-step presigned URL flow: request an upload URL, then PUT the file directly to MinIO, then complete the upload. Max file size is 200MB.
+
+`GET /files?path=/` — list children of a folder.
 
 Response:
 
 ```json
-{
-  "items": [
-    {
-      "id": "uuid",
-      "name": "doc.pdf",
-      "path": "/doc.pdf",
-      "is_directory": false,
-      "size_bytes": 1024,
-      "content_type": "application/pdf",
-      "extension": "pdf",
-      "status": "active",
-      "created_by": "uuid",
-      "created_at": "2026-05-20T10:00:00Z"
-    }
-  ]
-}
+[
+  {
+    "id": "uuid",
+    "name": "Design",
+    "path": "/Design",
+    "parent_path": "/",
+    "is_directory": true,
+    "size_bytes": 0,
+    "content_type": null,
+    "extension": null,
+    "status": "active",
+    "created_by": "uuid",
+    "created_at": "2026-05-25T10:00:00Z",
+    "updated_at": "2026-05-25T10:00:00Z"
+  }
+]
 ```
+
+`GET /files/search?q=logo` — search files by name across all folders.
 
 `POST /files/folders` — create a new folder.
 
@@ -221,43 +227,98 @@ Request:
 
 ```json
 {
-  "name": "reports",
-  "parent_path": "/"
+  "parent_path": "/",
+  "name": "Design"
 }
 ```
 
-`POST /files/upload` — upload a file. Uses `multipart/form-data` with fields: `file`, `path`.
+`POST /files/upload-url` — request a presigned upload URL.
 
-`GET /files/{file_id}/download` — returns a 302 redirect to a presigned MinIO download URL.
+Request:
 
-`GET /files/{file_id}/preview` — returns a 302 redirect to a presigned MinIO preview URL.
+```json
+{
+  "parent_path": "/",
+  "name": "logo.png",
+  "size_bytes": 2048,
+  "content_type": "image/png"
+}
+```
+
+Response:
+
+```json
+{
+  "file": { "id": "uuid", "name": "logo.png", "status": "pending_upload", "..." : "..." },
+  "upload_url": "https://minio/bucket/object?signature=...",
+  "method": "PUT",
+  "expires_in_seconds": 300
+}
+```
+
+`POST /files/{file_id}/complete-upload` — confirm upload completed. Request: `{ "size_bytes": 2048 }`.
+
+`POST /files/{file_id}/download-url` — get a presigned download URL.
+
+Response:
+
+```json
+{
+  "url": "https://minio/bucket/object?signature=...",
+  "expires_in_seconds": 300
+}
+```
+
+`POST /files/{file_id}/preview-url` — get a presigned preview URL. Only supported for images (png, jpg, gif, webp) and PDF.
 
 `PATCH /files/{file_id}/rename` — rename a file or folder. Lead-only.
 
 Request:
 
 ```json
-{
-  "name": "new-name.pdf"
-}
+{ "name": "new-name.pdf" }
 ```
 
-`PATCH /files/{file_id}/move` — move a file or folder to a new parent path. Lead-only.
+`PATCH /files/{file_id}/move` — move a single file/folder to a new parent. Lead-only.
+
+Request:
+
+```json
+{ "parent_path": "/Archive" }
+```
+
+`POST /files/batch-copy` — copy multiple files/folders to a destination. Lead-only.
 
 Request:
 
 ```json
 {
-  "parent_path": "/archive"
+  "file_ids": ["uuid1", "uuid2"],
+  "parent_path": "/Archive"
 }
 ```
 
-`POST /files/{file_id}/delete` — soft-delete a file or folder. Deleted files are retained for 7 days. Lead-only.
+`POST /files/batch-move` — move multiple files/folders to a destination. Lead-only.
 
-`POST /files/{file_id}/restore` — restore a soft-deleted file or folder. Lead-only.
+Request:
 
-`DELETE /files/{file_id}/purge` — permanently delete a file and its MinIO object. Lead-only.
+```json
+{
+  "file_ids": ["uuid1", "uuid2"],
+  "parent_path": "/Archive"
+}
+```
 
-`GET /files/{file_id}/activity` — list activity logs for a file. Supports `limit` query param with default `50` and max `100`.
+`POST /files/{file_id}/delete` — soft-delete. File goes to trash, retained 7 days. Lead-only.
 
-`GET /files/search?q=` — search files by name across the team.
+`POST /files/{file_id}/restore` — restore from trash. Lead-only.
+
+`POST /files/purge-expired` — permanently delete all expired trash items from MinIO and DB. Lead-only.
+
+Response:
+
+```json
+{ "purged": 3 }
+```
+
+`GET /files/activity?file_id=uuid` — list audit logs. Supports `limit` (default 50, max 100).

@@ -34,5 +34,5 @@ Supabase RLS is enabled as defense-in-depth, but product authorization lives in 
 ## Team Files
 
 - Active `fe`, `be`, and `lead` users can browse, search, create folders, upload, download, and preview files.
-- Only `lead` users can rename, move, delete, restore, and purge files.
+- Only `lead` users can rename, move, copy, batch-move, delete, restore, and purge files.
 - Deleted files are retained for 7 days before purge eligibility.
