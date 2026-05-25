@@ -36,7 +36,7 @@ export function RequestActions({ request }: { request: InternalRequest }) {
   const isLead = currentUser?.role === "lead";
   const isCreator = currentUser?.id === request.created_by;
   const isAssignee = currentUser?.id === request.assigned_to;
-  const isWorker = currentUser?.role === "be" || isLead;
+  const isWorker = currentUser?.role === "be" || currentUser?.role === "fe" || isLead;
   const isClosed = request.status === "done" || request.status === "cancelled";
   const shouldRender = Boolean(currentUser) && !isClosed;
   const canSelfAssign =
@@ -51,7 +51,7 @@ export function RequestActions({ request }: { request: InternalRequest }) {
   const canDone =
     !isClosed && (isAssignee || isLead) && request.status === "in_progress";
   const canCancel = !isClosed && (isCreator || isLead);
-  const canReassign = !isClosed && isLead;
+  const canReassign = !isClosed && (isLead || isCreator || isAssignee);
 
   useEffect(() => {
     if (!shouldRender) {

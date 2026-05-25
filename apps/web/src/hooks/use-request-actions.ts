@@ -1,6 +1,10 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQueryClient,
+  type QueryClient,
+} from "@tanstack/react-query";
 import {
   cancelRequest,
   createRequest,
@@ -17,6 +21,32 @@ import {
   type StatusUpdatePayload,
 } from "@/lib/api/requests";
 import { queryKeys } from "@/lib/api/query-keys";
+import type { InternalRequest } from "@/types";
+
+const requestListViews = new Set(["assigned", "created", "pool", "done", "all"]);
+
+function updateCachedRequest(
+  queryClient: QueryClient,
+  updatedRequest: InternalRequest,
+) {
+  queryClient.setQueryData(
+    queryKeys.requests.detail(updatedRequest.id),
+    updatedRequest,
+  );
+
+  queryClient.setQueriesData<InternalRequest[]>(
+    {
+      predicate: ({ queryKey }) =>
+        queryKey[0] === "requests" &&
+        typeof queryKey[1] === "string" &&
+        requestListViews.has(queryKey[1]),
+    },
+    (requests) =>
+      requests?.map((request) =>
+        request.id === updatedRequest.id ? updatedRequest : request,
+      ),
+  );
+}
 
 export function useRequestActions() {
   const queryClient = useQueryClient();
@@ -52,11 +82,17 @@ export function useRequestActions() {
         requestId: string;
         payload: InternalRequestUpdatePayload;
       }) => updateRequest(requestId, payload),
-      onSuccess: (_, variables) => invalidateRequestData(variables.requestId),
+      onSuccess: (updatedRequest, variables) => {
+        updateCachedRequest(queryClient, updatedRequest);
+        invalidateRequestData(variables.requestId);
+      },
     }),
     selfAssign: useMutation({
       mutationFn: (requestId: string) => selfAssignRequest(requestId),
-      onSuccess: (_, requestId) => invalidateRequestData(requestId),
+      onSuccess: (updatedRequest, requestId) => {
+        updateCachedRequest(queryClient, updatedRequest);
+        invalidateRequestData(requestId);
+      },
     }),
     reassign: useMutation({
       mutationFn: ({
@@ -66,7 +102,10 @@ export function useRequestActions() {
         requestId: string;
         payload: ReassignRequestPayload;
       }) => reassignRequest(requestId, payload),
-      onSuccess: (_, variables) => invalidateRequestData(variables.requestId),
+      onSuccess: (updatedRequest, variables) => {
+        updateCachedRequest(queryClient, updatedRequest);
+        invalidateRequestData(variables.requestId);
+      },
     }),
     updateStatus: useMutation({
       mutationFn: ({
@@ -76,7 +115,10 @@ export function useRequestActions() {
         requestId: string;
         payload: StatusUpdatePayload;
       }) => updateRequestStatus(requestId, payload),
-      onSuccess: (_, variables) => invalidateRequestData(variables.requestId),
+      onSuccess: (updatedRequest, variables) => {
+        updateCachedRequest(queryClient, updatedRequest);
+        invalidateRequestData(variables.requestId);
+      },
     }),
     markDone: useMutation({
       mutationFn: ({
@@ -86,7 +128,10 @@ export function useRequestActions() {
         requestId: string;
         payload: DoneRequestPayload;
       }) => markRequestDone(requestId, payload),
-      onSuccess: (_, variables) => invalidateRequestData(variables.requestId),
+      onSuccess: (updatedRequest, variables) => {
+        updateCachedRequest(queryClient, updatedRequest);
+        invalidateRequestData(variables.requestId);
+      },
     }),
     cancel: useMutation({
       mutationFn: ({
@@ -96,7 +141,10 @@ export function useRequestActions() {
         requestId: string;
         payload: CancelRequestPayload;
       }) => cancelRequest(requestId, payload),
-      onSuccess: (_, variables) => invalidateRequestData(variables.requestId),
+      onSuccess: (updatedRequest, variables) => {
+        updateCachedRequest(queryClient, updatedRequest);
+        invalidateRequestData(variables.requestId);
+      },
     }),
   };
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { animate } from 'animejs';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from "next-intl";
@@ -15,6 +16,7 @@ import { useActiveUsers } from '@/hooks/use-users';
 import { useRequestActions } from '@/hooks/use-request-actions';
 
 export function ReassignDialog({ requestId }: { requestId: string }) {
+  const router = useRouter();
   const t = useTranslations("requests");
   const tCommon = useTranslations("common");
   const actions = useRequestActions();
@@ -87,6 +89,7 @@ export function ReassignDialog({ requestId }: { requestId: string }) {
       setAssignedTo('');
       setReason('');
       await closeDialog();
+      router.push('/assigned');
     } catch {}
   }
 

@@ -48,6 +48,8 @@ def list_assigned_requests(user_id: str, limit: int = 50) -> list[dict]:
         .table(REQUESTS_TABLE)
         .select(REQUEST_LIST_COLUMNS)
         .eq("assigned_to", user_id)
+        .neq("status", "done")
+        .neq("status", "cancelled")
         .order("created_at", desc=True)
         .limit(limit)
         .execute()
