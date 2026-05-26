@@ -3,7 +3,7 @@ import re
 from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
-from app.core.exceptions import BadRequestError, ConflictError, ForbiddenError, GoneError, NotFoundError
+from app.core.exceptions import BadRequestError, ConflictError, DomainError, ForbiddenError, GoneError, NotFoundError
 from app.repositories import file_activity_repository, file_repository
 from app.schemas.files import CompleteUploadRequest, CreateFolderRequest, MoveFileRequest, RenameFileRequest, UploadUrlRequest, BatchCopyFilesRequest, BatchMoveFilesRequest, CopyFileRequest
 from app.schemas.users import CurrentUser
@@ -21,6 +21,8 @@ PREVIEW_TYPES = {
     ("text/html", "html"), ("text/html", "htm"),
 }
 PREVIEW_EXTENSIONS = {ext for _, ext in PREVIEW_TYPES}
+TEXT_PREVIEW_EXTENSIONS = {"md", "markdown", "html", "htm"}
+TEXT_PREVIEW_CONTENT_TYPES = {"text/markdown", "text/html", "text/plain"}
 
 
 def is_lead(current_user: CurrentUser) -> bool:
@@ -256,7 +258,6 @@ def move_file(file_id: str, payload: MoveFileRequest, current_user: CurrentUser)
 
 
 def soft_delete_file(file_id: str, current_user: CurrentUser) -> dict:
-    ensure_lead(current_user)
     file = file_repository.get_file_or_404(file_id)
 
     now = utc_now_iso()
@@ -329,7 +330,14 @@ def create_download_url(file_id: str, current_user: CurrentUser) -> dict:
     if not file.get("object_key"):
         raise BadRequestError("File has no object key")
 
-    url = minio_storage.presigned_get_url(file["object_key"], PRESIGNED_EXPIRY_SECONDS)
+    filename = str(file.get("name") or "download").replace("\\", "_").replace('"', "_")
+    url = minio_storage.presigned_get_url(
+        file["object_key"],
+        PRESIGNED_EXPIRY_SECONDS,
+        response_headers={
+            "response-content-disposition": f'attachment; filename="{filename}"',
+        },
+    )
     activity(current_user.id, file, "download")
     return {"url": url, "expires_in_seconds": PRESIGNED_EXPIRY_SECONDS}
 
@@ -351,6 +359,40 @@ def create_preview_url(file_id: str, current_user: CurrentUser) -> dict:
     url = minio_storage.presigned_get_url(file["object_key"], PRESIGNED_EXPIRY_SECONDS)
     activity(current_user.id, file, "preview")
     return {"url": url, "expires_in_seconds": PRESIGNED_EXPIRY_SECONDS}
+
+
+def get_preview_content(file_id: str, current_user: CurrentUser) -> tuple[bytes, str]:
+    file = file_repository.get_file_or_404(file_id)
+    if file.get("status") != "active":
+        raise BadRequestError("File is not active")
+    if file.get("is_directory"):
+        raise BadRequestError("Cannot preview a folder")
+    if not file.get("object_key"):
+        raise BadRequestError("File has no object key")
+
+    extension = (file.get("extension") or "").lower()
+    content_type = (file.get("content_type") or "").lower()
+    is_text_preview = (
+        extension in TEXT_PREVIEW_EXTENSIONS
+        or content_type in TEXT_PREVIEW_CONTENT_TYPES
+    )
+    if not is_text_preview:
+        raise BadRequestError("Preview content only supported for markdown and html files")
+
+    try:
+        content = minio_storage.get_object_bytes(file["object_key"])
+    except DomainError:
+        try:
+            content = minio_storage.get_object_bytes_via_presigned_url(file["object_key"])
+        except DomainError as exc:
+            raise BadRequestError("Unable to read preview content from storage") from exc
+    media_type = (
+        "text/html; charset=utf-8"
+        if extension in {"html", "htm"} or content_type == "text/html"
+        else "text/markdown; charset=utf-8"
+    )
+    activity(current_user.id, file, "preview")
+    return content, media_type
 
 
 def purge_expired(current_user: CurrentUser) -> dict:

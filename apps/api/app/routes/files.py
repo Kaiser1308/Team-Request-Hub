@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Response, status
 
 from app.core.auth import get_current_user, require_active_current_user
 from app.schemas.files import (
@@ -61,6 +61,12 @@ async def download_url(file_id: str, current_user: CurrentUser = Depends(active_
 @router.post("/{file_id}/preview-url", response_model=PresignedUrlResponse)
 async def preview_url(file_id: str, current_user: CurrentUser = Depends(active_user)):
     return file_service.create_preview_url(file_id, current_user)
+
+
+@router.get("/{file_id}/preview-content")
+async def preview_content(file_id: str, current_user: CurrentUser = Depends(active_user)):
+    content, media_type = file_service.get_preview_content(file_id, current_user)
+    return Response(content=content, media_type=media_type)
 
 
 @router.patch("/{file_id}/rename", response_model=TeamFileOut)

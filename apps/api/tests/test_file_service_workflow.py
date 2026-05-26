@@ -95,6 +95,32 @@ class CompleteUploadTests(unittest.TestCase):
         mock_file_repo.update_file.assert_called_once()
 
 
+class CreateDownloadUrlTests(unittest.TestCase):
+    @patch("app.services.file_service.file_activity_repository")
+    @patch("app.services.file_service.minio_storage")
+    @patch("app.services.file_service.file_repository")
+    def test_download_url_requests_attachment_disposition(self, mock_file_repo, mock_minio, mock_activity_repo):
+        mock_file_repo.get_file_or_404.return_value = {
+            "id": "file-1",
+            "name": "doc.pdf",
+            "status": "active",
+            "is_directory": False,
+            "object_key": "team-files/uuid-doc.pdf",
+        }
+        mock_minio.presigned_get_url.return_value = "https://minio.example.com/download-url"
+
+        result = file_service.create_download_url("file-1", _fe_user())
+
+        self.assertEqual(result["url"], "https://minio.example.com/download-url")
+        mock_minio.presigned_get_url.assert_called_once_with(
+            "team-files/uuid-doc.pdf",
+            300,
+            response_headers={
+                "response-content-disposition": 'attachment; filename="doc.pdf"',
+            },
+        )
+
+
 class CreatePreviewUrlTests(unittest.TestCase):
     @patch("app.services.file_service.file_repository")
     def test_rejects_svg(self, mock_file_repo):
@@ -109,6 +135,24 @@ class CreatePreviewUrlTests(unittest.TestCase):
 
         with self.assertRaises(BadRequestError):
             file_service.create_preview_url("file-1", _fe_user())
+
+    @patch("app.services.file_service.file_activity_repository")
+    @patch("app.services.file_service.minio_storage")
+    @patch("app.services.file_service.file_repository")
+    def test_get_preview_content_for_html(self, mock_file_repo, mock_minio, mock_activity_repo):
+        mock_file_repo.get_file_or_404.return_value = {
+            "id": "file-1",
+            "status": "active",
+            "is_directory": False,
+            "object_key": "team-files/uuid-page.html",
+            "extension": "html",
+        }
+        mock_minio.get_object_bytes.return_value = b"<html><body>ok</body></html>"
+
+        content, media_type = file_service.get_preview_content("file-1", _fe_user())
+
+        self.assertEqual(content, b"<html><body>ok</body></html>")
+        self.assertEqual(media_type, "text/html; charset=utf-8")
 
 
 class SoftDeleteTests(unittest.TestCase):

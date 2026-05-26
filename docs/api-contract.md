@@ -182,6 +182,7 @@ POST   /files/upload-url
 POST   /files/{file_id}/complete-upload
 POST   /files/{file_id}/download-url
 POST   /files/{file_id}/preview-url
+GET    /files/{file_id}/preview-content
 PATCH  /files/{file_id}/rename
 PATCH  /files/{file_id}/move
 POST   /files/batch-copy
@@ -270,6 +271,8 @@ Response:
 ```
 
 `POST /files/{file_id}/preview-url` — get a presigned preview URL. Supported for images (png, jpg, jpeg, gif, webp), PDF, Markdown (md, markdown), and HTML (html, htm).
+
+`GET /files/{file_id}/preview-content` — get authenticated inline text content for Markdown/HTML preview rendering in-app. Supported only for `md`, `markdown`, `html`, `htm`.
 
 `PATCH /files/{file_id}/rename` — rename a file or folder. Lead-only.
 

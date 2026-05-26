@@ -44,9 +44,17 @@ class FileServicePermissionTests(unittest.TestCase):
         result = file_service.move_file("f-1", MoveFileRequest(parent_path="/Archive"), _be_user())
         self.assertEqual(result["path"], "/Archive/doc.pdf")
 
-    def test_non_lead_cannot_soft_delete(self):
-        with self.assertRaises(ForbiddenError):
-            file_service.soft_delete_file("f-1", _fe_user())
+    @patch("app.services.file_service.file_repository")
+    @patch("app.services.file_service.file_activity_repository")
+    @patch("app.services.file_service.utc_now_iso", return_value="2026-01-01T00:00:00Z")
+    def test_fe_can_soft_delete(self, mock_now, mock_activity_repo, mock_file_repo):
+        file = {"id": "f-1", "name": "doc.pdf", "path": "/doc.pdf", "parent_path": "/", "is_directory": False, "status": "active"}
+        updated = {**file, "status": "deleted"}
+        mock_file_repo.get_file_or_404.return_value = file
+        mock_file_repo.update_file.return_value = updated
+
+        result = file_service.soft_delete_file("f-1", _fe_user())
+        self.assertEqual(result["status"], "deleted")
 
     def test_non_lead_cannot_restore(self):
         with self.assertRaises(ForbiddenError):
