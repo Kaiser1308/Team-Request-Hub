@@ -21,3 +21,10 @@ export function markAllNotificationsRead() {
     method: "POST",
   });
 }
+
+export function markNotificationsReadByType(types: string[]) {
+  return apiFetch<{ updated: number }>("/notifications/read-by-type", {
+    method: "POST",
+    body: JSON.stringify({ types }),
+  });
+}
