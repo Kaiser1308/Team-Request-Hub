@@ -10,12 +10,13 @@ import type { TeamFile } from "@/types";
 
 const MAX_TEXT_PREVIEW_BYTES = 1_000_000;
 
-type PreviewKind = "image" | "pdf" | "markdown" | "html" | "unsupported";
+type PreviewKind = "image" | "pdf" | "markdown" | "unsupported";
 
 interface FilePreviewPanelProps {
   file: TeamFile | null;
   getPreviewUrl: (fileId: string) => Promise<PresignedUrlResponse>;
   getDownloadUrl: (fileId: string) => Promise<PresignedUrlResponse>;
+  getPreviewContent?: (fileId: string) => Promise<string>;
 }
 
 function extensionOf(file: TeamFile): string {
@@ -27,7 +28,6 @@ function getPreviewKind(file: TeamFile): PreviewKind {
   if (file.content_type?.startsWith("image/") && extension !== "svg") return "image";
   if (file.content_type === "application/pdf" || extension === "pdf") return "pdf";
   if (extension === "md" || extension === "markdown") return "markdown";
-  if (extension === "html" || extension === "htm") return "html";
   return "unsupported";
 }
 
@@ -41,6 +41,7 @@ export function FilePreviewPanel({
   file,
   getPreviewUrl,
   getDownloadUrl,
+  getPreviewContent,
 }: FilePreviewPanelProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
@@ -68,30 +69,42 @@ export function FilePreviewPanel({
       setIsLoading(true);
 
       try {
-        const download = await getDownloadUrl(file.id);
-        if (!cancelled) setDownloadUrl(download.url);
+        void getDownloadUrl(file.id)
+          .then((download) => {
+            if (!cancelled) setDownloadUrl(download.url);
+          })
+          .catch(() => {
+            if (!cancelled) setDownloadUrl(null);
+          });
 
         if (kind === "unsupported") return;
-        if ((kind === "markdown" || kind === "html") && file.size_bytes > MAX_TEXT_PREVIEW_BYTES) {
-          throw new Error("File is too large to preview in the browser.");
+
+        if (kind === "markdown") {
+          if (file.size_bytes > MAX_TEXT_PREVIEW_BYTES) {
+            throw new Error("File is too large to preview in the browser.");
+          }
+          if (!getPreviewContent) {
+            throw new Error("Preview service is temporarily unavailable. Please refresh the page.");
+          }
+          const content = await getPreviewContent(file.id);
+          if (!cancelled) {
+            setTextContent(content);
+            setIsLoading(false);
+          }
+          return;
         }
 
         const preview = await getPreviewUrl(file.id);
         if (cancelled) return;
         setPreviewUrl(preview.url);
-
-        if (kind === "markdown" || kind === "html") {
-          const response = await fetch(preview.url);
-          if (!response.ok) throw new Error(`Preview request failed with ${response.status}`);
-          const content = await response.text();
-          if (!cancelled) setTextContent(content);
+        if (!cancelled) {
+          setIsLoading(false);
         }
       } catch (err) {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : "Unable to load preview.");
+          setIsLoading(false);
         }
-      } finally {
-        if (!cancelled) setIsLoading(false);
       }
     }
 
@@ -99,7 +112,7 @@ export function FilePreviewPanel({
     return () => {
       cancelled = true;
     };
-  }, [file, getDownloadUrl, getPreviewUrl, retryKey]);
+  }, [file, getDownloadUrl, getPreviewContent, getPreviewUrl, retryKey]);
 
   if (!file) {
     return (
@@ -155,6 +168,7 @@ export function FilePreviewPanel({
         ) : null}
 
         {!isLoading && !error && kind === "image" && previewUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img src={previewUrl} alt={file.name} className="max-h-[70vh] w-full object-contain" />
         ) : null}
 
@@ -183,14 +197,6 @@ export function FilePreviewPanel({
           </div>
         ) : null}
 
-        {!isLoading && !error && kind === "html" && textContent ? (
-          <iframe
-            title={file.name}
-            sandbox=""
-            srcDoc={textContent}
-            className="h-[70vh] w-full rounded-md border border-[#e5e7eb] bg-white"
-          />
-        ) : null}
       </div>
     </aside>
   );

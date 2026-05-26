@@ -1,4 +1,4 @@
-import { apiFetch } from "@/lib/api/client";
+import { apiFetch, apiFetchText } from "@/lib/api/client";
 import type { FileActivityLog, TeamFile } from "@/types";
 
 export interface CreateFolderPayload {
@@ -105,6 +105,10 @@ export function getPreviewUrl(fileId: string) {
   return apiFetch<PresignedUrlResponse>(`/files/${fileId}/preview-url`, {
     method: "POST",
   });
+}
+
+export function getPreviewContent(fileId: string) {
+  return apiFetchText(`/files/${fileId}/preview-content`);
 }
 
 export function renameFile(fileId: string, payload: RenameFilePayload) {

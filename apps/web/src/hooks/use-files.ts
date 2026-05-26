@@ -9,6 +9,7 @@ import {
   createUploadUrl,
   deleteFile,
   getDownloadUrl,
+  getPreviewContent,
   getPreviewUrl,
   listFileActivity,
   listFiles,
@@ -93,6 +94,9 @@ export function useFileMutations() {
     }),
     previewUrl: useMutation({
       mutationFn: (fileId: string) => getPreviewUrl(fileId),
+    }),
+    previewContent: useMutation({
+      mutationFn: (fileId: string) => getPreviewContent(fileId),
     }),
     renameFile: useMutation({
       mutationFn: ({

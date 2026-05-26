@@ -1,19 +1,9 @@
 import { getTranslations } from "next-intl/server";
-import { AuthForm } from "@/components/auth/auth-form";
 import { GoogleLoginButton } from "@/components/auth/google-login-button";
 
-type LoginPageProps = {
-  searchParams?: Promise<{
-    mode?: string | string[];
-  }>;
-};
-
-export default async function LoginPage({ searchParams }: LoginPageProps) {
+export default async function LoginPage() {
   const tCommon = await getTranslations("common");
   const tAuth = await getTranslations("auth");
-  const params = await searchParams;
-  const mode = Array.isArray(params?.mode) ? params.mode[0] : params?.mode;
-  const initialMode = mode === "register" ? "register" : "login";
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#f9fafb] px-4 py-8">
@@ -24,8 +14,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             {tAuth("loginDescription")}
           </p>
         </div>
-        <AuthForm initialMode={initialMode} />
-        <div className="grid gap-3 border-t border-[#e5e7eb] pt-4">
+        <div className="grid gap-3">
           <p className="text-center text-sm text-[#6b7280]">{tAuth("companyGooglePrompt")}</p>
           <GoogleLoginButton />
         </div>

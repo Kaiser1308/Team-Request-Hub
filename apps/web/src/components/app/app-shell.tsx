@@ -67,6 +67,7 @@ function canSeeNavItem(item: NavItem, role?: Role) {
 }
 
 function isActivePath(pathname: string, href: string) {
+  if (pathname === "/requests/new" && href === "/requests") return false;
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 

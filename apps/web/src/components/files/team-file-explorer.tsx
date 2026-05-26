@@ -6,6 +6,7 @@ import { FileManager } from "@cubone/react-file-manager";
 import "@cubone/react-file-manager/dist/style.css";
 import { Upload } from "lucide-react";
 import { FilePreviewPanel } from "@/components/files/file-preview-panel";
+import { TrashPanel } from "@/components/files/trash-panel";
 import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useFileMutations, useFileSearch, useFiles, useFileTree } from "@/hooks/use-files";
@@ -226,7 +227,7 @@ export function TeamFileExplorer() {
               copy: isLead,
               move: true,
               rename: true,
-              delete: isLead,
+              delete: true,
             }}
             onFolderChange={(path) => {
               const encoded = encodeURIComponent(path);
@@ -274,8 +275,11 @@ export function TeamFileExplorer() {
           file={selectedFile}
           getPreviewUrl={mutations.previewUrl.mutateAsync}
           getDownloadUrl={mutations.downloadUrl.mutateAsync}
+          getPreviewContent={mutations.previewContent.mutateAsync}
         />
       </div>
+
+      {isLead && includeDeleted ? <TrashPanel /> : null}
     </div>
   );
 }
