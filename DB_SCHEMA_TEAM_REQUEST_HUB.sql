@@ -7,6 +7,7 @@
 -- =========================================================
 
 create extension if not exists "pgcrypto";
+create extension if not exists pg_trgm schema extensions;
 
 -- =========================================================
 -- 1. Enums
@@ -73,9 +74,25 @@ create table if not exists public.users (
   avatar_url text,
   role user_role not null default 'fe',
   is_active boolean not null default false,
+  preferred_language text not null default 'vi',
+  telegram_chat_id text,
+  telegram_username text,
+  telegram_linked_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.users
+  add column if not exists preferred_language text not null default 'vi';
+
+alter table public.users
+  add column if not exists telegram_chat_id text,
+  add column if not exists telegram_username text,
+  add column if not exists telegram_linked_at timestamptz;
+
+create unique index if not exists idx_users_telegram_chat_id
+  on public.users(telegram_chat_id)
+  where telegram_chat_id is not null;
 
 create index if not exists idx_users_role on public.users(role);
 create index if not exists idx_users_is_active on public.users(is_active);
@@ -181,16 +198,16 @@ create table if not exists public.assignment_history (
 );
 
 create index if not exists idx_assignment_history_request_id
-  on public.assignment_history(request_id);
+  on public.assignment_history(request_id, created_at desc);
 
 create index if not exists idx_assignment_history_to_user_id
   on public.assignment_history(to_user_id);
 
+create index if not exists idx_assignment_history_from_user_id
+  on public.assignment_history(from_user_id);
+
 create index if not exists idx_assignment_history_assigned_by
   on public.assignment_history(assigned_by);
-
-create index if not exists idx_assignment_history_created_at
-  on public.assignment_history(created_at desc);
 
 -- =========================================================
 -- 5. Request Status Logs
@@ -209,7 +226,7 @@ create table if not exists public.request_status_logs (
 );
 
 create index if not exists idx_request_status_logs_request_id
-  on public.request_status_logs(request_id);
+  on public.request_status_logs(request_id, created_at desc);
 
 create index if not exists idx_request_status_logs_changed_by
   on public.request_status_logs(changed_by);
@@ -237,6 +254,9 @@ create table if not exists public.notifications (
 create index if not exists idx_notifications_user_id
   on public.notifications(user_id);
 
+create index if not exists idx_notifications_user_created_at
+  on public.notifications(user_id, created_at desc);
+
 create index if not exists idx_notifications_user_unread
   on public.notifications(user_id, created_at desc)
   where is_read = false;
@@ -248,20 +268,7 @@ create index if not exists idx_notifications_created_at
   on public.notifications(created_at desc);
 
 -- =========================================================
--- 7. Telegram columns on users
--- =========================================================
-
-alter table public.users
-  add column if not exists telegram_chat_id text,
-  add column if not exists telegram_username text,
-  add column if not exists telegram_linked_at timestamptz;
-
-create unique index if not exists idx_users_telegram_chat_id
-  on public.users(telegram_chat_id)
-  where telegram_chat_id is not null;
-
--- =========================================================
--- 8. Telegram Link Tokens
+-- 7. Telegram Link Tokens
 -- =========================================================
 
 create table if not exists public.telegram_link_tokens (
@@ -393,8 +400,20 @@ create index if not exists idx_team_files_parent_status_name
 create index if not exists idx_team_files_status_purge_after
   on public.team_files(status, purge_after);
 
-create index if not exists idx_team_files_lower_name
-  on public.team_files(lower(name));
+create index if not exists idx_team_files_created_by
+  on public.team_files(created_by);
+
+create index if not exists idx_team_files_uploaded_by
+  on public.team_files(uploaded_by);
+
+create index if not exists idx_team_files_updated_by
+  on public.team_files(updated_by);
+
+create index if not exists idx_team_files_deleted_by
+  on public.team_files(deleted_by);
+
+create index if not exists idx_team_files_name_trgm
+  on public.team_files using gin(name extensions.gin_trgm_ops);
 
 create table if not exists public.file_activity_logs (
   id uuid primary key default gen_random_uuid(),
@@ -421,6 +440,7 @@ create index if not exists idx_file_activity_logs_actor_created_at
 create or replace function public.set_updated_at()
 returns trigger
 language plpgsql
+set search_path = public
 as $$
 begin
   new.updated_at = now();
@@ -464,8 +484,8 @@ begin
   values (
     new.id,
     new.email,
-    coalesce(new.raw_user_meta_data->>'name', new.raw_user_meta_data->>'full_name'),
-    new.raw_user_meta_data->>'avatar_url',
+    coalesce(new.raw_user_meta_data->>'name', new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1)),
+    coalesce(new.raw_user_meta_data->>'avatar_url', new.raw_user_meta_data->>'picture'),
     'fe',
     false
   )
@@ -474,6 +494,9 @@ begin
   return new;
 end;
 $$;
+
+revoke all on function public.handle_new_auth_user() from public;
+grant execute on function public.handle_new_auth_user() to postgres, service_role;
 
 drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
@@ -507,7 +530,7 @@ create policy "users can read own profile"
 on public.users
 for select
 to authenticated
-using (auth.uid() = id);
+using ((select auth.uid()) = id);
 
 -- Users can read their own notifications if direct client access is ever used for realtime/display.
 drop policy if exists "users can read own notifications" on public.notifications;
@@ -515,15 +538,15 @@ create policy "users can read own notifications"
 on public.notifications
 for select
 to authenticated
-using (auth.uid() = user_id);
+using ((select auth.uid()) = user_id);
 
 drop policy if exists "users can update own notification read state" on public.notifications;
 create policy "users can update own notification read state"
 on public.notifications
 for update
 to authenticated
-using (auth.uid() = user_id)
-with check (auth.uid() = user_id);
+using ((select auth.uid()) = user_id)
+with check ((select auth.uid()) = user_id);
 
 -- No insert/update/delete policies for internal_requests from FE.
 -- Backend service role bypasses RLS.

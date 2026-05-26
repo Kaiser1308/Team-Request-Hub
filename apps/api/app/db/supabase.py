@@ -2,11 +2,15 @@ from supabase import Client, create_client
 
 from app.core.config import get_settings
 
+_admin_client: Client | None = None
+
 
 def get_supabase_admin() -> Client:
-    settings = get_settings()
-
-    return create_client(
-        settings.supabase_url,
-        settings.supabase_service_role_key,
-    )
+    global _admin_client
+    if _admin_client is None:
+        settings = get_settings()
+        _admin_client = create_client(
+            settings.supabase_url,
+            settings.supabase_service_role_key,
+        )
+    return _admin_client

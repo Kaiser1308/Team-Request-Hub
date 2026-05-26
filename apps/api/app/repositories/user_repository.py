@@ -1,3 +1,5 @@
+from http.client import HTTPException
+
 from app.core.exceptions import BadRequestError, NotFoundError
 
 from app.db.supabase import get_supabase_admin
