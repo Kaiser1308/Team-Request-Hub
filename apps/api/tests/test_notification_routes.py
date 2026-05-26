@@ -54,5 +54,26 @@ class NotificationRoutesTests(unittest.TestCase):
         list_notifications.assert_called_once_with("user-1", False, 25)
 
 
+    def test_read_by_type_forwards_types(self):
+        app.dependency_overrides[get_current_user] = lambda: CurrentUser(
+            id="user-1",
+            email="user@example.com",
+            name="User",
+            role="fe",
+        )
+
+        with patch("app.routes.notifications.notification_module.mark_notifications_read_by_type") as mock_fn:
+            mock_fn.return_value = {"updated": 2}
+
+            response = TestClient(app).post(
+                "/notifications/read-by-type",
+                json={"types": ["assigned", "reassigned"]},
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"updated": 2})
+        mock_fn.assert_called_once_with("user-1", ["assigned", "reassigned"])
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from app.core.auth import get_current_user, require_active_current_user
-from app.schemas.notifications import NotificationOut, NotificationsReadAllOut
+from app.schemas.notifications import NotificationOut, NotificationsReadAllOut, NotificationsReadByTypeIn
 from app.schemas.users import CurrentUser
 from app import notification_module
 
@@ -26,6 +26,17 @@ async def mark_all_notifications_read(
 ):
     require_active_current_user(current_user)
     return notification_module.mark_all_notifications_read(current_user.id)
+
+
+@router.post("/read-by-type", response_model=NotificationsReadAllOut)
+async def mark_notifications_read_by_type(
+    body: NotificationsReadByTypeIn,
+    current_user: Annotated[CurrentUser, Depends(get_current_user)],
+):
+    require_active_current_user(current_user)
+    return notification_module.mark_notifications_read_by_type(
+        current_user.id, body.types
+    )
 
 
 @router.post("/{notification_id}/read", response_model=NotificationOut)
