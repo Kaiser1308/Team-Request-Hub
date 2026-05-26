@@ -24,7 +24,7 @@ import { LogoutButton } from "@/components/auth/logout-button";
 import { LanguageSwitcher } from "@/components/app/language-switcher";
 import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/hooks/use-current-user";
-import { useNotifications } from "@/hooks/use-notifications";
+import { useNotifications, useRouteBadgeCounts, useMarkRouteBadgeRead } from "@/hooks/use-notifications";
 import { MOTION_DURATION, MOTION_EASE, MOTION_SCALE } from "@/lib/animation/constants";
 import { cn } from "@/lib/utils";
 import type { Role } from "@/types";
@@ -47,13 +47,14 @@ interface NavItem {
   labelKey: NavLabelKey;
   roles?: Role[];
   icon: LucideIcon;
+  notificationTypes?: string[];
 }
 
 const navItems: NavItem[] = [
   { href: "/dashboard", labelKey: "dashboard", icon: LayoutDashboard },
-  { href: "/assigned", labelKey: "assigned", icon: UserCheck },
+  { href: "/assigned", labelKey: "assigned", icon: UserCheck, notificationTypes: ["assigned", "reassigned"] },
   { href: "/requests", labelKey: "created", icon: FileText },
-  { href: "/pool", labelKey: "pool", icon: Inbox },
+  { href: "/pool", labelKey: "pool", icon: Inbox, notificationTypes: ["pool_new"] },
   { href: "/done", labelKey: "done", icon: CheckCircle2 },
   { href: "/all", labelKey: "all", roles: ["lead"], icon: Database },
   { href: "/files", labelKey: "files", icon: FolderOpen },
@@ -105,6 +106,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const unreadRef = useRef<HTMLSpanElement | null>(null);
   const unreadCount = notificationsQuery.data?.length ?? 0;
+
+  const badgeCounts = useRouteBadgeCounts();
+  const markBadgeRead = useMarkRouteBadgeRead();
+
+  const badgeForItem = (item: NavItem): number => {
+    if (!item.notificationTypes) return 0;
+    if (item.notificationTypes.includes("assigned")) return badgeCounts.data?.assigned ?? 0;
+    if (item.notificationTypes.includes("pool_new")) return badgeCounts.data?.pool ?? 0;
+    return 0;
+  };
 
   const tCommon = useTranslations("common");
   const tNav = useTranslations("nav");
@@ -208,11 +219,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <nav className="flex flex-col gap-1" aria-label={tShell("mainNavigation")}>
           {visibleNavItems.map((item) => {
             const Icon = item.icon;
+            const badge = badgeForItem(item);
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                onClick={() => setIsMobileNavOpen(false)}
+                onClick={() => {
+                  setIsMobileNavOpen(false);
+                  if (item.notificationTypes && item.notificationTypes.length > 0) {
+                    markBadgeRead.mutate(item.notificationTypes);
+                  }
+                }}
                 className={cn(
                   "group flex items-center gap-3 rounded-md px-3 py-2 text-sm text-[#d1d5db] outline-none transition-colors hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-white/40",
                   isActivePath(pathname, item.href) &&
@@ -227,7 +244,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   )}
                   aria-hidden="true"
                 />
-                <span>{tNav(item.labelKey)}</span>
+                <span className="flex-1">{tNav(item.labelKey)}</span>
+                {badge > 0 && (
+                  <span className="inline-flex min-w-[18px] h-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-medium leading-none text-white">
+                    {badge}
+                  </span>
+                )}
               </Link>
             );
           })}
