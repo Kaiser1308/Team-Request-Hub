@@ -41,6 +41,10 @@ def mark_all_notifications_read(user_id: str) -> dict:
     return {"updated": _store.mark_all_notifications_read(user_id)}
 
 
+def mark_notifications_read_by_type(user_id: str, types: list[str]) -> dict:
+    return {"updated": _store.mark_notifications_read_by_type(user_id, types)}
+
+
 def get_telegram_profile(user_id: str) -> dict | None:
     return _store.get_user_telegram_profile(user_id)
 

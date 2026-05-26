@@ -71,6 +71,19 @@ def mark_all_notifications_read(user_id: str) -> int:
     return len(result.data or [])
 
 
+def mark_notifications_read_by_type(user_id: str, types: list[str]) -> int:
+    result = (
+        get_supabase_admin()
+        .table("notifications")
+        .update({"is_read": True})
+        .eq("user_id", user_id)
+        .eq("is_read", False)
+        .in_("type", types)
+        .execute()
+    )
+    return len(result.data or [])
+
+
 def create_delivery(*, notification_id: str, user_id: str, channel: str) -> dict:
     result = (
         get_supabase_admin()

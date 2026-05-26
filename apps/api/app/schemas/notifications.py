@@ -26,3 +26,7 @@ class NotificationOut(BaseModel):
 
 class NotificationsReadAllOut(BaseModel):
     updated: int
+
+
+class NotificationsReadByTypeIn(BaseModel):
+    types: list[NotificationType]
