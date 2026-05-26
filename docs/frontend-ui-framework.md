@@ -158,11 +158,15 @@ Implement routes inside `apps/web/src/app`.
 
 /(dashboard)/admin/users
   Source: no direct mockup
-  Purpose: lead-only role management.
+  Purpose: lead-only role management and user approval.
 
 /(dashboard)/files
   Source: no direct mockup
   Purpose: shared team file explorer with MinIO presigned URLs, drag-drop, copy/paste.
+
+/(dashboard)/notifications
+  Source: no direct mockup
+  Purpose: user notification list with read/mark-all actions.
 ```
 
 ## Frontend Architecture
@@ -174,16 +178,17 @@ src/app/
   Route files and route layouts only.
 
 src/components/app/
-  AppShell, AppSidebar, AppTopbar, UserMenu, NotificationBell.
+  AppShell, AppSidebar, AppTopbar, UserMenu, NotificationBell,
+  PageSkeleton, PageTransition, AnimeSampleCard, LanguageSwitcher.
 
 src/components/auth/
-  GoogleLoginButton, LogoutButton.
+  GoogleLoginButton, LogoutButton, WelcomeScreen, GoodbyeScreen, AuthForm.
 
 src/components/requests/
   RequestCard, RequestList, RequestFilters, RequestStatusBadge,
   RequestPriorityBadge, RequestForm, RequestDetail, RequestTimeline,
   RequestActions, DoneRequestDialog, ReassignRequestDialog,
-  CancelRequestDialog.
+  CancelRequestDialog, UserDisplay, TranslatedLabels.
 
 src/components/notifications/
   NotificationList, NotificationItem, NotificationEmptyState.
@@ -191,15 +196,26 @@ src/components/notifications/
 src/components/admin/
   UserRoleTable, UserRoleSelect.
 
+src/components/files/
+  TeamFileExplorer, FilePreviewPanel, TrashPanel.
+
+src/components/settings/
+  TelegramSettings.
+
 src/components/shared/
-  PageHeader, EmptyState, ErrorState, LoadingState, ConfirmDialog.
+  PageHeader, EmptyState, ErrorState, LoadingState, FilterBar,
+  ConfirmDialog.
 
 src/hooks/
-  useCurrentUser, useRequests, useRequest, useRequestActions,
-  useNotifications, useUsers.
+  useCurrentUser, useUsers, useRequests, useRequestActions,
+  useNotifications, useDashboardSummary, useFiles, useTelegram.
 
 src/lib/api/
-  users.ts, requests.ts, notifications.ts, query-keys.ts.
+  client.ts, users.ts, requests.ts, notifications.ts, dashboard.ts,
+  telegram.ts, files.ts, query-keys.ts.
+
+src/i18n/
+  config.ts, request.ts.
 
 src/types/
   Shared frontend domain types matching backend schemas.
@@ -227,7 +243,9 @@ Created by me
 Pool
 Done
 All requests    lead only
+Files
 Users           lead only
+Notifications
 New request
 ```
 
@@ -236,6 +254,7 @@ Top bar:
 ```txt
 current page title
 notification bell
+language switcher
 current user name/email
 role badge
 logout menu item
@@ -489,12 +508,16 @@ Required API modules:
 src/lib/api/users.ts
   getCurrentUser()
   listUsers()
+  listActiveUsers()
   updateUserRole(userId, role)
+  updateUserActiveState(userId, isActive)
+  updateMyLanguage(language)
 
 src/lib/api/requests.ts
   listRequests(params)
   getRequest(requestId)
   createRequest(input)
+  updateRequest(requestId, input)
   assignRequest(requestId)
   reassignRequest(requestId, assigneeId)
   acknowledgeRequest(requestId)
@@ -505,9 +528,37 @@ src/lib/api/requests.ts
   getStatusLogs(requestId)
 
 src/lib/api/notifications.ts
-  listNotifications()
+  listNotifications(unreadOnly)
   markNotificationRead(notificationId)
   markAllNotificationsRead()
+  markNotificationsReadByType(types)
+
+src/lib/api/dashboard.ts
+  getDashboardSummary()
+
+src/lib/api/telegram.ts
+  getTelegramProfile()
+  createTelegramLink()
+  unlinkTelegram()
+
+src/lib/api/files.ts
+  listFiles(path, includeDeleted)
+  searchFiles(query, includeDeleted)
+  listAllFiles(includeDeleted)
+  createFolder(payload)
+  createUploadUrl(payload)
+  completeUpload(fileId, payload)
+  getDownloadUrl(fileId)
+  getPreviewUrl(fileId)
+  getPreviewContent(fileId)
+  renameFile(fileId, payload)
+  moveFile(fileId, payload)
+  batchCopyFiles(payload)
+  batchMoveFiles(payload)
+  deleteFile(fileId)
+  restoreFile(fileId)
+  purgeExpiredFiles()
+  listFileActivity(fileId, limit)
 ```
 
 Query key pattern:
@@ -515,11 +566,17 @@ Query key pattern:
 ```txt
 ['current-user']
 ['users']
-['requests', params]
-['request', requestId]
-['request-assignment-history', requestId]
-['request-status-logs', requestId]
+['users', 'active']
+['requests', view, { limit }]
+['requests', 'detail', requestId]
+['requests', 'assignment-history', requestId]
+['requests', 'status-logs', requestId]
 ['notifications']
+['dashboard', 'summary']
+['telegram', 'profile']
+['files', 'list', { path, includeDeleted }]
+['files', 'search', { query, includeDeleted }]
+['files', 'activity', fileId]
 ```
 
 ## Accessibility
@@ -592,7 +649,12 @@ done with reply
 cancel
 notifications
 lead role management
+lead user approval
 lead all requests view
 request detail timeline/history
+dashboard summary
+team file explorer
+telegram settings
+bilingual language switching
 mobile usable layout
 ```

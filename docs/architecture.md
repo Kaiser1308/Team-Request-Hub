@@ -100,13 +100,23 @@ Request actions update `internal_requests` and create the required side effects:
 - `request_status_logs` for status changes, done, cancel, and active reassign reset
 - `notifications` for assignment, reassignment, status change, done, and cancel events
 
+## File Service
+
+File operations use MinIO (S3-compatible) for object storage with a two-step presigned URL upload flow. File metadata lives in `public.team_files` and `public.file_activity_logs`. The service module `app/services/file_service.py` enforces size limits, path safety, and soft-delete with 7-day purge scheduling. `app/services/minio_storage.py` handles all MinIO interactions.
+
 ## Current State
 
 - Google OAuth login/logout is implemented in `apps/web`.
 - Frontend protected pages call FastAPI through `apiFetch` with a Supabase Bearer JWT.
-- Request list, create, detail, workflow action, role management, and notification UI are implemented.
+- Request list, create, detail, workflow action, role management, notification UI, and request timeline are implemented.
 - Backend request workflow creates assignment history, status logs, and notifications.
 - Lead role management is available through `PATCH /users/{user_id}/role`.
+- Lead user approval/rejection is available through `PATCH /users/{user_id}/active`.
+- Dashboard summary endpoint provides bounded workload data per active user.
+- Telegram integration supports account linking, message delivery, and webhook handling.
+- Team file explorer supports browse, search, upload, download, preview, rename, move, copy, batch operations, soft-delete, restore, and purge.
+- Bilingual i18n (VI/EN) is implemented in the frontend with `src/i18n/config.ts`.
+- User language preference is stored in `preferred_language` column and synced via `PATCH /users/me/language`.
 
 ## Local Backend Commands
 

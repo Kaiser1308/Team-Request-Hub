@@ -30,9 +30,12 @@ Response:
 ## Users
 
 ```txt
-GET /users/me
-GET /users
-PATCH /users/{user_id}/role
+GET    /users/me
+PATCH  /users/me/language
+GET    /users/active
+GET    /users
+PATCH  /users/{user_id}/role
+PATCH  /users/{user_id}/active
 ```
 
 `PATCH /users/{user_id}/role` is lead-only.
@@ -51,7 +54,29 @@ Allowed roles:
 fe | be | lead
 ```
 
-Response:
+`PATCH /users/{user_id}/active` is lead-only. Sets user approval state.
+
+Request:
+
+```json
+{
+  "is_active": true
+}
+```
+
+`PATCH /users/me/language` updates the current user's language preference.
+
+Request:
+
+```json
+{
+  "language": "vi"
+}
+```
+
+`GET /users/active` returns only active users (for assignee selection).
+
+User response:
 
 ```json
 {
@@ -60,6 +85,7 @@ Response:
   "name": "User",
   "avatar_url": null,
   "role": "fe",
+  "is_active": true,
   "created_at": "2026-05-20T10:00:00Z"
 }
 ```
@@ -67,7 +93,7 @@ Response:
 ## Requests
 
 ```txt
-GET    /requests?view=assigned|created|pool|done|all
+GET    /requests?view=assigned|created|pool|done|all&limit=50
 POST   /requests
 GET    /requests/{request_id}
 PATCH  /requests/{request_id}
@@ -76,8 +102,8 @@ POST   /requests/{request_id}/reassign
 POST   /requests/{request_id}/status
 POST   /requests/{request_id}/done
 POST   /requests/{request_id}/cancel
-GET    /requests/{request_id}/assignment-history
-GET    /requests/{request_id}/status-logs
+GET    /requests/{request_id}/assignment-history?limit=50
+GET    /requests/{request_id}/status-logs?limit=50
 ```
 
 `view=all` is lead-only.
@@ -92,14 +118,17 @@ in_progress -> acknowledged | done | cancelled
 
 Use `/done` for `done` and `/cancel` for cancel actions from the frontend.
 
+`GET /requests` supports optional `limit` query param with default `50`.
+
 `assignment-history` and `status-logs` support optional `limit` query param with default `50` and max `100`.
 
 ## Notifications
 
 ```txt
 GET  /notifications?unread_only=false&limit=50
-POST /notifications/{notification_id}/read
 POST /notifications/read-all
+POST /notifications/read-by-type
+POST /notifications/{notification_id}/read
 ```
 
 `GET /notifications` supports `limit` with default `50` and max `100`.
@@ -109,6 +138,24 @@ POST /notifications/read-all
 ```json
 {
   "updated": 5
+}
+```
+
+`POST /notifications/read-by-type` marks notifications read filtered by type.
+
+Request:
+
+```json
+{
+  "types": ["assigned", "reassigned"]
+}
+```
+
+Response:
+
+```json
+{
+  "updated": 3
 }
 ```
 
@@ -175,8 +222,9 @@ Response:
 ## Files
 
 ```txt
-GET    /files?path=/
-GET    /files/search?q=logo
+GET    /files?path=/&include_deleted=false
+GET    /files/search?q=logo&include_deleted=false
+GET    /files/tree?include_deleted=false
 POST   /files/folders
 POST   /files/upload-url
 POST   /files/{file_id}/complete-upload
@@ -193,11 +241,11 @@ POST   /files/purge-expired
 GET    /files/activity?file_id=...
 ```
 
-All active users can browse, search, create folders, upload, download, and preview supported files (images, PDF). Only `lead` users can rename, move, copy, delete, restore, and purge files or folders. Deleted files are retained for 7 days in trash before permanent purge.
+All active users can browse, search, create folders, upload, download, preview, rename, move, batch-move, and soft-delete files. Only `lead` users can batch-copy, restore from trash, and purge files. Deleted files are retained for 7 days in trash before permanent purge.
 
 Uploads use two-step presigned URL flow: request an upload URL, then PUT the file directly to MinIO, then complete the upload. Max file size is 200MB.
 
-`GET /files?path=/` — list children of a folder.
+`GET /files?path=/` — list children of a folder. Supports `include_deleted` (only effective for lead users).
 
 Response:
 
@@ -220,7 +268,7 @@ Response:
 ]
 ```
 
-`GET /files/search?q=logo` — search files by name across all folders.
+`GET /files/search?q=logo` — search files by name across all folders. Supports `include_deleted` (only effective for lead users).
 
 `POST /files/folders` — create a new folder.
 
@@ -274,7 +322,7 @@ Response:
 
 `GET /files/{file_id}/preview-content` — get authenticated inline text content for Markdown/HTML preview rendering in-app. Supported only for `md`, `markdown`, `html`, `htm`.
 
-`PATCH /files/{file_id}/rename` — rename a file or folder. Lead-only.
+`PATCH /files/{file_id}/rename` — rename a file or folder.
 
 Request:
 
@@ -282,7 +330,7 @@ Request:
 { "name": "new-name.pdf" }
 ```
 
-`PATCH /files/{file_id}/move` — move a single file/folder to a new parent. Lead-only.
+`PATCH /files/{file_id}/move` — move a single file/folder to a new parent.
 
 Request:
 
@@ -301,7 +349,7 @@ Request:
 }
 ```
 
-`POST /files/batch-move` — move multiple files/folders to a destination. Lead-only.
+`POST /files/batch-move` — move multiple files/folders to a destination.
 
 Request:
 
@@ -312,7 +360,7 @@ Request:
 }
 ```
 
-`POST /files/{file_id}/delete` — soft-delete. File goes to trash, retained 7 days. Lead-only.
+`POST /files/{file_id}/delete` — soft-delete. File goes to trash, retained 7 days.
 
 `POST /files/{file_id}/restore` — restore from trash. Lead-only.
 
@@ -325,3 +373,5 @@ Response:
 ```
 
 `GET /files/activity?file_id=uuid` — list audit logs. Supports `limit` (default 50, max 100).
+
+`GET /files/tree` — list all files in a flat tree. Supports `include_deleted` (only effective for lead users).

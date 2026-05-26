@@ -23,6 +23,14 @@ New users default to `fe` through the Supabase Auth profile trigger.
 
 `PATCH /users/{user_id}/role` is lead-only. The backend rejects non-lead role updates regardless of frontend navigation state.
 
+## User Approval
+
+`PATCH /users/{user_id}/active` is lead-only. Leads can approve (`is_active: true`) or deactivate (`is_active: false`) users.
+
+## User Language Preference
+
+`PATCH /users/me/language` is available to all active users. Updates the `preferred_language` field used for i18n and Telegram message language.
+
 ## Pending Approval
 
 New users can authenticate but start with `is_active = false`. `/users/me` returns the profile so the frontend can show a pending approval screen. Request, notification, user-list, and admin endpoints reject inactive users until a lead approves them.
@@ -33,6 +41,6 @@ Supabase RLS is enabled as defense-in-depth, but product authorization lives in 
 
 ## Team Files
 
-- Active `fe`, `be`, and `lead` users can browse, search, create folders, upload, download, rename, move, and preview files.
-- Only `lead` users can copy, batch-move, delete, restore, and purge files.
+- Active `fe`, `be`, and `lead` users can browse, search, create folders, upload, download, preview, rename, move, batch-move, and soft-delete files.
+- Only `lead` users can batch-copy, restore from trash, and purge expired files.
 - Deleted files are retained for 7 days before purge eligibility.

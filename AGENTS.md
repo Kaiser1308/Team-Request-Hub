@@ -18,17 +18,19 @@
 - Path alias is `@/* -> src/*`; routes live under `src/app`, including `(auth)` and `(dashboard)` route groups.
 - Frontend Supabase usage is for Auth/session middleware only; call the backend through `src/lib/api/client.ts` with `NEXT_PUBLIC_API_URL` and a Bearer JWT. Do not put business logic, service-role keys, or notification providers in the frontend.
 - Treat `ui-frameware/` as visual reference only. Do not copy its static HTML/CDN setup into the app; rebuild with React components according to `docs/frontend-ui-framework.md`.
-- Required local env keys are documented in `apps/web/.env.example`: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_API_URL`.
+- Required local env keys are documented in `apps/web/.env.example`: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SITE_URL`.
 
 ## Backend (`apps/api`)
 - Use `uv` from `apps/api` so `pydantic-settings` loads the local `.env` file and dependencies stay isolated in `.venv`.
 - Setup/run: `uv --cache-dir .uv-cache venv`, `uv --cache-dir .uv-cache pip install -r requirements.txt`, `uv --cache-dir .uv-cache run uvicorn app.main:app --reload --port 8000`.
-- API entrypoint is `app/main.py`; routers are mounted at `/health`, `/users`, `/requests`, and `/notifications`.
+- API entrypoint is `app/main.py`; routers are mounted at `/health`, `/users`, `/requests`, `/notifications`, `/dashboard`, `/notifications/telegram`, and `/files`.
 - Supabase service-role access is backend-only via `app/db/supabase.py`; never expose `SUPABASE_SERVICE_ROLE_KEY` to `apps/web`.
 - Auth verifies Supabase JWTs in `app/core/auth.py`, then loads the profile from the `users` table. Permission rules live in `app/core/permissions.py` and use roles `fe`, `be`, and `lead`.
 - Backend architecture is `routes -> services -> repositories -> Supabase`; routes stay thin, services own workflow rules, repositories own table access.
 - Request business rules are implemented in backend services, including assignment, status transitions, done replies, cancellation, notification records, assignment history, and status logs.
-- New users default to role `fe`; only `lead` users can update roles through `PATCH /users/{user_id}/role`.
+- File operations use MinIO (S3-compatible) storage via `app/services/file_service.py` and `app/services/minio_storage.py`, with presigned URL uploads, soft-delete, and purge scheduling.
+- Bilingual i18n (VI/EN) is supported via `preferred_language` on users and `src/i18n/` in the frontend.
+- New users default to role `fe` and `is_active = false`; only `lead` users can update roles through `PATCH /users/{user_id}/role` and approve users through `PATCH /users/{user_id}/active`.
 - Required backend env keys are in `apps/api/.env.example`; `CORS_ORIGINS` defaults to `http://localhost:3000`.
 
 ## Verification Notes
