@@ -116,6 +116,20 @@ class IsPreviewSupportedTests(unittest.TestCase):
     def test_unknown_type_not_supported(self):
         self.assertFalse(is_preview_supported("application/octet-stream", "bin"))
 
+    def test_markdown_supported_by_extension_with_generic_type(self):
+        self.assertTrue(is_preview_supported("text/plain", "md"))
+        self.assertTrue(is_preview_supported("application/octet-stream", "markdown"))
+        self.assertTrue(is_preview_supported(None, "md"))
+
+    def test_html_supported_by_extension_with_generic_type(self):
+        self.assertTrue(is_preview_supported("text/html", "html"))
+        self.assertTrue(is_preview_supported("text/plain", "htm"))
+        self.assertTrue(is_preview_supported(None, "html"))
+
+    def test_supported_extensions_are_case_insensitive(self):
+        self.assertTrue(is_preview_supported("text/plain", "MD"))
+        self.assertTrue(is_preview_supported("text/plain", "HTML"))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -17,7 +17,10 @@ SAFE_NAME_RE = re.compile(r"^[^/\\\x00<>:\"|?*]+$")
 PREVIEW_TYPES = {
     ("image/png", "png"), ("image/jpeg", "jpg"), ("image/jpeg", "jpeg"),
     ("image/gif", "gif"), ("image/webp", "webp"), ("application/pdf", "pdf"),
+    ("text/markdown", "md"), ("text/markdown", "markdown"),
+    ("text/html", "html"), ("text/html", "htm"),
 }
+PREVIEW_EXTENSIONS = {ext for _, ext in PREVIEW_TYPES}
 
 
 def is_lead(current_user: CurrentUser) -> bool:
@@ -75,15 +78,12 @@ def get_extension(name: str) -> str | None:
 
 
 def is_preview_supported(content_type: str | None, extension: str | None) -> bool:
-    if content_type and extension:
-        return (content_type, extension.lower()) in PREVIEW_TYPES
+    normalized_extension = extension.lower() if extension else None
+    if normalized_extension in PREVIEW_EXTENSIONS:
+        return True
     if content_type:
-        for ct, ext in PREVIEW_TYPES:
+        for ct, _ in PREVIEW_TYPES:
             if ct == content_type:
-                return True
-    if extension:
-        for ct, ext in PREVIEW_TYPES:
-            if ext == extension.lower():
                 return True
     return False
 

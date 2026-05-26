@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { FileManager } from "@cubone/react-file-manager";
 import "@cubone/react-file-manager/dist/style.css";
 import { Upload } from "lucide-react";
+import { FilePreviewPanel } from "@/components/files/file-preview-panel";
 import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useFileMutations, useFileSearch, useFiles, useFileTree } from "@/hooks/use-files";
@@ -34,13 +35,6 @@ function toCuboneFile(file: TeamFile): CuboneFile {
   };
 }
 
-function isPreviewable(file: CuboneFile) {
-  return (
-    (file.content_type?.startsWith("image/") && file.extension !== "svg") ||
-    file.content_type === "application/pdf"
-  );
-}
-
 export function TeamFileExplorer() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -53,10 +47,8 @@ export function TeamFileExplorer() {
   const searchQuery = useFileSearch(search, includeDeleted && isLead);
   const treeQuery = useFileTree(includeDeleted && isLead);
   const mutations = useFileMutations();
-  const files = (search.trim() ? searchQuery.data : filesQuery.data) ?? [];
   const treeFiles = (treeQuery.data ?? []).map(toCuboneFile);
-  const managerFiles = files.map(toCuboneFile);
-  const isLoading = filesQuery.isLoading || searchQuery.isLoading || treeQuery.isLoading;
+  const isLoading = treeQuery.isLoading;
   const error = filesQuery.error || searchQuery.error || treeQuery.error;
 
   const clipboardRef = useRef<{ files: CuboneFile[]; type: "copy" | "move" } | null>(null);
@@ -65,10 +57,19 @@ export function TeamFileExplorer() {
   const [isDragOver, setIsDragOver] = useState(false);
   const dragCounterRef = useRef(0);
   const fileManagerRef = useRef<HTMLDivElement>(null);
+  const [selectedFile, setSelectedFile] = useState<TeamFile | null>(null);
 
   useEffect(() => {
     fileManagerRef.current?.focus();
   }, [currentPath]);
+
+  useEffect(() => {
+    if (!selectedFile) return;
+    const stillExists = (treeQuery.data ?? []).some((file) => file.id === selectedFile.id);
+    if (!stillExists) {
+      setSelectedFile(null);
+    }
+  }, [selectedFile, treeQuery.data]);
 
   function handleNativeDrop(e: DragEvent<HTMLDivElement>) {
     e.preventDefault();
@@ -122,9 +123,20 @@ export function TeamFileExplorer() {
     if (file.isDirectory) {
       return;
     }
-    const response = isPreviewable(file)
-      ? await mutations.previewUrl.mutateAsync(file.id)
-      : await mutations.downloadUrl.mutateAsync(file.id);
+    const sourceFile = (treeQuery.data ?? []).find((item) => item.id === file.id);
+    if (sourceFile) {
+      setSelectedFile(sourceFile);
+      return;
+    }
+    const response = await mutations.downloadUrl.mutateAsync(file.id);
+    window.open(response.url, "_blank", "noopener,noreferrer");
+  }
+
+  async function downloadFile(file: CuboneFile) {
+    if (file.isDirectory) {
+      return;
+    }
+    const response = await mutations.downloadUrl.mutateAsync(file.id);
     window.open(response.url, "_blank", "noopener,noreferrer");
   }
 
@@ -176,85 +188,92 @@ export function TeamFileExplorer() {
         </div>
       </div>
 
-      <div
-        ref={fileManagerRef}
-        tabIndex={-1}
-        className="relative rounded-lg border border-[#e5e7eb] bg-white p-2 outline-none"
-        onDrop={handleNativeDrop}
-        onDragOver={handleNativeDragOver}
-        onDragEnter={() => {
-          dragCounterRef.current += 1;
-          setIsDragOver(true);
-        }}
-        onDragLeave={() => {
-          dragCounterRef.current -= 1;
-          if (dragCounterRef.current === 0) setIsDragOver(false);
-        }}
-      >
-        {isDragOver ? (
-          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg border-2 border-dashed border-[#2563eb] bg-[#eff6ff]/90 text-sm font-medium text-[#2563eb]">
-            Drop files to upload
-          </div>
-        ) : null}
-        <FileManager
-          files={treeFiles}
-          isLoading={isLoading}
-          initialPath={currentPath}
-          layout="list"
-          language="vi-VN"
-          maxFileSize={209_715_200}
-          enableFilePreview={false}
-          collapsibleNav
-          defaultNavExpanded
-          permissions={{
-            create: true,
-            upload: false,
-            download: true,
-            copy: isLead,
-            move: true,
-            rename: true,
-            delete: isLead,
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(360px,42%)]">
+        <div
+          ref={fileManagerRef}
+          tabIndex={-1}
+          className="relative min-w-0 rounded-lg border border-[#e5e7eb] bg-white p-2 outline-none"
+          onDrop={handleNativeDrop}
+          onDragOver={handleNativeDragOver}
+          onDragEnter={() => {
+            dragCounterRef.current += 1;
+            setIsDragOver(true);
           }}
-          onFolderChange={(path) => {
-            const encoded = encodeURIComponent(path);
-            if (`/files?path=${encoded}` !== `/files?path=${encodeURIComponent(currentPath)}`) {
-              router.push(`/files?path=${encoded}`);
+          onDragLeave={() => {
+            dragCounterRef.current -= 1;
+            if (dragCounterRef.current === 0) setIsDragOver(false);
+          }}
+        >
+          {isDragOver ? (
+            <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg border-2 border-dashed border-[#2563eb] bg-[#eff6ff]/90 text-sm font-medium text-[#2563eb]">
+              Drop files to upload
+            </div>
+          ) : null}
+          <FileManager
+            files={treeFiles}
+            isLoading={isLoading}
+            initialPath={currentPath}
+            layout="list"
+            language="vi-VN"
+            maxFileSize={209_715_200}
+            enableFilePreview={false}
+            collapsibleNav
+            defaultNavExpanded
+            permissions={{
+              create: true,
+              upload: false,
+              download: true,
+              copy: isLead,
+              move: true,
+              rename: true,
+              delete: isLead,
+            }}
+            onFolderChange={(path) => {
+              const encoded = encodeURIComponent(path);
+              if (`/files?path=${encoded}` !== `/files?path=${encodeURIComponent(currentPath)}`) {
+                router.push(`/files?path=${encoded}`);
+              }
+            }}
+            onFileOpen={(file) => void openFile(file as CuboneFile)}
+            onCreateFolder={(name) =>
+              void mutations.createFolder.mutateAsync({
+                parent_path: currentPath,
+                name,
+              })
             }
-          }}
-          onFileOpen={(file) => void openFile(file as CuboneFile)}
-          onCreateFolder={(name) =>
-            void mutations.createFolder.mutateAsync({
-              parent_path: currentPath,
-              name,
-            })
-          }
-          onCopy={(files) => {
-            clipboardRef.current = { files: files as CuboneFile[], type: "copy" };
-          }}
-          onCut={(files) => {
-            clipboardRef.current = { files: files as CuboneFile[], type: "move" };
-          }}
-          onPaste={(files, destination, operationType) =>
-            void handlePaste(files as CuboneFile[], destination as CuboneFile, operationType)
-          }
-          onDrop={(files, destination, operationType) =>
-            void handlePaste(files as CuboneFile[], destination as CuboneFile, operationType || "move")
-          }
-          onRename={(file, name) =>
-            void mutations.renameFile.mutateAsync({
-              fileId: (file as CuboneFile).id,
-              payload: { name },
-            })
-          }
-          onDelete={(selected) =>
-            selected.forEach(
-              (file) => void mutations.deleteFile.mutateAsync((file as CuboneFile).id),
-            )
-          }
-          onDownload={(selected) =>
-            selected.forEach((file) => void openFile(file as CuboneFile))
-          }
-          onRefresh={() => { void filesQuery.refetch(); void treeQuery.refetch(); }}
+            onCopy={(files) => {
+              clipboardRef.current = { files: files as CuboneFile[], type: "copy" };
+            }}
+            onCut={(files) => {
+              clipboardRef.current = { files: files as CuboneFile[], type: "move" };
+            }}
+            onPaste={(files, destination, operationType) =>
+              void handlePaste(files as CuboneFile[], destination as CuboneFile, operationType)
+            }
+            onDrop={(files, destination, operationType) =>
+              void handlePaste(files as CuboneFile[], destination as CuboneFile, operationType || "move")
+            }
+            onRename={(file, name) =>
+              void mutations.renameFile.mutateAsync({
+                fileId: (file as CuboneFile).id,
+                payload: { name },
+              })
+            }
+            onDelete={(selected) =>
+              selected.forEach(
+                (file) => void mutations.deleteFile.mutateAsync((file as CuboneFile).id),
+              )
+            }
+            onDownload={(selected) =>
+              selected.forEach((file) => void downloadFile(file as CuboneFile))
+            }
+            onRefresh={() => { void filesQuery.refetch(); void treeQuery.refetch(); }}
+          />
+        </div>
+        <FilePreviewPanel
+          file={selectedFile}
+          getPreviewUrl={mutations.previewUrl.mutateAsync}
+          getDownloadUrl={mutations.downloadUrl.mutateAsync}
         />
       </div>
     </div>

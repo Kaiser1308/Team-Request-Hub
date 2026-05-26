@@ -269,7 +269,7 @@ Response:
 }
 ```
 
-`POST /files/{file_id}/preview-url` — get a presigned preview URL. Only supported for images (png, jpg, gif, webp) and PDF.
+`POST /files/{file_id}/preview-url` — get a presigned preview URL. Supported for images (png, jpg, jpeg, gif, webp), PDF, Markdown (md, markdown), and HTML (html, htm).
 
 `PATCH /files/{file_id}/rename` — rename a file or folder. Lead-only.
 
