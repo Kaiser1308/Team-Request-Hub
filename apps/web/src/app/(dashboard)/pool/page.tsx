@@ -1,6 +1,5 @@
 import { getTranslations } from "next-intl/server";
 import { RequestList } from "@/components/requests/request-list";
-import { AnimeSampleCard } from "@/components/app/anime-sample-card";
 
 export default async function PoolPage() {
   const t = await getTranslations("requests");
@@ -13,7 +12,6 @@ export default async function PoolPage() {
           {t("views.poolDescription")}
         </p>
       </div>
-      <AnimeSampleCard />
       <RequestList
         view="pool"
         emptyMessage={t("empty.pool")}
