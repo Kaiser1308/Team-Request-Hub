@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
+import { AssigneeList } from "@/components/requests/assignee-list";
 import { formatUserSummaryLabel } from "@/components/requests/user-display";
 import { RequestPriorityBadge } from "@/components/requests/request-priority-badge";
 import { RequestStatusBadge } from "@/components/requests/request-status-badge";
@@ -22,8 +23,9 @@ export function RequestCard({ request }: { request: InternalRequest }) {
 
   const creatorLabel =
     formatUserSummaryLabel(request.creator) ?? t("card.unassigned");
-  const assigneeLabel =
-    formatUserSummaryLabel(request.assignee) ?? t("card.unassigned");
+  const hasAssignees = Boolean(
+    (request.assignees?.length ?? 0) > 0 || request.assigned_to,
+  );
 
   let timestampLabel: string;
   if (request.done_at) {
@@ -40,7 +42,7 @@ export function RequestCard({ request }: { request: InternalRequest }) {
 
   let actionLabel: string | null = null;
   if (request.status === "pending") {
-    actionLabel = request.assigned_to
+    actionLabel = hasAssignees
       ? t("card.acknowledge")
       : t("card.selfAssign");
   } else if (request.status === "acknowledged") {
@@ -65,7 +67,13 @@ export function RequestCard({ request }: { request: InternalRequest }) {
 
       <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-caption text-[#6b7280]">
         <span>{t("card.creator", { name: creatorLabel })}</span>
-        <span>{t("card.assignee", { name: assigneeLabel })}</span>
+        <span className="inline-flex items-center gap-1">
+          {t("card.assignee", { name: "" })}
+          <AssigneeList
+            assignees={request.assignees}
+            fallback={t("card.unassigned")}
+          />
+        </span>
         <span>{timestampLabel}</span>
       </div>
 

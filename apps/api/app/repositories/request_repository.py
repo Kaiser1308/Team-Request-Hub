@@ -43,11 +43,24 @@ def get_request_or_404(request_id: str) -> dict:
 
 
 def list_assigned_requests(user_id: str, limit: int = 50) -> list[dict]:
+    assignment_result = (
+        get_supabase_admin()
+        .table("request_assignees")
+        .select("request_id")
+        .eq("user_id", user_id)
+        .order("assigned_at", desc=True)
+        .limit(limit)
+        .execute()
+    )
+    request_ids = [row["request_id"] for row in (assignment_result.data or [])]
+    if not request_ids:
+        return []
+
     result = (
         get_supabase_admin()
         .table(REQUESTS_TABLE)
         .select(REQUEST_LIST_COLUMNS)
-        .eq("assigned_to", user_id)
+        .in_("id", request_ids)
         .neq("status", "done")
         .neq("status", "cancelled")
         .order("created_at", desc=True)
@@ -71,16 +84,24 @@ def list_created_requests(user_id: str, limit: int = 50) -> list[dict]:
 
 
 def list_pool_requests(limit: int = 50) -> list[dict]:
-    result = (
+    assignment_result = (
+        get_supabase_admin()
+        .table("request_assignees")
+        .select("request_id")
+        .execute()
+    )
+    assigned_request_ids = list({row["request_id"] for row in (assignment_result.data or [])})
+
+    query = (
         get_supabase_admin()
         .table(REQUESTS_TABLE)
         .select(REQUEST_LIST_COLUMNS)
-        .is_("assigned_to", "null")
         .eq("status", "pending")
-        .order("created_at", desc=True)
-        .limit(limit)
-        .execute()
     )
+    if assigned_request_ids:
+        query = query.not_.in_("id", assigned_request_ids)
+
+    result = query.order("created_at", desc=True).limit(limit).execute()
     return result.data or []
 
 

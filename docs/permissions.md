@@ -13,11 +13,13 @@ New users default to `fe` through the Supabase Auth profile trigger.
 ## Request Access
 
 - Creators can see requests they created.
-- Assignees can see and act on requests assigned to them.
+- Assignees can see and act on requests where they are current members in `request_assignees`.
 - Unassigned pending requests appear in the pool and can be viewed by active users.
 - Active users can self-assign from the pool; backend rejects invalid state changes.
 - `view=all` is lead-only.
 - Leads can reassign any request and cancel any request across the team.
+- Creator, lead, or a current assignee can add/remove assignees on open requests.
+- Removing an assignee from an active request requires a reason; the last assignee cannot be removed from `acknowledged` or `in_progress` requests.
 
 ## Role Management
 

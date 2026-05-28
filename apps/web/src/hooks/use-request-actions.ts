@@ -6,18 +6,22 @@ import {
   type QueryClient,
 } from "@tanstack/react-query";
 import {
+  addRequestAssignee,
   cancelRequest,
   createRequest,
   markRequestDone,
   reassignRequest,
+  removeRequestAssignee,
   selfAssignRequest,
   updateRequest,
   updateRequestStatus,
+  type AddAssigneePayload,
   type CancelRequestPayload,
   type DoneRequestPayload,
   type InternalRequestCreatePayload,
   type InternalRequestUpdatePayload,
   type ReassignRequestPayload,
+  type RemoveAssigneePayload,
   type StatusUpdatePayload,
 } from "@/lib/api/requests";
 import { queryKeys } from "@/lib/api/query-keys";
@@ -92,6 +96,34 @@ export function useRequestActions() {
       onSuccess: (updatedRequest, requestId) => {
         updateCachedRequest(queryClient, updatedRequest);
         invalidateRequestData(requestId);
+      },
+    }),
+    addAssignee: useMutation({
+      mutationFn: ({
+        requestId,
+        payload,
+      }: {
+        requestId: string;
+        payload: AddAssigneePayload;
+      }) => addRequestAssignee(requestId, payload),
+      onSuccess: (updatedRequest, variables) => {
+        updateCachedRequest(queryClient, updatedRequest);
+        invalidateRequestData(variables.requestId);
+      },
+    }),
+    removeAssignee: useMutation({
+      mutationFn: ({
+        requestId,
+        userId,
+        payload,
+      }: {
+        requestId: string;
+        userId: string;
+        payload: RemoveAssigneePayload;
+      }) => removeRequestAssignee(requestId, userId, payload),
+      onSuccess: (updatedRequest, variables) => {
+        updateCachedRequest(queryClient, updatedRequest);
+        invalidateRequestData(variables.requestId);
       },
     }),
     reassign: useMutation({

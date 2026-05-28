@@ -6,6 +6,7 @@ The executable schema lives in `DB_SCHEMA_TEAM_REQUEST_HUB.sql` and targets Supa
 
 - `public.users`: application profile for `auth.users`, including `role`, `is_active`, `preferred_language`, profile metadata, and optional Telegram linking fields (`telegram_chat_id`, `telegram_username`, `telegram_linked_at`).
 - `public.internal_requests`: core request records with title, description, tags, priority, status, creator, assignee, reply, and lifecycle timestamps.
+- `public.request_assignees`: current many-to-many request assignment membership with `request_id`, `user_id`, `assigned_by`, and `assigned_at`. This is the source of truth for current assignees.
 - `public.assignment_history`: audit trail for create-with-assignee, self-assign, and reassign events.
 - `public.request_status_logs`: audit trail for status changes, done, and cancel events.
 - `public.notifications`: user-facing notification records tied to request workflow events.

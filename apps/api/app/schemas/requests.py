@@ -16,6 +16,7 @@ class InternalRequestBase(BaseModel):
     tags: list[str] = Field(default_factory=list)
     priority: RequestPriority = "medium"
     assigned_to: str | None = None
+    assignee_ids: list[str] = Field(default_factory=list)
     reference_links: list[str] = Field(default_factory=list)
 
 
@@ -54,6 +55,15 @@ class CancelRequest(BaseModel):
     reason: str | None = None
 
 
+class AddAssigneeRequest(BaseModel):
+    user_id: str
+    reason: str | None = None
+
+
+class RemoveAssigneeRequest(BaseModel):
+    reason: str | None = None
+
+
 class InternalRequestOut(BaseModel):
     id: str
     title: str
@@ -73,6 +83,7 @@ class InternalRequestOut(BaseModel):
     updated_at: str
     creator: UserSummary | None = None
     assignee: UserSummary | None = None
+    assignees: list[UserSummary] = Field(default_factory=list)
 
 
 class AssignmentHistoryOut(BaseModel):

@@ -54,6 +54,7 @@ export interface InternalRequest {
   updated_at: string;
   creator?: UserSummary | null;
   assignee?: UserSummary | null;
+  assignees?: UserSummary[];
 }
 
 export interface AssignmentHistory {

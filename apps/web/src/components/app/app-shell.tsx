@@ -23,6 +23,7 @@ import { useTranslations } from "next-intl";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { LanguageSwitcher } from "@/components/app/language-switcher";
 import { Button } from "@/components/ui/button";
+import { UnreadCountBadge } from "@/components/shared/unread-count-badge";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useNotifications, useRouteBadgeCounts, useMarkRouteBadgeRead } from "@/hooks/use-notifications";
 import { MOTION_DURATION, MOTION_EASE, MOTION_SCALE } from "@/lib/animation/constants";
@@ -246,11 +247,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   aria-hidden="true"
                 />
                 <span className="flex-1">{tNav(item.labelKey)}</span>
-                {badge > 0 && (
-                  <span className="inline-flex min-w-[18px] h-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-medium leading-none text-white">
-                    {badge}
-                  </span>
-                )}
+                <UnreadCountBadge count={badge} />
               </Link>
             );
           })}
@@ -283,7 +280,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               className="inline-flex items-center gap-1 rounded-md border border-slate-700 bg-slate-800/80 px-2 py-1.5 text-xs text-slate-200 transition-colors hover:bg-slate-700/80 hover:text-white"
             >
               <Bell className="h-3.5 w-3.5 text-slate-300" aria-hidden="true" />
-              <span ref={unreadRef}>{unreadCount}</span>
+              <span ref={unreadRef}>
+                <UnreadCountBadge count={unreadCount} showZero />
+              </span>
             </Link>
             <LanguageSwitcher />
             <div className="hidden text-right sm:block">

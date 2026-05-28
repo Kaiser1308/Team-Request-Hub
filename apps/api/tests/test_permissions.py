@@ -38,6 +38,10 @@ class TestEnsureCanViewRequest(unittest.TestCase):
             ensure_can_view_request(_user(), request)
         self.assertEqual(ctx.exception.status_code, 403)
 
+    def test_assignee_in_assignee_ids_can_view_request(self):
+        request = {"id": "r1", "created_by": "other", "assignee_ids": ["user-1", "user-2"]}
+        ensure_can_view_request(_user(), request)
+
 
 class TestEnsureCanReassign(unittest.TestCase):
     def test_lead_can_reassign_any_request(self):
@@ -97,6 +101,10 @@ class TestEnsureIsAssigneeOrLead(unittest.TestCase):
             ensure_is_assignee_or_lead(_user(), request)
         self.assertEqual(ctx.exception.status_code, 403)
         self.assertIn("assignee or lead", ctx.exception.detail.lower())
+
+    def test_assignee_in_assignee_ids_can_act(self):
+        request = {"id": "r1", "assignee_ids": ["user-1", "user-2"]}
+        ensure_is_assignee_or_lead(_user(), request)
 
 
 if __name__ == "__main__":

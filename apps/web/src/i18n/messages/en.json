@@ -287,6 +287,8 @@
       "cancelError": "Could not cancel this request.",
       "cancelling": "Cancelling...",
       "confirmCancel": "Confirm cancel"
+      ,"addAssignee": "Add assignee"
+      ,"removeAssignee": "Remove"
     },
     "timeline": {
       "loading": "Loading assignment and status history...",

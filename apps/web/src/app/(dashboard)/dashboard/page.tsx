@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useDashboardSummary } from "@/hooks/use-dashboard-summary";
 import { TelegramSettings } from "@/components/settings/telegram-settings";
+import { UnreadCountBadge } from "@/components/shared/unread-count-badge";
 import { translatePriority, translateStatus } from "@/components/requests/translated-labels";
 import type { InternalRequest } from "@/types";
 
@@ -149,7 +150,8 @@ export default function DashboardPage() {
             </Link>
           </div>
           {notificationsUnread > 0 ? (
-            <div className="px-4 py-3">
+            <div className="flex items-center gap-2 px-4 py-3">
+              <UnreadCountBadge count={notificationsUnread} showZero />
               <p className="text-body text-[#111827]">{t("unreadNotifications", { count: notificationsUnread })}</p>
             </div>
           ) : (

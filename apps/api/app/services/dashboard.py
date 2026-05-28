@@ -5,6 +5,20 @@ from app import notification_module
 from app.services import request_service
 
 
+def is_assigned_to_user(request: dict, user_id: str) -> bool:
+    assignees = request.get("assignees") or []
+    if any(assignee.get("id") == user_id for assignee in assignees if isinstance(assignee, dict)):
+        return True
+    return request.get("assigned_to") == user_id
+
+
+def has_assignees(request: dict) -> bool:
+    assignees = request.get("assignees") or []
+    if assignees:
+        return True
+    return bool(request.get("assigned_to"))
+
+
 def get_dashboard_summary(current_user: CurrentUser) -> dict:
     raw_requests = request_repository.get_dashboard_data(current_user.id)
     enriched = request_service.enrich_requests_with_users(raw_requests)
@@ -16,19 +30,19 @@ def get_dashboard_summary(current_user: CurrentUser) -> dict:
 
     for request in enriched:
         status = request.get("status")
-        assigned_to = request.get("assigned_to")
         created_by = request.get("created_by")
+        is_assigned = is_assigned_to_user(request, current_user.id)
 
-        if assigned_to == current_user.id and status != "done":
+        if is_assigned and status != "done":
             assigned_recent.append(request)
         if created_by == current_user.id:
             created_recent.append(request)
-        if assigned_to is None and status == "pending":
+        if not has_assignees(request) and status == "pending":
             pool_recent.append(request)
         if status == "done":
             if is_lead(current_user):
                 done_recent.append(request)
-            elif created_by == current_user.id or assigned_to == current_user.id:
+            elif created_by == current_user.id or is_assigned:
                 done_recent.append(request)
 
     urgent_ids = set()

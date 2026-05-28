@@ -102,8 +102,28 @@ POST   /requests/{request_id}/reassign
 POST   /requests/{request_id}/status
 POST   /requests/{request_id}/done
 POST   /requests/{request_id}/cancel
+POST   /requests/{request_id}/assignees
+DELETE /requests/{request_id}/assignees/{user_id}
 GET    /requests/{request_id}/assignment-history?limit=50
 GET    /requests/{request_id}/status-logs?limit=50
+```
+
+Create request payload supports optional multi-assignee assignment:
+
+```json
+{
+  "assignee_ids": ["uuid-1", "uuid-2"]
+}
+```
+
+Request response includes plural assignees:
+
+```json
+{
+  "assignees": [
+    {"id": "uuid", "email": "user@example.com", "name": "User", "avatar_url": null}
+  ]
+}
 ```
 
 `view=all` is lead-only.

@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
+import { AssigneeManagement } from "@/components/requests/assignee-management";
 import { RequestActions } from "@/components/requests/request-actions";
+import { AssigneeList } from "@/components/requests/assignee-list";
 import { RequestPriorityBadge } from "@/components/requests/request-priority-badge";
 import { RequestStatusBadge } from "@/components/requests/request-status-badge";
 import { RequestTimeline } from "@/components/requests/request-timeline";
@@ -13,6 +15,7 @@ import {
   useRequestAssignmentHistory,
   useRequestStatusLogs,
 } from "@/hooks/use-requests";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 function formatDate(value: string | null | undefined, locale: string, notSet: string) {
   if (!value) {
@@ -40,6 +43,7 @@ export function RequestDetail({ requestId }: { requestId: string }) {
   const requestQuery = useRequest(requestId);
   const assignmentHistoryQuery = useRequestAssignmentHistory(requestId);
   const statusLogsQuery = useRequestStatusLogs(requestId);
+  const { data: currentUser } = useCurrentUser();
 
   if (requestQuery.isLoading) {
     return (
@@ -71,6 +75,16 @@ export function RequestDetail({ requestId }: { requestId: string }) {
   }
 
   const request = requestQuery.data;
+  const assigneeIds = request.assignees?.map((assignee) => assignee.id) ?? [];
+  const canManageAssignees = Boolean(
+    currentUser &&
+      request.status !== "done" &&
+      request.status !== "cancelled" &&
+      (currentUser.role === "lead" ||
+        currentUser.id === request.created_by ||
+        assigneeIds.includes(currentUser.id) ||
+        currentUser.id === request.assigned_to),
+  );
 
   return (
     <div className="space-y-5">
@@ -105,7 +119,7 @@ export function RequestDetail({ requestId }: { requestId: string }) {
           </div>
           <div>
             <p className="text-caption text-[#6b7280]">{t("detail.assigned")}</p>
-            <p>{formatUserSummaryLabel(request.assignee) ?? request.assigned_to ?? tCommon("notSet")}</p>
+            <AssigneeList assignees={request.assignees} fallback={tCommon("notSet")} />
           </div>
           <div>
             <p className="text-caption text-[#6b7280]">{t("detail.updated")}</p>
@@ -124,6 +138,8 @@ export function RequestDetail({ requestId }: { requestId: string }) {
             <p>{formatDate(request.cancelled_at, locale, tCommon("notSet"))}</p>
           </div>
         </div>
+
+        {canManageAssignees ? <AssigneeManagement request={request} /> : null}
 
         {request.reply ? (
           <div className="mt-5 rounded-lg border border-green-200 bg-green-50 p-4">

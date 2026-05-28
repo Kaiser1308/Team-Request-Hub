@@ -5,7 +5,6 @@ import { useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { CancelDialog } from "@/components/requests/cancel-dialog";
 import { DoneDialog } from "@/components/requests/done-dialog";
-import { ReassignDialog } from "@/components/requests/reassign-dialog";
 import { Button } from "@/components/ui/button";
 import { ApiError } from "@/lib/api/client";
 import { useCurrentUser } from "@/hooks/use-current-user";
@@ -35,23 +34,26 @@ export function RequestActions({ request }: { request: InternalRequest }) {
   const actionRowRef = useRef<HTMLDivElement | null>(null);
   const isLead = currentUser?.role === "lead";
   const isCreator = currentUser?.id === request.created_by;
-  const isAssignee = currentUser?.id === request.assigned_to;
+  const assigneeIds = request.assignees?.map((assignee) => assignee.id) ?? [];
+  const isAssignee = currentUser
+    ? assigneeIds.includes(currentUser.id) || currentUser.id === request.assigned_to
+    : false;
+  const hasAssignees = assigneeIds.length > 0 || Boolean(request.assigned_to);
   const isWorker = currentUser?.role === "be" || currentUser?.role === "fe" || isLead;
   const isClosed = request.status === "done" || request.status === "cancelled";
   const shouldRender = Boolean(currentUser) && !isClosed;
   const canSelfAssign =
-    !isClosed && isWorker && !request.assigned_to && request.status === "pending";
+    !isClosed && isWorker && !hasAssignees && request.status === "pending";
   const canAcknowledge =
     !isClosed &&
     (isAssignee || isLead) &&
-    Boolean(request.assigned_to) &&
+    hasAssignees &&
     request.status === "pending";
   const canStart =
     !isClosed && (isAssignee || isLead) && request.status === "acknowledged";
   const canDone =
     !isClosed && (isAssignee || isLead) && request.status === "in_progress";
   const canCancel = !isClosed && (isCreator || isLead);
-  const canReassign = !isClosed && (isLead || isCreator || isAssignee);
 
   useEffect(() => {
     if (!shouldRender) {
@@ -137,7 +139,6 @@ export function RequestActions({ request }: { request: InternalRequest }) {
         ) : null}
 
         {canDone ? <DoneDialog requestId={request.id} /> : null}
-        {canReassign ? <ReassignDialog requestId={request.id} /> : null}
         {canCancel ? <CancelDialog requestId={request.id} /> : null}
       </div>
 

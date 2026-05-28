@@ -20,7 +20,17 @@ export interface InternalRequestCreatePayload {
   tags: string[];
   priority: RequestPriority;
   assigned_to?: string | null;
+  assignee_ids?: string[];
   reference_links: string[];
+}
+
+export interface AddAssigneePayload {
+  user_id: string;
+  reason?: string | null;
+}
+
+export interface RemoveAssigneePayload {
+  reason?: string | null;
 }
 
 export interface InternalRequestUpdatePayload {
@@ -90,6 +100,27 @@ export function reassignRequest(
 ) {
   return apiFetch<InternalRequest>(`/requests/${requestId}/reassign`, {
     method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function addRequestAssignee(
+  requestId: string,
+  payload: AddAssigneePayload,
+) {
+  return apiFetch<InternalRequest>(`/requests/${requestId}/assignees`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function removeRequestAssignee(
+  requestId: string,
+  userId: string,
+  payload: RemoveAssigneePayload,
+) {
+  return apiFetch<InternalRequest>(`/requests/${requestId}/assignees/${userId}`, {
+    method: "DELETE",
     body: JSON.stringify(payload),
   });
 }

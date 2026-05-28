@@ -287,6 +287,8 @@
       "cancelError": "Không thể hủy yêu cầu này.",
       "cancelling": "Đang hủy...",
       "confirmCancel": "Xác nhận hủy"
+      ,"addAssignee": "Thêm người nhận"
+      ,"removeAssignee": "Gỡ"
     },
     "timeline": {
       "loading": "Đang tải lịch sử giao việc và trạng thái...",

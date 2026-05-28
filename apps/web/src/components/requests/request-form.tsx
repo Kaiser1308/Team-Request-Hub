@@ -43,7 +43,7 @@ export function RequestForm() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<RequestPriority>("medium");
-  const [assignedTo, setAssignedTo] = useState("");
+  const [assigneeIds, setAssigneeIds] = useState<string[]>([]);
   const [titleError, setTitleError] = useState<string | null>(null);
   const [descriptionError, setDescriptionError] = useState<string | null>(null);
 
@@ -69,10 +69,19 @@ export function RequestForm() {
         priority,
         tags: splitCommaList(""),
         reference_links: splitLineList(""),
-        assigned_to: assignedTo || null,
+        assigned_to: assigneeIds[0] || null,
+        assignee_ids: assigneeIds,
       });
       router.push("/requests");
     } catch {}
+  }
+
+  function toggleAssignee(userId: string) {
+    setAssigneeIds((current) =>
+      current.includes(userId)
+        ? current.filter((id) => id !== userId)
+        : [...current, userId],
+    );
   }
 
   return (
@@ -135,25 +144,33 @@ export function RequestForm() {
         </select>
       </label>
 
-      <label className="grid gap-2 text-sm font-medium text-[#111827]">
-        {t("form.assignee")}
-        <select
-          className="h-10 rounded-md border border-[#e5e7eb] bg-white px-3 text-sm font-normal"
-          value={assignedTo}
-          onChange={(event) => setAssignedTo(event.target.value)}
-          disabled={activeUsersQuery.isLoading}
-        >
-          <option value="">{t("form.leaveInPool")}</option>
+      <fieldset className="grid gap-2 text-sm font-medium text-[#111827]">
+        <legend>{t("form.assignee")}</legend>
+        <div className="grid gap-2 rounded-md border border-[#e5e7eb] bg-white p-3">
           {(activeUsersQuery.data ?? []).map((user) => (
-            <option key={user.id} value={user.id}>
+            <label
+              key={user.id}
+              className="flex items-center gap-2 text-sm font-normal text-[#4b5563]"
+            >
+              <input
+                type="checkbox"
+                checked={assigneeIds.includes(user.id)}
+                onChange={() => toggleAssignee(user.id)}
+                disabled={activeUsersQuery.isLoading}
+              />
               {formatUserLabel(user)}
-            </option>
+            </label>
           ))}
-        </select>
+          {(activeUsersQuery.data ?? []).length === 0 ? (
+            <p className="text-xs font-normal text-[#6b7280]">
+              {t("form.leaveInPool")}
+            </p>
+          ) : null}
+        </div>
         <span className="text-xs font-normal text-[#6b7280]">
           {t("form.assigneeHelp")}
         </span>
-      </label>
+      </fieldset>
 
       {actions.create.error ? (
         <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">

@@ -210,6 +210,30 @@ create index if not exists idx_assignment_history_assigned_by
   on public.assignment_history(assigned_by);
 
 -- =========================================================
+-- 4b. Current Request Assignees
+-- =========================================================
+
+create table if not exists public.request_assignees (
+  request_id uuid not null references public.internal_requests(id) on delete cascade,
+  user_id uuid not null references public.users(id) on delete restrict,
+  assigned_by uuid not null references public.users(id) on delete restrict,
+  assigned_at timestamptz not null default now(),
+  primary key (request_id, user_id)
+);
+
+create index if not exists idx_request_assignees_request_id
+  on public.request_assignees(request_id);
+
+create index if not exists idx_request_assignees_user_assigned_at
+  on public.request_assignees(user_id, assigned_at desc);
+
+insert into public.request_assignees (request_id, user_id, assigned_by, assigned_at)
+select id, assigned_to, created_by, created_at
+from public.internal_requests
+where assigned_to is not null
+on conflict (request_id, user_id) do nothing;
+
+-- =========================================================
 -- 5. Request Status Logs
 -- =========================================================
 

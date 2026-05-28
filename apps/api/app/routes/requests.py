@@ -4,6 +4,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, status
 
 from app.core.auth import get_current_user, require_active_current_user
 from app.schemas.requests import (
+    AddAssigneeRequest,
     AssignmentHistoryOut,
     CancelRequest,
     DoneRequest,
@@ -11,6 +12,7 @@ from app.schemas.requests import (
     InternalRequestOut,
     InternalRequestUpdate,
     ReassignRequest,
+    RemoveAssigneeRequest,
     RequestStatusLogOut,
     StatusUpdateRequest,
 )
@@ -39,10 +41,10 @@ async def create_request(
 ):
     require_active_current_user(current_user)
     result = request_service.create_request(payload, current_user)
-    if result.get("assigned_to"):
+    for assignee in result.get("assignees", []):
         background_tasks.add_task(
             notification_module.dispatch_telegram_background,
-            result["assigned_to"],
+            assignee["id"],
             result,
             False,
         )
@@ -152,6 +154,45 @@ async def list_assignment_history(
 ):
     require_active_current_user(current_user)
     return request_service.list_assignment_history(request_id, current_user, limit=limit)
+
+
+@router.post("/{request_id}/assignees", response_model=InternalRequestOut)
+async def add_request_assignee(
+    request_id: str,
+    payload: AddAssigneeRequest,
+    current_user: Annotated[CurrentUser, Depends(get_current_user)],
+    background_tasks: BackgroundTasks,
+):
+    require_active_current_user(current_user)
+    result = request_service.add_request_assignee(
+        request_id,
+        payload.user_id,
+        payload.reason,
+        current_user,
+    )
+    background_tasks.add_task(
+        notification_module.dispatch_telegram_background,
+        payload.user_id,
+        result,
+        False,
+    )
+    return result
+
+
+@router.delete("/{request_id}/assignees/{user_id}", response_model=InternalRequestOut)
+async def remove_request_assignee(
+    request_id: str,
+    user_id: str,
+    payload: RemoveAssigneeRequest,
+    current_user: Annotated[CurrentUser, Depends(get_current_user)],
+):
+    require_active_current_user(current_user)
+    return request_service.remove_request_assignee(
+        request_id,
+        user_id,
+        payload.reason,
+        current_user,
+    )
 
 
 @router.get("/{request_id}/status-logs", response_model=list[RequestStatusLogOut])
