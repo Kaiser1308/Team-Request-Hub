@@ -80,7 +80,7 @@ export function FilePreviewPanel({
 
         if (kind === "unsupported") return;
 
-        if (kind === "markdown" || kind === "html") {
+        if (kind === "markdown") {
           if (file.size_bytes > MAX_TEXT_PREVIEW_BYTES) {
             throw new Error("File is too large to preview in the browser.");
           }
@@ -177,11 +177,11 @@ export function FilePreviewPanel({
           <iframe title={file.name} src={previewUrl} className="h-[70vh] w-full rounded-md border border-[#e5e7eb]" />
         ) : null}
 
-        {!isLoading && !error && kind === "html" && textContent ? (
+        {!isLoading && !error && kind === "html" && previewUrl ? (
           <iframe
             title={file.name}
             sandbox=""
-            srcDoc={textContent}
+            src={previewUrl}
             className="h-[70vh] w-full rounded-md border border-[#e5e7eb] bg-white"
           />
         ) : null}
