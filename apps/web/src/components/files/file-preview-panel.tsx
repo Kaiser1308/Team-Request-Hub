@@ -10,7 +10,7 @@ import type { TeamFile } from "@/types";
 
 const MAX_TEXT_PREVIEW_BYTES = 1_000_000;
 
-type PreviewKind = "image" | "pdf" | "markdown" | "unsupported";
+type PreviewKind = "image" | "pdf" | "markdown" | "html" | "unsupported";
 
 interface FilePreviewPanelProps {
   file: TeamFile | null;
@@ -28,6 +28,7 @@ function getPreviewKind(file: TeamFile): PreviewKind {
   if (file.content_type?.startsWith("image/") && extension !== "svg") return "image";
   if (file.content_type === "application/pdf" || extension === "pdf") return "pdf";
   if (extension === "md" || extension === "markdown") return "markdown";
+  if (extension === "html" || extension === "htm") return "html";
   return "unsupported";
 }
 
@@ -79,7 +80,7 @@ export function FilePreviewPanel({
 
         if (kind === "unsupported") return;
 
-        if (kind === "markdown") {
+        if (kind === "markdown" || kind === "html") {
           if (file.size_bytes > MAX_TEXT_PREVIEW_BYTES) {
             throw new Error("File is too large to preview in the browser.");
           }
@@ -174,6 +175,15 @@ export function FilePreviewPanel({
 
         {!isLoading && !error && kind === "pdf" && previewUrl ? (
           <iframe title={file.name} src={previewUrl} className="h-[70vh] w-full rounded-md border border-[#e5e7eb]" />
+        ) : null}
+
+        {!isLoading && !error && kind === "html" && textContent ? (
+          <iframe
+            title={file.name}
+            sandbox=""
+            srcDoc={textContent}
+            className="h-[70vh] w-full rounded-md border border-[#e5e7eb] bg-white"
+          />
         ) : null}
 
         {!isLoading && !error && kind === "markdown" && textContent ? (
