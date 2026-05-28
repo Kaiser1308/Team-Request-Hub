@@ -74,10 +74,13 @@ class RequestRoutesTests(unittest.TestCase):
             "assignees": [],
         }
 
-        with patch(
-            "app.routes.requests.request_service.add_request_assignee",
-            return_value=response_body,
-        ) as add_assignee:
+        with (
+            patch(
+                "app.routes.requests.request_service.add_request_assignee",
+                return_value=response_body,
+            ) as add_assignee,
+            patch("app.routes.requests.notification_module.dispatch_telegram_background"),
+        ):
             response = TestClient(app).post(
                 "/requests/request-1/assignees",
                 json={"user_id": "user-2", "reason": "Need help"},
