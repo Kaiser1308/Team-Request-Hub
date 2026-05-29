@@ -53,7 +53,7 @@ Rules:
 - Routes should not contain business workflows.
 - Services should own permission checks, status transitions, and side effects.
 - Repositories should not contain product permissions or workflow decisions.
-- `notification_module` owns notification records, Telegram delivery, and webhook handling. Its internal adapters (`_store`, `_telegram`, `_webhook`) are not part of the public API.
+- `notification_module` owns notification records, channel preferences, Telegram delivery, Email delivery, Web Push delivery, and webhook handling. Its internal adapters (`_store`, `_telegram`, `_email`, `_web_push`, `_webhook`) are not part of the public API.
 - Backend tests live under `apps/api/tests` and run with `uv`.
 
 ## Auth And Roles
@@ -114,6 +114,7 @@ File operations use MinIO (S3-compatible) for object storage with a two-step pre
 - Lead user approval/rejection is available through `PATCH /users/{user_id}/active`.
 - Dashboard summary endpoint provides bounded workload data per active user.
 - Telegram integration supports account linking, message delivery, and webhook handling.
+- Notification delivery supports Telegram, Email, and Web Push for assignment and reassignment events, with per-user channel preferences.
 - Team file explorer supports browse, search, upload, download, preview, rename, move, copy, batch operations, soft-delete, restore, and purge.
 - Bilingual i18n (VI/EN) is implemented in the frontend with `src/i18n/config.ts`.
 - User language preference is stored in `preferred_language` column and synced via `PATCH /users/me/language`.

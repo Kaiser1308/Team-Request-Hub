@@ -132,3 +132,10 @@ export interface FileActivityLog {
   metadata: Record<string, unknown>;
   created_at: string;
 }
+
+export type NotificationChannel = "telegram" | "email" | "web_push";
+
+export interface NotificationPreference {
+  channel: NotificationChannel;
+  enabled: boolean;
+}

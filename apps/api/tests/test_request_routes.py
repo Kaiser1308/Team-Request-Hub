@@ -79,7 +79,7 @@ class RequestRoutesTests(unittest.TestCase):
                 "app.routes.requests.request_service.add_request_assignee",
                 return_value=response_body,
             ) as add_assignee,
-            patch("app.routes.requests.notification_module.dispatch_telegram_background"),
+            patch("app.routes.requests.notification_module.dispatch_assignment_background"),
         ):
             response = TestClient(app).post(
                 "/requests/request-1/assignees",

@@ -7,11 +7,36 @@ are not part of the public API.
 import logging
 
 from app.core.config import get_settings
-from app.notification_module import _store, _telegram, _webhook
+from app.notification_module import _email, _store, _telegram, _web_push, _webhook
 
 logger = logging.getLogger(__name__)
 
 TELEGRAM_TYPES = {"assigned", "reassigned"}
+
+CHANNELS = ("telegram", "email", "web_push")
+
+
+def list_notification_preferences(user_id: str) -> list[dict]:
+    return _store.list_notification_preferences(user_id)
+
+
+def update_notification_preferences(user_id: str, updates: dict[str, bool]) -> list[dict]:
+    return _store.update_notification_preferences(user_id, updates)
+
+
+def upsert_web_push_subscription(*, user_id: str, endpoint: str, p256dh: str, auth: str, user_agent: str | None) -> dict:
+    return _store.upsert_web_push_subscription(
+        user_id=user_id,
+        endpoint=endpoint,
+        p256dh=p256dh,
+        auth=auth,
+        user_agent=user_agent,
+    )
+
+
+def revoke_web_push_subscription(user_id: str, subscription_id: str) -> dict:
+    _store.revoke_web_push_subscription(user_id, subscription_id)
+    return {"revoked": True}
 
 
 def create_notification(
@@ -136,6 +161,107 @@ def dispatch_telegram_background(user_id: str, request: dict, is_reassigned: boo
             user_id,
             exc,
         )
+
+
+def dispatch_external_delivery(*, notification: dict, request: dict) -> None:
+    preferences = {
+        row["channel"]: row["enabled"]
+        for row in _store.list_notification_preferences(notification["user_id"])
+    }
+    if preferences.get("telegram", True):
+        dispatch_telegram_delivery(notification=notification, request=request)
+    if preferences.get("email", True):
+        dispatch_email_delivery(notification=notification, request=request)
+    if preferences.get("web_push", True):
+        dispatch_web_push_delivery(notification=notification, request=request)
+
+
+def dispatch_email_delivery(*, notification: dict, request: dict) -> None:
+    settings = get_settings()
+    if not settings.smtp_host or not settings.smtp_from_email:
+        return
+    user_id = notification["user_id"]
+    to_email = _store.get_user_email(user_id)
+    if not to_email:
+        return
+    delivery = _store.create_delivery(
+        notification_id=notification["id"],
+        user_id=user_id,
+        channel="email",
+    )
+    try:
+        from datetime import datetime, timezone
+
+        message = _email.build_assignment_email(
+            request,
+            reassigned=notification.get("type") == "reassigned",
+            app_base_url=settings.app_base_url,
+            lang="vi",
+        )
+        provider_message_id = _email.send_email(
+            host=settings.smtp_host,
+            port=settings.smtp_port,
+            username=settings.smtp_username,
+            password=settings.smtp_password,
+            from_email=settings.smtp_from_email,
+            from_name=settings.smtp_from_name,
+            to_email=to_email,
+            subject=message["subject"],
+            text=message["text"],
+        )
+        _store.mark_delivery_sent(delivery["id"], provider_message_id, datetime.now(timezone.utc).isoformat())
+    except Exception as exc:
+        logger.warning("Email delivery failed for notification %s: %s", notification["id"], exc)
+        _store.mark_delivery_failed(delivery["id"], str(exc))
+
+
+def dispatch_web_push_delivery(*, notification: dict, request: dict) -> None:
+    settings = get_settings()
+    if not settings.vapid_private_key or not settings.vapid_subject:
+        return
+    user_id = notification["user_id"]
+    subscriptions = _store.list_active_web_push_subscriptions(user_id)
+    if not subscriptions:
+        return
+    payload = _web_push.build_web_push_payload(
+        request,
+        notification_id=notification["id"],
+        reassigned=notification.get("type") == "reassigned",
+        app_base_url=settings.app_base_url,
+        lang="vi",
+    )
+    for subscription in subscriptions:
+        delivery = _store.create_delivery(
+            notification_id=notification["id"],
+            user_id=user_id,
+            channel="web_push",
+        )
+        try:
+            from datetime import datetime, timezone
+
+            _web_push.send_web_push(
+                endpoint=subscription["endpoint"],
+                p256dh=subscription["p256dh"],
+                auth=subscription["auth"],
+                vapid_private_key=settings.vapid_private_key,
+                vapid_subject=settings.vapid_subject,
+                payload=payload,
+            )
+            used_at = datetime.now(timezone.utc).isoformat()
+            _store.touch_web_push_subscription(subscription["id"], used_at)
+            _store.mark_delivery_sent(delivery["id"], None, used_at)
+        except Exception as exc:
+            logger.warning("Web Push delivery failed for notification %s: %s", notification["id"], exc)
+            _store.mark_delivery_failed(delivery["id"], str(exc))
+
+
+def dispatch_assignment_background(user_id: str, request: dict, is_reassigned: bool) -> None:
+    notification = {
+        "id": f"background-{request['id']}-{user_id}",
+        "user_id": user_id,
+        "type": "reassigned" if is_reassigned else "assigned",
+    }
+    dispatch_external_delivery(notification=notification, request=request)
 
 
 def notify_assigned(user_id: str, request: dict) -> dict | None:
