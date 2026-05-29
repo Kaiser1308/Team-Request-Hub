@@ -43,7 +43,7 @@ async def create_request(
     result = request_service.create_request(payload, current_user)
     for assignee in result.get("assignees", []):
         background_tasks.add_task(
-            notification_module.dispatch_telegram_background,
+            notification_module.dispatch_assignment_background,
             assignee["id"],
             result,
             False,
@@ -80,7 +80,7 @@ async def self_assign_request(
     result = request_service.self_assign_request(request_id, current_user)
     if result["created_by"] != current_user.id:
         background_tasks.add_task(
-            notification_module.dispatch_telegram_background,
+            notification_module.dispatch_assignment_background,
             result["created_by"],
             result,
             False,
@@ -98,14 +98,14 @@ async def reassign_request(
     require_active_current_user(current_user)
     result = request_service.reassign_request(request_id, payload, current_user)
     background_tasks.add_task(
-        notification_module.dispatch_telegram_background,
+        notification_module.dispatch_assignment_background,
         payload.assigned_to,
         result,
         True,
     )
     if result["created_by"] != current_user.id:
         background_tasks.add_task(
-            notification_module.dispatch_telegram_background,
+            notification_module.dispatch_assignment_background,
             result["created_by"],
             result,
             True,
@@ -171,7 +171,7 @@ async def add_request_assignee(
         current_user,
     )
     background_tasks.add_task(
-        notification_module.dispatch_telegram_background,
+        notification_module.dispatch_assignment_background,
         payload.user_id,
         result,
         False,

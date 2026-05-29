@@ -16,6 +16,8 @@ export const queryKeys = {
   notifications: ["notifications"] as const,
   dashboardSummary: ["dashboard", "summary"] as const,
   telegramProfile: ["telegram", "profile"] as const,
+  notificationPreferences: ["notifications", "preferences"] as const,
+  webPushPublicKey: ["notifications", "web-push", "public-key"] as const,
   files: {
     all: ["files"] as const,
     list: (path: string, includeDeleted: boolean) =>

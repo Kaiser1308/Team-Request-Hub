@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { NotificationList } from "@/components/notifications/notification-list";
+import { NotificationSettings } from "@/components/settings/notification-settings";
 
 export default async function NotificationsPage() {
   const t = await getTranslations("notifications");
@@ -14,6 +15,7 @@ export default async function NotificationsPage() {
           {t("description")}
         </p>
       </div>
+      <NotificationSettings />
       <NotificationList />
     </div>
   );

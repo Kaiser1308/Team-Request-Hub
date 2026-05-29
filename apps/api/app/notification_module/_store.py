@@ -213,3 +213,113 @@ def unlink_telegram_user(user_id: str) -> dict:
         .execute()
     )
     return result.data[0]
+
+
+CHANNELS = ("telegram", "email", "web_push")
+
+
+def list_notification_preferences(user_id: str) -> list[dict]:
+    result = (
+        get_supabase_admin()
+        .table("notification_preferences")
+        .select("channel, enabled")
+        .eq("user_id", user_id)
+        .execute()
+    )
+    rows = {row["channel"]: row for row in (result.data or [])}
+    return [
+        {"channel": channel, "enabled": rows.get(channel, {}).get("enabled", True)}
+        for channel in CHANNELS
+    ]
+
+
+def update_notification_preferences(user_id: str, updates: dict[str, bool]) -> list[dict]:
+    rows = [
+        {"user_id": user_id, "channel": channel, "enabled": enabled}
+        for channel, enabled in updates.items()
+        if channel in CHANNELS
+    ]
+    if rows:
+        (
+            get_supabase_admin()
+            .table("notification_preferences")
+            .upsert(rows, on_conflict="user_id,channel")
+            .execute()
+        )
+    return list_notification_preferences(user_id)
+
+
+def upsert_web_push_subscription(
+    *,
+    user_id: str,
+    endpoint: str,
+    p256dh: str,
+    auth: str,
+    user_agent: str | None,
+) -> dict:
+    result = (
+        get_supabase_admin()
+        .table("web_push_subscriptions")
+        .upsert(
+            {
+                "user_id": user_id,
+                "endpoint": endpoint,
+                "p256dh": p256dh,
+                "auth": auth,
+                "user_agent": user_agent,
+                "revoked_at": None,
+            },
+            on_conflict="endpoint",
+        )
+        .execute()
+    )
+    return result.data[0]
+
+
+def list_active_web_push_subscriptions(user_id: str) -> list[dict]:
+    result = (
+        get_supabase_admin()
+        .table("web_push_subscriptions")
+        .select("id, endpoint, p256dh, auth")
+        .eq("user_id", user_id)
+        .is_("revoked_at", "null")
+        .execute()
+    )
+    return result.data or []
+
+
+def revoke_web_push_subscription(user_id: str, subscription_id: str) -> None:
+    from datetime import datetime, timezone
+
+    (
+        get_supabase_admin()
+        .table("web_push_subscriptions")
+        .update({"revoked_at": datetime.now(timezone.utc).isoformat()})
+        .eq("id", subscription_id)
+        .eq("user_id", user_id)
+        .execute()
+    )
+
+
+def touch_web_push_subscription(subscription_id: str, used_at: str) -> None:
+    (
+        get_supabase_admin()
+        .table("web_push_subscriptions")
+        .update({"last_used_at": used_at})
+        .eq("id", subscription_id)
+        .execute()
+    )
+
+
+def get_user_email(user_id: str) -> str | None:
+    result = (
+        get_supabase_admin()
+        .table("users")
+        .select("email")
+        .eq("id", user_id)
+        .limit(1)
+        .execute()
+    )
+    if not result.data:
+        return None
+    return result.data[0].get("email")

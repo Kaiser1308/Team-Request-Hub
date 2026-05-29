@@ -8,3 +8,4 @@ httpx
 python-jose[cryptography]
 email-validator
 minio
+pywebpush

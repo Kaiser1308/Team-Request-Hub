@@ -317,8 +317,14 @@ create index if not exists idx_telegram_link_tokens_token
 do $$
 begin
   if not exists (select 1 from pg_type where typname = 'notification_channel') then
-    create type notification_channel as enum ('telegram');
+    create type notification_channel as enum ('telegram', 'email', 'web_push');
   end if;
+end $$;
+
+do $$
+begin
+  alter type notification_channel add value if not exists 'email';
+  alter type notification_channel add value if not exists 'web_push';
 end $$;
 
 do $$
@@ -352,6 +358,38 @@ create index if not exists idx_notification_deliveries_status
 create index if not exists idx_notification_deliveries_pending_created_at
   on public.notification_deliveries(created_at)
   where status = 'pending';
+
+-- =========================================================
+-- 9b. Notification Preferences
+-- =========================================================
+
+create table if not exists public.notification_preferences (
+  user_id uuid not null references public.users(id) on delete cascade,
+  channel notification_channel not null,
+  enabled boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  primary key (user_id, channel)
+);
+
+-- =========================================================
+-- 9c. Web Push Subscriptions
+-- =========================================================
+
+create table if not exists public.web_push_subscriptions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.users(id) on delete cascade,
+  endpoint text not null unique,
+  p256dh text not null,
+  auth text not null,
+  user_agent text,
+  created_at timestamptz not null default now(),
+  last_used_at timestamptz,
+  revoked_at timestamptz
+);
+
+create index if not exists idx_web_push_subscriptions_user_active
+  on public.web_push_subscriptions(user_id, revoked_at);
 
 -- =========================================================
 -- 10. Team Files
@@ -490,6 +528,12 @@ before update on public.team_files
 for each row
 execute function public.set_updated_at();
 
+drop trigger if exists trg_notification_preferences_set_updated_at on public.notification_preferences;
+create trigger trg_notification_preferences_set_updated_at
+before update on public.notification_preferences
+for each row
+execute function public.set_updated_at();
+
 -- =========================================================
 -- 12. Auto-create user profile after Supabase Auth signup
 -- =========================================================
@@ -545,6 +589,8 @@ alter table public.request_status_logs enable row level security;
 alter table public.notifications enable row level security;
 alter table public.telegram_link_tokens enable row level security;
 alter table public.notification_deliveries enable row level security;
+alter table public.notification_preferences enable row level security;
+alter table public.web_push_subscriptions enable row level security;
 alter table public.team_files enable row level security;
 alter table public.file_activity_logs enable row level security;
 
@@ -575,6 +621,46 @@ with check ((select auth.uid()) = user_id);
 -- No insert/update/delete policies for internal_requests from FE.
 -- Backend service role bypasses RLS.
 -- Keep business logic in FastAPI.
+
+-- Users can view their own notification preferences.
+drop policy if exists "Users can view their own notification preferences" on public.notification_preferences;
+create policy "Users can view their own notification preferences"
+  on public.notification_preferences for select
+  to authenticated
+  using ((select auth.uid()) = user_id);
+
+drop policy if exists "Users can insert their own notification preferences" on public.notification_preferences;
+create policy "Users can insert their own notification preferences"
+  on public.notification_preferences for insert
+  to authenticated
+  with check ((select auth.uid()) = user_id);
+
+drop policy if exists "Users can update their own notification preferences" on public.notification_preferences;
+create policy "Users can update their own notification preferences"
+  on public.notification_preferences for update
+  to authenticated
+  using ((select auth.uid()) = user_id)
+  with check ((select auth.uid()) = user_id);
+
+-- Users can manage their own web push subscriptions.
+drop policy if exists "Users can view their own web push subscriptions" on public.web_push_subscriptions;
+create policy "Users can view their own web push subscriptions"
+  on public.web_push_subscriptions for select
+  to authenticated
+  using ((select auth.uid()) = user_id);
+
+drop policy if exists "Users can insert their own web push subscriptions" on public.web_push_subscriptions;
+create policy "Users can insert their own web push subscriptions"
+  on public.web_push_subscriptions for insert
+  to authenticated
+  with check ((select auth.uid()) = user_id);
+
+drop policy if exists "Users can update their own web push subscriptions" on public.web_push_subscriptions;
+create policy "Users can update their own web push subscriptions"
+  on public.web_push_subscriptions for update
+  to authenticated
+  using ((select auth.uid()) = user_id)
+  with check ((select auth.uid()) = user_id);
 
 -- =========================================================
 -- 14. Realtime
@@ -618,5 +704,7 @@ with check ((select auth.uid()) = user_id);
 -- public.notifications
 -- public.telegram_link_tokens
 -- public.notification_deliveries
+-- public.notification_preferences
+-- public.web_push_subscriptions
 -- public.team_files
 -- public.file_activity_logs

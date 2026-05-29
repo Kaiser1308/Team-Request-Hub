@@ -179,6 +179,42 @@ Response:
 }
 ```
 
+### Channel Preferences
+
+```txt
+GET    /notifications/preferences
+PATCH  /notifications/preferences
+GET    /notifications/web-push/vapid-public-key
+POST   /notifications/web-push/subscriptions
+DELETE /notifications/web-push/subscriptions/{subscription_id}
+```
+
+`GET /notifications/preferences` — returns channel preferences for current user.
+
+Response:
+
+```json
+[
+  {"channel": "telegram", "enabled": true},
+  {"channel": "email", "enabled": true},
+  {"channel": "web_push", "enabled": false}
+]
+```
+
+`PATCH /notifications/preferences` — updates channel preferences. Request body is an array of `{ "channel": "...", "enabled": bool }`.
+
+`GET /notifications/web-push/vapid-public-key` — returns the VAPID public key for browser push subscription.
+
+Response:
+
+```json
+{"public_key": "BExampleVapidPublicKey"}
+```
+
+`POST /notifications/web-push/subscriptions` — registers a web push subscription for the current user.
+
+`DELETE /notifications/web-push/subscriptions/{subscription_id}` — removes a web push subscription.
+
 ## Dashboard
 
 ```txt

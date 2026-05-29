@@ -27,6 +27,17 @@ class Settings(BaseSettings):
     minio_secure: bool = True
     minio_public_endpoint: str | None = None
 
+    smtp_host: str | None = None
+    smtp_port: int = 587
+    smtp_username: str | None = None
+    smtp_password: str | None = None
+    smtp_from_email: str | None = None
+    smtp_from_name: str = "Team Request Hub"
+
+    vapid_public_key: str | None = None
+    vapid_private_key: str | None = None
+    vapid_subject: str | None = None
+
     class Config:
         env_file = ".env"
 
