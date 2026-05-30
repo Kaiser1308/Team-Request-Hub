@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { formatUserLabel } from "@/components/requests/user-display";
+import { UserMultiSelect } from "@/components/requests/user-multi-select";
 import { translatePriority } from "@/components/requests/translated-labels";
 import { useActiveUsers } from "@/hooks/use-users";
 import { useRequestActions } from "@/hooks/use-request-actions";
@@ -76,23 +76,15 @@ export function RequestForm() {
     } catch {}
   }
 
-  function toggleAssignee(userId: string) {
-    setAssigneeIds((current) =>
-      current.includes(userId)
-        ? current.filter((id) => id !== userId)
-        : [...current, userId],
-    );
-  }
-
   return (
     <form
       onSubmit={handleSubmit}
-      className="grid gap-5 rounded-lg border border-[#e5e7eb] bg-white p-5"
+      className="grid gap-5 rounded-lg border border-[#e5e7eb] bg-white p-4 sm:p-5"
     >
       <label className="grid gap-2 text-sm font-medium text-[#111827]">
         {t("form.title")}
         <input
-          className="h-10 rounded-md border border-[#e5e7eb] bg-white px-3 text-sm font-normal"
+          className="h-10 w-full rounded-md border border-[#e5e7eb] bg-white px-3 text-sm font-normal"
           value={title}
           onChange={(event) => setTitle(event.target.value)}
           required
@@ -110,7 +102,7 @@ export function RequestForm() {
       <label className="grid gap-2 text-sm font-medium text-[#111827]">
         {t("form.description")}
         <textarea
-          className="min-h-36 rounded-md border border-[#e5e7eb] bg-white px-3 py-2 text-sm font-normal"
+          className="min-h-32 w-full rounded-md border border-[#e5e7eb] bg-white px-3 py-2 text-sm font-normal sm:min-h-36"
           value={description}
           onChange={(event) => setDescription(event.target.value)}
           required
@@ -130,7 +122,7 @@ export function RequestForm() {
       <label className="grid gap-2 text-sm font-medium text-[#111827]">
         {t("form.priority")}
         <select
-          className="h-10 rounded-md border border-[#e5e7eb] bg-white px-3 text-sm font-normal"
+          className="h-10 w-full rounded-md border border-[#e5e7eb] bg-white px-3 text-sm font-normal"
           value={priority}
           onChange={(event) =>
             setPriority(event.target.value as RequestPriority)
@@ -144,33 +136,18 @@ export function RequestForm() {
         </select>
       </label>
 
-      <fieldset className="grid gap-2 text-sm font-medium text-[#111827]">
-        <legend>{t("form.assignee")}</legend>
-        <div className="grid gap-2 rounded-md border border-[#e5e7eb] bg-white p-3">
-          {(activeUsersQuery.data ?? []).map((user) => (
-            <label
-              key={user.id}
-              className="flex items-center gap-2 text-sm font-normal text-[#4b5563]"
-            >
-              <input
-                type="checkbox"
-                checked={assigneeIds.includes(user.id)}
-                onChange={() => toggleAssignee(user.id)}
-                disabled={activeUsersQuery.isLoading}
-              />
-              {formatUserLabel(user)}
-            </label>
-          ))}
-          {(activeUsersQuery.data ?? []).length === 0 ? (
-            <p className="text-xs font-normal text-[#6b7280]">
-              {t("form.leaveInPool")}
-            </p>
-          ) : null}
-        </div>
+      <label className="grid gap-2 text-sm font-medium text-[#111827]">
+        {t("form.assignee")}
+        <UserMultiSelect
+          users={activeUsersQuery.data ?? []}
+          selectedIds={assigneeIds}
+          onChange={setAssigneeIds}
+          disabled={activeUsersQuery.isLoading}
+        />
         <span className="text-xs font-normal text-[#6b7280]">
           {t("form.assigneeHelp")}
         </span>
-      </fieldset>
+      </label>
 
       {actions.create.error ? (
         <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -178,15 +155,20 @@ export function RequestForm() {
         </p>
       ) : null}
 
-      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => router.push("/requests")}
+      <div className="grid gap-3 sm:flex sm:justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            className="min-h-10 w-full sm:w-auto"
+            onClick={() => router.push("/requests")}
         >
           {tCommon("cancel")}
         </Button>
-        <Button type="submit" disabled={actions.create.isPending}>
+        <Button
+          type="submit"
+          className="min-h-10 w-full sm:w-auto"
+          disabled={actions.create.isPending}
+        >
           {actions.create.isPending ? t("form.creating") : t("form.create")}
         </Button>
       </div>
