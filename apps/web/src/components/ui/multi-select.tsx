@@ -65,7 +65,7 @@ export function MultiSelect<T>({
     setSearch("");
   }
 
-  function handleRemove(e: React.MouseEvent, item: T) {
+  function handleRemove(e: React.SyntheticEvent, item: T) {
     e.preventDefault();
     e.stopPropagation();
     onRemove(item);
@@ -84,11 +84,12 @@ export function MultiSelect<T>({
               {renderBadge(item)}
               <button
                 type="button"
+                aria-label="Remove"
                 className="ml-0.5 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
                 onMouseDown={(e) => handleRemove(e, item)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
-                    handleRemove(e as unknown as React.MouseEvent, item);
+                    handleRemove(e, item);
                   }
                 }}
                 disabled={disabled}
