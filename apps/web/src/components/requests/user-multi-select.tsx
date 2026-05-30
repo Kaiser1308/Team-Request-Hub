@@ -13,11 +13,6 @@ interface UserMultiSelectProps {
   disabled?: boolean;
 }
 
-function formatUserLabel(user: UserSummary): string {
-  if (user.name && user.email) return `${user.name} (${user.email})`;
-  return user.name ?? user.email ?? user.id;
-}
-
 export function UserMultiSelect({
   users,
   selectedIds,
