@@ -7,7 +7,7 @@ from app.core.permissions import (
     ensure_can_view_request,
     ensure_is_assignee_or_lead,
 )
-from app.repositories import request_repository, user_repository
+from app.repositories import request_repository
 from app.schemas.requests import (
     CancelRequest,
     DoneRequest,
@@ -22,20 +22,16 @@ from app.repositories import (
     request_assignee_repository,
     status_log_repository,
 )
-from app.services import request_list_read_model, users
+from app.services import request_assignment_engine, request_list_read_model, request_read_model_builder, request_transition_engine, users
 from app.utils.time import utc_now_iso
 
-CLOSED_STATUSES = {"done", "cancelled"}
-ACTIVE_STATUSES = {"acknowledged", "in_progress"}
+CLOSED_STATUSES = request_transition_engine.CLOSED_STATUSES
+ACTIVE_STATUSES = request_transition_engine.ACTIVE_STATUSES
 DEFAULT_REQUEST_LIST_LIMIT = 50
 MAX_REQUEST_LIST_LIMIT = 100
 DEFAULT_HISTORY_LIST_LIMIT = 50
 MAX_HISTORY_LIST_LIMIT = 100
-ALLOWED_STATUS_TRANSITIONS = {
-    "pending": {"acknowledged", "cancelled"},
-    "acknowledged": {"in_progress", "cancelled"},
-    "in_progress": {"acknowledged", "cancelled"},
-}
+ALLOWED_STATUS_TRANSITIONS = request_transition_engine.ALLOWED_STATUS_TRANSITIONS
 
 
 def is_lead(current_user: CurrentUser) -> bool:
@@ -43,11 +39,7 @@ def is_lead(current_user: CurrentUser) -> bool:
 
 
 def ensure_open_request(request: dict) -> None:
-    if request.get("status") in CLOSED_STATUSES:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Request is already closed",
-        )
+    request_transition_engine.ensure_open_request(request)
 
 
 def ensure_creator_or_lead(current_user: CurrentUser, request: dict) -> None:
@@ -61,43 +53,19 @@ def ensure_creator_or_lead(current_user: CurrentUser, request: dict) -> None:
 
 
 def ensure_status_transition_allowed(from_status: str, to_status: str) -> None:
-    if to_status == "done":
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Use /done endpoint",
-        )
-
-    allowed_statuses = ALLOWED_STATUS_TRANSITIONS.get(from_status, set())
-    if to_status not in allowed_statuses:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid status transition",
-        )
+    request_transition_engine.ensure_status_transition_allowed(from_status, to_status)
 
 
 def ensure_reassign_reason(request: dict, reason: str | None) -> None:
-    if request.get("status") in {"acknowledged", "in_progress"} and not reason:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Reason is required to reassign an active request",
-        )
+    request_transition_engine.ensure_reassign_reason(request, reason)
 
 
 def ensure_done_allowed(request: dict) -> None:
-    if request.get("status") != "in_progress":
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Request must be in_progress before done",
-        )
+    request_transition_engine.ensure_done_allowed(request)
 
 
 def ensure_request_assigned(request: dict) -> None:
-    assignee_ids = request.get("assignee_ids") or []
-    if not assignee_ids and request.get("assigned_to") is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Request must be assigned before status can change",
-        )
+    request_transition_engine.ensure_request_assigned(request)
 
 
 def attach_assignee_ids(request: dict) -> dict:
@@ -114,28 +82,11 @@ def attach_assignee_ids(request: dict) -> dict:
 
 
 def ensure_can_manage_assignees(current_user: CurrentUser, request: dict) -> None:
-    if is_lead(current_user) or request["created_by"] == current_user.id:
-        return
-    if current_user.id in (request.get("assignee_ids") or []):
-        return
-    raise HTTPException(
-        status_code=status.HTTP_403_FORBIDDEN,
-        detail="You cannot manage assignees for this request",
-    )
+    request_assignment_engine.ensure_can_manage_assignees(current_user, request)
 
 
 def build_status_update_data(next_status: str, now: str | None = None) -> dict:
-    timestamp = now or utc_now_iso()
-    data = {"status": next_status}
-
-    if next_status == "acknowledged":
-        data["acknowledged_at"] = timestamp
-    elif next_status == "in_progress":
-        data["started_at"] = timestamp
-    elif next_status == "cancelled":
-        data["cancelled_at"] = timestamp
-
-    return data
+    return request_transition_engine.build_status_update_data(next_status, now)
 
 
 def filter_viewable_requests(
@@ -167,44 +118,11 @@ def normalize_history_list_limit(limit: int | None) -> int:
 
 
 def enrich_requests_with_users(requests: list[dict]) -> list[dict]:
-    request_ids = [request["id"] for request in requests if request.get("id")]
-    try:
-        assignee_ids_by_request = request_assignee_repository.list_assignee_ids_by_request_ids(
-            request_ids
-        )
-    except Exception:
-        assignee_ids_by_request = {
-            request.get("id"): ([request.get("assigned_to")] if request.get("assigned_to") else [])
-            for request in requests
-            if request.get("id")
-        }
-
-    user_ids: list[str] = []
-    for request in requests:
-        if request.get("created_by"):
-            user_ids.append(request["created_by"])
-        user_ids.extend(assignee_ids_by_request.get(request.get("id"), []))
-        if request.get("assigned_to"):
-            user_ids.append(request["assigned_to"])
-
-    users_by_id = user_repository.list_user_summaries(user_ids)
-    enriched = []
-    for request in requests:
-        item = dict(request)
-        assignee_ids = assignee_ids_by_request.get(request.get("id"), [])
-        assignees = [users_by_id[user_id] for user_id in assignee_ids if user_id in users_by_id]
-        fallback_assignee = users_by_id.get(request.get("assigned_to"))
-        item["creator"] = users_by_id.get(request.get("created_by"))
-        item["assignees"] = assignees
-        item["assignee"] = assignees[0] if assignees else fallback_assignee
-        item["assigned_to"] = assignee_ids[0] if assignee_ids else request.get("assigned_to")
-        item["assignee_ids"] = assignee_ids
-        enriched.append(item)
-    return enriched
+    return request_read_model_builder.enrich_requests_with_users(requests)
 
 
 def enrich_request_with_users(request: dict) -> dict:
-    return enrich_requests_with_users([request])[0]
+    return request_read_model_builder.enrich_request_with_users(request)
 
 
 def list_requests(
@@ -466,11 +384,7 @@ def add_request_assignee(
     ensure_open_request(request)
     users.ensure_active_user(user_id)
 
-    if user_id in request.get("assignee_ids", []):
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="User is already assigned to this request",
-        )
+    request_assignment_engine.ensure_can_add_assignee(request, user_id)
 
     request_assignee_repository.add_assignee(request_id, user_id, current_user.id)
     assignment_repository.create_assignment_history(
@@ -494,19 +408,7 @@ def remove_request_assignee(
     ensure_can_manage_assignees(current_user, request)
     ensure_open_request(request)
 
-    assignee_ids = request.get("assignee_ids", [])
-    if user_id not in assignee_ids:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Assignee not found on request")
-    if request.get("status") in ACTIVE_STATUSES and not reason:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Reason is required to remove assignee from active request",
-        )
-    if request.get("status") in ACTIVE_STATUSES and len(assignee_ids) == 1:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Cannot remove the last assignee from an active request",
-        )
+    request_assignment_engine.ensure_can_remove_assignee(request, user_id, reason)
 
     request_assignee_repository.remove_assignee(request_id, user_id)
     assignment_repository.create_assignment_history(

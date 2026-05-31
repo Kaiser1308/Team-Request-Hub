@@ -69,7 +69,7 @@ class TestCreateRequest(unittest.TestCase):
 
         with (
             patch("app.services.request_service.request_repository.create_request", return_value=created),
-            patch("app.services.request_service.user_repository.list_user_summaries", return_value={}),
+            patch("app.services.request_read_model_builder.user_repository.list_user_summaries", return_value={}),
         ):
             result = request_service.create_request(payload, _user())
 
@@ -89,7 +89,7 @@ class TestCreateRequest(unittest.TestCase):
             patch("app.services.request_service.request_repository.create_request", return_value=created),
             patch("app.services.request_service.assignment_repository.create_assignment_history") as record,
             patch("app.services.request_service.notification_module.notify_assigned") as notify,
-            patch("app.services.request_service.user_repository.list_user_summaries", return_value={}),
+            patch("app.services.request_read_model_builder.user_repository.list_user_summaries", return_value={}),
         ):
             result = request_service.create_request(payload, _user())
 
@@ -109,7 +109,7 @@ class TestCreateRequest(unittest.TestCase):
             patch("app.services.request_service.request_repository.create_request", return_value=created),
             patch("app.services.request_service.assignment_repository.create_assignment_history") as record,
             patch("app.services.request_service.notification_module.notify_assigned") as notify,
-            patch("app.services.request_service.user_repository.list_user_summaries", return_value={}),
+            patch("app.services.request_read_model_builder.user_repository.list_user_summaries", return_value={}),
         ):
             request_service.create_request(payload, _user())
 
@@ -127,7 +127,7 @@ class TestSelfAssignRequest(unittest.TestCase):
             patch("app.services.request_service.request_repository.assign_if_unassigned", return_value=updated),
             patch("app.services.request_service.assignment_repository.create_assignment_history") as record,
             patch("app.services.request_service.notification_module.notify_request_picked_up") as notify,
-            patch("app.services.request_service.user_repository.list_user_summaries", return_value={}),
+            patch("app.services.request_read_model_builder.user_repository.list_user_summaries", return_value={}),
         ):
             result = request_service.self_assign_request("req-1", _user())
 
@@ -162,7 +162,7 @@ class TestSelfAssignRequest(unittest.TestCase):
             patch("app.services.request_service.request_repository.assign_if_unassigned", return_value=updated),
             patch("app.services.request_service.assignment_repository.create_assignment_history"),
             patch("app.services.request_service.notification_module.notify_request_picked_up") as notify,
-            patch("app.services.request_service.user_repository.list_user_summaries", return_value={}),
+            patch("app.services.request_read_model_builder.user_repository.list_user_summaries", return_value={}),
         ):
             request_service.self_assign_request("req-1", _user())
 
@@ -177,7 +177,7 @@ class TestSelfAssignRequest(unittest.TestCase):
             patch("app.services.request_service.request_repository.assign_if_unassigned", return_value=updated),
             patch("app.services.request_service.assignment_repository.create_assignment_history"),
             patch("app.services.request_service.notification_module.notify_request_picked_up") as notify,
-            patch("app.services.request_service.user_repository.list_user_summaries", return_value={}),
+            patch("app.services.request_read_model_builder.user_repository.list_user_summaries", return_value={}),
         ):
             request_service.self_assign_request("req-1", _user())
 
@@ -194,7 +194,7 @@ class TestCancelRequest(unittest.TestCase):
             patch("app.services.request_service.request_repository.update_request", return_value=updated),
             patch("app.services.request_service.status_log_repository.create_status_log") as log,
             patch("app.services.request_service.notification_module.notify_cancelled") as notify,
-            patch("app.services.request_service.user_repository.list_user_summaries", return_value={}),
+            patch("app.services.request_read_model_builder.user_repository.list_user_summaries", return_value={}),
         ):
             result = request_service.cancel_request("req-1", CancelRequest(), _user(role="lead"))
 
@@ -210,7 +210,7 @@ class TestCancelRequest(unittest.TestCase):
             patch("app.services.request_service.request_repository.update_request", return_value=updated),
             patch("app.services.request_service.status_log_repository.create_status_log"),
             patch("app.services.request_service.notification_module.notify_cancelled") as notify,
-            patch("app.services.request_service.user_repository.list_user_summaries", return_value={}),
+            patch("app.services.request_read_model_builder.user_repository.list_user_summaries", return_value={}),
         ):
             result = request_service.cancel_request("req-1", CancelRequest(), _user())
 
@@ -225,7 +225,7 @@ class TestCancelRequest(unittest.TestCase):
             patch("app.services.request_service.request_repository.update_request", return_value=updated),
             patch("app.services.request_service.status_log_repository.create_status_log"),
             patch("app.services.request_service.notification_module.notify_cancelled") as notify,
-            patch("app.services.request_service.user_repository.list_user_summaries", return_value={}),
+            patch("app.services.request_read_model_builder.user_repository.list_user_summaries", return_value={}),
         ):
             request_service.cancel_request("req-1", CancelRequest(reason="No longer needed"), _user())
 
@@ -240,7 +240,7 @@ class TestCancelRequest(unittest.TestCase):
             patch("app.services.request_service.request_repository.update_request", return_value=updated),
             patch("app.services.request_service.status_log_repository.create_status_log"),
             patch("app.services.request_service.notification_module.notify_cancelled") as notify,
-            patch("app.services.request_service.user_repository.list_user_summaries", return_value={}),
+            patch("app.services.request_read_model_builder.user_repository.list_user_summaries", return_value={}),
         ):
             request_service.cancel_request("req-1", CancelRequest(), _user())
 
@@ -270,7 +270,7 @@ class TestGetRequestDetail(unittest.TestCase):
 
         with (
             patch("app.services.request_service.request_repository.get_request_or_404", return_value=req),
-            patch("app.services.request_service.user_repository.list_user_summaries", return_value={}),
+            patch("app.services.request_read_model_builder.user_repository.list_user_summaries", return_value={}),
         ):
             result = request_service.get_request_detail("req-1", _user(role="lead"))
 
@@ -281,7 +281,7 @@ class TestGetRequestDetail(unittest.TestCase):
 
         with (
             patch("app.services.request_service.request_repository.get_request_or_404", return_value=req),
-            patch("app.services.request_service.user_repository.list_user_summaries", return_value={}),
+            patch("app.services.request_read_model_builder.user_repository.list_user_summaries", return_value={}),
         ):
             result = request_service.get_request_detail("req-1", _user())
 
@@ -305,7 +305,7 @@ class TestUpdateRequest(unittest.TestCase):
         with (
             patch("app.services.request_service.request_repository.get_request_or_404", return_value=req),
             patch("app.services.request_service.request_repository.update_request", return_value=updated),
-            patch("app.services.request_service.user_repository.list_user_summaries", return_value={}),
+            patch("app.services.request_read_model_builder.user_repository.list_user_summaries", return_value={}),
         ):
             result = request_service.update_request("req-1", payload, _user())
 
@@ -335,7 +335,7 @@ class TestUpdateRequest(unittest.TestCase):
 
         with (
             patch("app.services.request_service.request_repository.get_request_or_404", return_value=req),
-            patch("app.services.request_service.user_repository.list_user_summaries", return_value={}),
+            patch("app.services.request_read_model_builder.user_repository.list_user_summaries", return_value={}),
         ):
             result = request_service.update_request("req-1", payload, _user())
 

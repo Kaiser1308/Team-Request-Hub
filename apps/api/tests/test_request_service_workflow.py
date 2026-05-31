@@ -36,7 +36,7 @@ class RequestServiceWorkflowTests(unittest.TestCase):
             patch("app.services.request_service.assignment_repository.create_assignment_history") as record_assignment,
             patch("app.services.request_service.status_log_repository.create_status_log") as record_status_change,
             patch("app.services.request_service.notification_module.notify_reassigned") as notify_reassigned,
-            patch("app.services.request_service.user_repository.list_user_summaries", return_value={}),
+            patch("app.services.request_read_model_builder.user_repository.list_user_summaries", return_value={}),
         ):
             result = request_service.reassign_request(
                 "request-1",
@@ -86,7 +86,7 @@ class RequestServiceWorkflowTests(unittest.TestCase):
             patch("app.services.request_service.request_repository.update_request", return_value=updated_request),
             patch("app.services.request_service.status_log_repository.create_status_log") as record_status_change,
             patch("app.services.request_service.notification_module.notify_status_changed") as notify_status_changed,
-            patch("app.services.request_service.user_repository.list_user_summaries", return_value={}),
+            patch("app.services.request_read_model_builder.user_repository.list_user_summaries", return_value={}),
         ):
             result = request_service.update_status(
                 "request-1",
@@ -129,7 +129,7 @@ class RequestServiceWorkflowTests(unittest.TestCase):
             patch("app.services.request_service.request_repository.update_request", return_value=updated_request),
             patch("app.services.request_service.status_log_repository.create_status_log") as record_status_change,
             patch("app.services.request_service.notification_module.notify_done") as notify_done,
-            patch("app.services.request_service.user_repository.list_user_summaries", return_value={}),
+            patch("app.services.request_read_model_builder.user_repository.list_user_summaries", return_value={}),
         ):
             result = request_service.mark_done(
                 "request-1",
@@ -170,7 +170,7 @@ class RequestServiceWorkflowTests(unittest.TestCase):
 
         with (
             patch("app.services.request_service.request_repository.list_all_requests", return_value=requests),
-            patch("app.services.request_service.user_repository.list_user_summaries", return_value=users_by_id),
+            patch("app.services.request_read_model_builder.user_repository.list_user_summaries", return_value=users_by_id),
         ):
             result = request_service.list_requests("all", current_user)
 
