@@ -14,12 +14,12 @@ The executable schema lives in `DB_SCHEMA_TEAM_REQUEST_HUB.sql` and targets Supa
 - `public.notification_deliveries`: per-channel delivery tracking for notifications (e.g. Telegram).
 - `public.notification_preferences`: per-user opt-in/out settings for external notification channels.
 - `public.web_push_subscriptions`: per-device browser Push API subscription records for Web Push delivery.
-- `public.team_files`: team file explorer records with directory hierarchy, MinIO object references, soft-delete, and purge scheduling.
+- `public.team_files`: team file explorer records with directory hierarchy, unique `path`, MinIO object references, soft-delete, and purge scheduling.
 - `public.file_activity_logs`: audit trail for file operations including upload, rename, move, delete, restore, and purge events.
 
 ## Performance Indexes
 
-Request list and queue views use composite and partial indexes on `internal_requests` so filter + sort patterns by assignee, creator, status, and recent done requests stay fast. Notification processing uses a partial index on pending `notification_deliveries` to speed worker polling. Audit history tables keep `created_at desc` indexes so recent assignment and status activity can be retrieved efficiently.
+Request list and queue views use composite and partial indexes on `internal_requests` so filter + sort patterns by assignee, creator, status, and recent done requests stay fast. Request assignment and dashboard views use indexes on `request_assignees(user_id, assigned_at desc)` and `request_assignees(request_id, assigned_at)` so multi-assignee request lists can use `request_assignees` as the source of truth. Notification processing uses a partial index on pending `notification_deliveries` and a user/read/recent index on `notifications` to speed unread dashboard access. Audit history tables keep `created_at desc` indexes so recent assignment and status activity can be retrieved efficiently. Team file path operations rely on the `team_files.path` uniqueness constraint plus parent/status/name indexes for browse and search.
 
 Key composite indexes:
 - `request_assignees(user_id, assigned_at desc)` — assigned-request list view

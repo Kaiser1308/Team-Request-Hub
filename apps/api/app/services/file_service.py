@@ -1,5 +1,3 @@
-import posixpath
-import re
 from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
@@ -7,13 +5,12 @@ from app.core.exceptions import BadRequestError, ConflictError, DomainError, For
 from app.repositories import file_activity_repository, file_repository
 from app.schemas.files import CompleteUploadRequest, CreateFolderRequest, MoveFileRequest, RenameFileRequest, UploadUrlRequest, BatchCopyFilesRequest, BatchMoveFilesRequest, CopyFileRequest
 from app.schemas.users import CurrentUser
-from app.services import minio_storage
+from app.services import file_tree, minio_storage
 from app.utils.time import utc_now_iso
 
 MAX_FILE_SIZE_BYTES = 209_715_200
 PRESIGNED_EXPIRY_SECONDS = 300
 PURGE_AFTER_DAYS = 7
-SAFE_NAME_RE = re.compile(r"^[^/\\\x00<>:\"|?*]+$")
 PREVIEW_TYPES = {
     ("image/png", "png"), ("image/jpeg", "jpg"), ("image/jpeg", "jpeg"),
     ("image/gif", "gif"), ("image/webp", "webp"), ("application/pdf", "pdf"),
@@ -35,39 +32,15 @@ def ensure_lead(current_user: CurrentUser) -> None:
 
 
 def normalize_path(path: str) -> str:
-    if not path:
-        return "/"
-    if "\x00" in path:
-        raise BadRequestError("Path contains null byte")
-    if ".." in path.split("/"):
-        raise BadRequestError("Path traversal is not allowed")
-    if "//" in path:
-        raise BadRequestError("Double slash in path")
-    normalized = posixpath.normpath(path)
-    if not normalized.startswith("/"):
-        normalized = "/" + normalized
-    if normalized == "/.":
-        normalized = "/"
-    return normalized
+    return file_tree.normalize_path(path)
 
 
 def validate_name(name: str) -> str:
-    if not name or not name.strip():
-        raise BadRequestError("Name cannot be empty")
-    if name == "." or name == "..":
-        raise BadRequestError("Name cannot be '.' or '..'")
-    if "/" in name or "\\" in name:
-        raise BadRequestError("Name cannot contain slashes")
-    if not SAFE_NAME_RE.match(name):
-        raise BadRequestError("Name contains unsafe characters")
-    return name
+    return file_tree.validate_name(name)
 
 
 def build_child_path(parent_path: str, name: str) -> str:
-    parent = normalize_path(parent_path)
-    if parent == "/":
-        return f"/{name}"
-    return f"{parent}/{name}"
+    return file_tree.child_path(parent_path, name)
 
 
 def get_extension(name: str) -> str | None:
@@ -224,7 +197,7 @@ def rename_file(file_id: str, payload: RenameFileRequest, current_user: CurrentU
     })
 
     if file.get("is_directory") and new_path != old_path:
-        file_repository.update_descendants(old_path, {"updated_by": current_user.id})
+        file_repository.update_descendants(file_tree.descendant_prefix(old_path), {"updated_by": current_user.id})
 
     activity(current_user.id, updated, "rename", old_path=old_path, new_path=new_path)
     return updated
@@ -235,6 +208,7 @@ def move_file(file_id: str, payload: MoveFileRequest, current_user: CurrentUser)
     if file.get("status") != "active":
         raise NotFoundError("File not found")
     new_parent = normalize_path(payload.parent_path)
+    file_tree.assert_can_move(file, new_parent)
     name = file["name"]
     old_path = file["path"]
     new_path = build_child_path(new_parent, name)
@@ -251,7 +225,7 @@ def move_file(file_id: str, payload: MoveFileRequest, current_user: CurrentUser)
     })
 
     if file.get("is_directory"):
-        file_repository.update_descendants(old_path, {"updated_by": current_user.id})
+        file_repository.update_descendants(file_tree.descendant_prefix(old_path), {"updated_by": current_user.id})
 
     activity(current_user.id, updated, "move", old_path=old_path, new_path=new_path)
     return updated
@@ -479,6 +453,7 @@ def batch_move_files(payload: BatchMoveFilesRequest, current_user: CurrentUser) 
         file = file_repository.get_file_or_404(file_id)
         if file.get("status") != "active":
             continue
+        file_tree.assert_can_move(file, dest)
         old_path = file["path"]
         new_path = build_child_path(dest, file["name"])
         if new_path == old_path:
@@ -491,7 +466,7 @@ def batch_move_files(payload: BatchMoveFilesRequest, current_user: CurrentUser) 
             "updated_by": current_user.id,
         })
         if file.get("is_directory"):
-            file_repository.update_descendants(old_path, {"updated_by": current_user.id})
+            file_repository.update_descendants(file_tree.descendant_prefix(old_path), {"updated_by": current_user.id})
         activity(current_user.id, updated, "move", old_path=old_path, new_path=new_path)
         results.append(updated)
 

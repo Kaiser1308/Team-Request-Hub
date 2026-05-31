@@ -92,7 +92,13 @@ Only users whose current DB profile role is `lead` can update roles.
 
 ## Request Workflow
 
-The core request workflow lives in `app/services/request_service.py`.
+The core request workflow is orchestrated by `app/services/request_service.py` and supported by focused internal modules:
+
+- `request_assignment_read_model.py` owns compatibility between `request_assignees`, enriched `assignees`, `assignee_ids`, and legacy `assigned_to`.
+- `request_list_read_model.py` owns request list view selection.
+- `request_transition_engine.py` owns status transitions, closed/open checks, and lifecycle timestamp payloads.
+- `request_assignment_engine.py` owns add/remove assignee guards.
+- `request_read_model_builder.py` owns creator/assignee enrichment.
 
 Request actions update `internal_requests` and create the required side effects:
 
@@ -102,7 +108,7 @@ Request actions update `internal_requests` and create the required side effects:
 
 ## File Service
 
-File operations use MinIO (S3-compatible) for object storage with a two-step presigned URL upload flow. File metadata lives in `public.team_files` and `public.file_activity_logs`. The service module `app/services/file_service.py` enforces size limits, path safety, and soft-delete with 7-day purge scheduling. `app/services/minio_storage.py` handles all MinIO interactions.
+File operations use MinIO (S3-compatible) for object storage with a two-step presigned URL upload flow. File metadata lives in `public.team_files` and `public.file_activity_logs`. The service module `app/services/file_service.py` orchestrates file workflows, while `app/services/file_tree.py` owns path normalization, name validation, descendant-prefix safety, and folder self-move prevention. Soft-delete uses 7-day purge scheduling. `app/services/minio_storage.py` handles all MinIO interactions.
 
 ## Current State
 

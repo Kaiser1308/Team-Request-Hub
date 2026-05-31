@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import patch, MagicMock
 
 from app.core.exceptions import BadRequestError, GoneError
-from app.schemas.files import CompleteUploadRequest, CreateFolderRequest, UploadUrlRequest
+from app.schemas.files import CompleteUploadRequest, CreateFolderRequest, MoveFileRequest, RenameFileRequest, UploadUrlRequest
 from app.schemas.users import CurrentUser
 from app.services import file_service
 
@@ -191,6 +191,45 @@ class RestoreTests(unittest.TestCase):
 
         with self.assertRaises(GoneError):
             file_service.restore_file("file-1", _lead())
+
+
+class FolderTreeOperationTests(unittest.TestCase):
+    @patch("app.services.file_service.file_activity_repository")
+    @patch("app.services.file_service.file_repository")
+    def test_rename_folder_updates_descendants_with_safe_prefix(self, mock_file_repo, mock_activity_repo):
+        folder = {
+            "id": "folder-1",
+            "name": "docs",
+            "path": "/docs",
+            "parent_path": "/",
+            "is_directory": True,
+            "status": "active",
+        }
+        updated = {**folder, "name": "reports", "path": "/reports"}
+        mock_file_repo.get_file_or_404.return_value = folder
+        mock_file_repo.get_by_path.return_value = None
+        mock_file_repo.update_file.return_value = updated
+
+        file_service.rename_file("folder-1", RenameFileRequest(name="reports"), _lead())
+
+        mock_file_repo.update_descendants.assert_called_once_with("/docs/", {"updated_by": "lead-1"})
+
+    @patch("app.services.file_service.file_repository")
+    def test_move_folder_inside_itself_is_rejected(self, mock_file_repo):
+        folder = {
+            "id": "folder-1",
+            "name": "docs",
+            "path": "/docs",
+            "parent_path": "/",
+            "is_directory": True,
+            "status": "active",
+        }
+        mock_file_repo.get_file_or_404.return_value = folder
+
+        with self.assertRaises(BadRequestError) as ctx:
+            file_service.move_file("folder-1", MoveFileRequest(parent_path="/docs/archive"), _lead())
+
+        self.assertEqual(str(ctx.exception), "Cannot move a folder inside itself")
 
 
 class PurgeExpiredTests(unittest.TestCase):

@@ -14,6 +14,7 @@ New users default to `fe` through the Supabase Auth profile trigger.
 
 - Creators can see requests they created.
 - Assignees can see and act on requests where they are current members in `request_assignees`.
+- `request_assignees` is the assignment source of truth. Backend read models keep legacy `assigned_to` compatibility isolated so permission, dashboard, and list behavior share one assignment interpretation.
 - Unassigned pending requests appear in the pool and can be viewed by active users.
 - Active users can self-assign from the pool; backend rejects invalid state changes.
 - `view=all` is lead-only.
