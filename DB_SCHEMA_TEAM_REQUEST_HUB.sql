@@ -224,6 +224,9 @@ create table if not exists public.request_assignees (
 create index if not exists idx_request_assignees_request_id
   on public.request_assignees(request_id);
 
+create index if not exists idx_request_assignees_request_assigned_at
+  on public.request_assignees(request_id, assigned_at);
+
 create index if not exists idx_request_assignees_user_assigned_at
   on public.request_assignees(user_id, assigned_at desc);
 
@@ -284,6 +287,9 @@ create index if not exists idx_notifications_user_created_at
 create index if not exists idx_notifications_user_unread
   on public.notifications(user_id, created_at desc)
   where is_read = false;
+
+create index if not exists idx_notifications_user_read_created_at
+  on public.notifications(user_id, is_read, created_at desc);
 
 create index if not exists idx_notifications_request_id
   on public.notifications(request_id);
@@ -585,6 +591,7 @@ execute function public.handle_new_auth_user();
 alter table public.users enable row level security;
 alter table public.internal_requests enable row level security;
 alter table public.assignment_history enable row level security;
+alter table public.request_assignees enable row level security;
 alter table public.request_status_logs enable row level security;
 alter table public.notifications enable row level security;
 alter table public.telegram_link_tokens enable row level security;

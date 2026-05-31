@@ -106,6 +106,17 @@ class TestEnsureIsAssigneeOrLead(unittest.TestCase):
         request = {"id": "r1", "assignee_ids": ["user-1", "user-2"]}
         ensure_is_assignee_or_lead(_user(), request)
 
+    def test_assignee_in_assignees_can_act(self):
+        request = {
+            "id": "r1",
+            "assignees": [{"id": "user-1"}, {"id": "user-2"}],
+        }
+        ensure_is_assignee_or_lead(_user(), request)
+
+    def test_legacy_assigned_to_still_allows_action(self):
+        request = {"id": "r1", "assigned_to": "user-1"}
+        ensure_is_assignee_or_lead(_user(), request)
+
 
 if __name__ == "__main__":
     unittest.main()

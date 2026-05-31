@@ -21,6 +21,13 @@ The executable schema lives in `DB_SCHEMA_TEAM_REQUEST_HUB.sql` and targets Supa
 
 Request list and queue views use composite and partial indexes on `internal_requests` so filter + sort patterns by assignee, creator, status, and recent done requests stay fast. Notification processing uses a partial index on pending `notification_deliveries` to speed worker polling. Audit history tables keep `created_at desc` indexes so recent assignment and status activity can be retrieved efficiently.
 
+Key composite indexes:
+- `request_assignees(user_id, assigned_at desc)` — assigned-request list view
+- `request_assignees(request_id, assigned_at)` — per-request assignee lookups
+- `internal_requests(status, created_at desc)` — done/pool status filter + sort
+- `internal_requests(created_by, created_at desc)` — created-request list view
+- `notifications(user_id, is_read, created_at desc)` — read/unread notification list queries
+
 ## Enums
 
 - `user_role`: `fe`, `be`, `lead`.

@@ -205,6 +205,52 @@ class DashboardServiceTests(unittest.TestCase):
 
         self.assertEqual(result["counts"]["done"], 1)
 
+    def test_dashboard_summary_counts_multi_assignee_request(self):
+        current_user = CurrentUser(
+            id="user-1",
+            email="user@example.com",
+            name="User",
+            role="be",
+            is_active=True,
+        )
+
+        multi_assignee_req = {
+            "id": "r1", "title": "MA", "description": "", "tags": [],
+            "priority": "medium", "status": "pending",
+            "created_by": "user-2", "assigned_to": None,
+            "assignees": [{"id": "user-1"}, {"id": "user-3"}],
+            "reference_links": [], "created_at": "2026-01-01T00:00:00Z",
+            "updated_at": "2026-01-01T00:00:00Z",
+        }
+
+        def noop_enrich(requests):
+            enriched = []
+            for r in requests:
+                e = dict(r)
+                e["creator"] = {"id": r.get("created_by"), "name": "Creator"}
+                e["assignee"] = None
+                enriched.append(e)
+            return enriched
+
+        with (
+            patch(
+                "app.services.dashboard.request_repository.get_dashboard_data",
+                return_value=[multi_assignee_req],
+            ),
+            patch(
+                "app.services.dashboard.request_service.enrich_requests_with_users",
+                side_effect=noop_enrich,
+            ),
+            patch(
+                "app.services.dashboard.notification_module.list_notifications",
+                return_value=[],
+            ),
+        ):
+            result = dashboard.get_dashboard_summary(current_user)
+
+        self.assertEqual(result["counts"]["assigned"], 1)
+        self.assertEqual(result["counts"]["pool"], 0)
+
 
 if __name__ == "__main__":
     unittest.main()

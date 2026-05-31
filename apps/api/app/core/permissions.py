@@ -1,6 +1,7 @@
 from fastapi import HTTPException, status
 
 from app.schemas.users import CurrentUser
+from app.services import request_assignment_read_model
 
 
 def is_lead(user: CurrentUser) -> bool:
@@ -8,16 +9,7 @@ def is_lead(user: CurrentUser) -> bool:
 
 
 def is_request_assignee(user: CurrentUser, request: dict) -> bool:
-    assignee_ids = request.get("assignee_ids") or []
-    if user.id in assignee_ids:
-        return True
-
-    assignees = request.get("assignees") or []
-    for assignee in assignees:
-        if isinstance(assignee, dict) and assignee.get("id") == user.id:
-            return True
-
-    return request.get("assigned_to") == user.id
+    return request_assignment_read_model.is_assigned_to_user(request, user.id)
 
 
 def ensure_can_view_request(user: CurrentUser, request: dict) -> None:

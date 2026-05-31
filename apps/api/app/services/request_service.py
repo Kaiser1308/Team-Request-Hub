@@ -22,7 +22,7 @@ from app.repositories import (
     request_assignee_repository,
     status_log_repository,
 )
-from app.services import users
+from app.services import request_list_read_model, users
 from app.utils.time import utc_now_iso
 
 CLOSED_STATUSES = {"done", "cancelled"}
@@ -213,39 +213,8 @@ def list_requests(
     limit: int | None = None,
 ) -> list[dict]:
     normalized_limit = normalize_request_list_limit(limit)
-
-    if view == "assigned":
-        return enrich_requests_with_users(
-            request_repository.list_assigned_requests(current_user.id, limit=normalized_limit)
-        )
-
-    if view == "created":
-        return enrich_requests_with_users(request_repository.list_created_requests(current_user.id, limit=normalized_limit))
-
-    if view == "pool":
-        return enrich_requests_with_users(request_repository.list_pool_requests(limit=normalized_limit))
-
-    if view == "done":
-        if is_lead(current_user):
-            return enrich_requests_with_users(request_repository.list_done_requests(limit=normalized_limit))
-
-        return enrich_requests_with_users(request_repository.list_done_requests(
-            limit=normalized_limit,
-            user_id=current_user.id,
-        ))
-
-    if view == "all":
-        if not is_lead(current_user):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Only leads can view all requests",
-            )
-        return enrich_requests_with_users(request_repository.list_all_requests(limit=normalized_limit))
-
-    raise HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        detail="Invalid request view",
-    )
+    requests = request_list_read_model.list_requests(view, current_user, normalized_limit)
+    return enrich_requests_with_users(requests)
 
 
 def create_request(payload: InternalRequestCreate, current_user: CurrentUser) -> dict:

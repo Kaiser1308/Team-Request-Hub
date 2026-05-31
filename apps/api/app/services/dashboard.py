@@ -2,21 +2,7 @@ from app.core.permissions import is_lead
 from app.repositories import request_repository
 from app.schemas.users import CurrentUser
 from app import notification_module
-from app.services import request_service
-
-
-def is_assigned_to_user(request: dict, user_id: str) -> bool:
-    assignees = request.get("assignees") or []
-    if any(assignee.get("id") == user_id for assignee in assignees if isinstance(assignee, dict)):
-        return True
-    return request.get("assigned_to") == user_id
-
-
-def has_assignees(request: dict) -> bool:
-    assignees = request.get("assignees") or []
-    if assignees:
-        return True
-    return bool(request.get("assigned_to"))
+from app.services import request_service, request_assignment_read_model
 
 
 def get_dashboard_summary(current_user: CurrentUser) -> dict:
@@ -31,13 +17,13 @@ def get_dashboard_summary(current_user: CurrentUser) -> dict:
     for request in enriched:
         status = request.get("status")
         created_by = request.get("created_by")
-        is_assigned = is_assigned_to_user(request, current_user.id)
+        is_assigned = request_assignment_read_model.is_assigned_to_user(request, current_user.id)
 
         if is_assigned and status != "done":
             assigned_recent.append(request)
         if created_by == current_user.id:
             created_recent.append(request)
-        if not has_assignees(request) and status == "pending":
+        if not request_assignment_read_model.has_current_assignees(request) and status == "pending":
             pool_recent.append(request)
         if status == "done":
             if is_lead(current_user):
