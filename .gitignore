@@ -37,6 +37,7 @@ Thumbs.db
 # local agent/superpowers tooling
 .agents/
 .claude/
+.superpowers/
 docs/superpowers/
 apps/*/docs/superpowers/
 
