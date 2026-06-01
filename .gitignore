@@ -33,3 +33,12 @@ Thumbs.db
 
 # local notes/docs
 *.md
+
+# local agent/superpowers tooling
+.agents/
+.claude/
+docs/superpowers/
+apps/*/docs/superpowers/
+
+# design exports / local archives
+stitch_team_request_hub.zip
