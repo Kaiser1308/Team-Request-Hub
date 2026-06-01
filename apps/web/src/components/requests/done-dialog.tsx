@@ -3,6 +3,7 @@
 import { animate } from 'animejs';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from "next-intl";
+import { AttachmentUpload } from '@/components/requests/attachment-upload';
 import { Button } from '@/components/ui/button';
 import {
   MOTION_DURATION,
@@ -11,6 +12,7 @@ import {
   MOTION_SCALE,
 } from '@/lib/animation/constants';
 import { useRequestActions } from '@/hooks/use-request-actions';
+import { useRequestFileUpload } from '@/hooks/use-request-attachments';
 
 export function DoneDialog({ requestId }: { requestId: string }) {
   const t = useTranslations("requests");
@@ -22,6 +24,7 @@ export function DoneDialog({ requestId }: { requestId: string }) {
   const [validationError, setValidationError] = useState<string | null>(null);
   const overlayRef = useRef<HTMLDivElement | null>(null);
   const panelRef = useRef<HTMLFormElement | null>(null);
+  const attachmentHook = useRequestFileUpload("done_reply");
 
   const openDialog = useCallback(() => {
     setIsClosing(false);
@@ -73,9 +76,10 @@ export function DoneDialog({ requestId }: { requestId: string }) {
     }
 
     try {
+      const attachmentIds = await attachmentHook.uploadAll();
       await actions.markDone.mutateAsync({
         requestId,
-        payload: { reply: reply.trim() },
+        payload: { reply: reply.trim(), attachment_ids: attachmentIds },
       });
       setReply('');
       await closeDialog();
@@ -168,6 +172,11 @@ export function DoneDialog({ requestId }: { requestId: string }) {
             placeholder={t("actions.doneReplyPlaceholder")}
             required
           />
+        </label>
+
+        <label className="mt-3 grid gap-2 text-sm font-medium text-[#111827]">
+          {t("actions.attachments")}
+          <AttachmentUpload hook={attachmentHook} />
         </label>
 
         {validationError || actions.markDone.error ? (

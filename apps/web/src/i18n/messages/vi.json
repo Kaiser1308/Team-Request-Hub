@@ -35,7 +35,12 @@
     "newRequest": "Tạo yêu cầu mới",
     "requestDetail": "Chi tiết yêu cầu",
     "files": "Tệp",
-    "notifications": "Thông báo"
+    "notifications": "Thông báo",
+    "settings": "Cài đặt"
+  },
+  "settings": {
+    "title": "Cài đặt",
+    "description": "Quản lý tài khoản và tùy chọn thông báo."
   },
   "appShell": {
     "waitingApprovalTitle": "Đang chờ lead duyệt",
@@ -91,7 +96,7 @@
     "userManagement": "Quản lý người dùng",
     "assigned": "Được giao",
     "created": "Đã tạo",
-    "pool": "Hàng chờ",
+    "pending": "Đang chờ",
     "done": "Đã xong",
     "urgent": "Khẩn cấp",
     "recentRequests": "Yêu cầu gần đây",
@@ -196,8 +201,16 @@
       "newTitle": "Tạo yêu cầu mới",
       "newDescription": "Gửi yêu cầu nội bộ đến nhóm."
     },
+    "assignedTabs": {
+      "pending": "Được giao",
+      "acknowledged": "Đã nhận",
+      "in_progress": "Đang làm"
+    },
     "empty": {
       "assigned": "Không có yêu cầu nào được giao cho bạn.",
+      "assigned_pending": "Không có yêu cầu nào đang chờ.",
+      "assigned_acknowledged": "Không có yêu cầu nào đã nhận.",
+      "assigned_in_progress": "Không có yêu cầu nào đang làm.",
       "created": "Bạn chưa tạo yêu cầu nào. Hãy bắt đầu bằng cách tạo yêu cầu đầu tiên.",
       "pool": "Danh sách chờ trống. Hãy kiểm tra lại khi có yêu cầu mới.",
       "done": "Chưa có yêu cầu nào hoàn thành. Công việc đã hoàn thành sẽ hiển thị ở đây.",
@@ -239,7 +252,8 @@
       "descriptionRequired": "Nhập mô tả yêu cầu.",
       "createError": "Không thể tạo yêu cầu.",
       "creating": "Đang tạo...",
-      "create": "Tạo yêu cầu"
+      "create": "Tạo yêu cầu",
+      "attachments": "Tệp đính kèm (tùy chọn)"
     },
     "detail": {
       "loadError": "Không thể tải yêu cầu này.",
@@ -252,6 +266,7 @@
       "done": "Hoàn tất",
       "cancelled": "Đã hủy",
       "doneReply": "Phản hồi hoàn tất",
+      "description": "Mô tả",
       "actions": "Hành động",
       "historyLoadError": "Không thể tải lịch sử yêu cầu."
     },
@@ -287,8 +302,18 @@
       "cancelError": "Không thể hủy yêu cầu này.",
       "cancelling": "Đang hủy...",
       "confirmCancel": "Xác nhận hủy"
-      ,"addAssignee": "Thêm người nhận"
+      ,      "addAssignee": "Thêm người nhận"
       ,"removeAssignee": "Gỡ"
+      ,"adding": "Đang thêm..."
+      ,"attachments": "Tệp đính kèm (tùy chọn)"
+    },
+    "attachments": {
+      "addFiles": "Thêm tệp đính kèm",
+      "maxFiles": "Tối đa 5 tệp, 50MB/tệp",
+      "pasteHint": "Ctrl+V để dán ảnh",
+      "requestFiles": "Tệp đính kèm",
+      "replyFiles": "Tệp phản hồi",
+      "download": "Nhấn để xem"
     },
     "timeline": {
       "loading": "Đang tải lịch sử giao việc và trạng thái...",
@@ -296,6 +321,8 @@
       "title": "Timeline giao việc và trạng thái",
       "assignmentChanged": "Đã đổi người xử lý",
       "assignedTo": "Đã giao cho {user}",
+      "assigneeRemoved": "Đã xóa người xử lý",
+      "removedBy": "{removed} đã bị {by} xóa khỏi task",
       "statusChanged": "Đã đổi trạng thái",
       "statusChangeDetail": "{from} -> {to}"
     }

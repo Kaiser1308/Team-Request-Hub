@@ -52,20 +52,20 @@ export function RequestCard({ request }: { request: InternalRequest }) {
   }
 
   return (
-    <article className="rounded-lg border border-[#e5e7eb] bg-white p-4">
-      <div className="flex items-start justify-between gap-3">
+    <article className="min-w-0 rounded-lg border border-[#e5e7eb] bg-white p-4">
+      <div className="flex flex-col gap-2 min-[390px]:flex-row min-[390px]:items-start min-[390px]:justify-between">
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-card-title text-[#111827]">
+          <h3 className="line-clamp-2 text-card-title text-[#111827]">
             {request.title}
           </h3>
         </div>
-        <div className="flex shrink-0 flex-wrap justify-end gap-2">
+        <div className="flex shrink-0 flex-wrap gap-2 min-[390px]:justify-end">
           <RequestStatusBadge status={request.status} />
           <RequestPriorityBadge priority={request.priority} />
         </div>
       </div>
 
-      <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-caption text-[#6b7280]">
+      <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 break-words text-caption text-[#6b7280]">
         <span>{t("card.creator", { name: creatorLabel })}</span>
         <span className="inline-flex items-center gap-1">
           {t("card.assignee", { name: "" })}
@@ -81,7 +81,7 @@ export function RequestCard({ request }: { request: InternalRequest }) {
         {request.description}
       </p>
 
-      <div className="mt-3 flex items-center justify-between gap-3 border-t border-[#f3f4f6] pt-3">
+      <div className="mt-3 grid gap-2 border-t border-[#f3f4f6] pt-3 min-[390px]:flex min-[390px]:items-center min-[390px]:justify-between min-[390px]:gap-3">
         <div className="min-h-5 text-caption text-[#4b5563]">
           {actionLabel
             ? t("card.nextAction", { action: actionLabel })
@@ -89,7 +89,7 @@ export function RequestCard({ request }: { request: InternalRequest }) {
         </div>
         <Link
           href={`/requests/${request.id}`}
-          className="shrink-0 text-link text-[#2563eb] hover:underline"
+          className="inline-flex min-h-9 items-center justify-center rounded-md text-link text-[#2563eb] hover:underline min-[390px]:shrink-0 min-[390px]:justify-start"
         >
           {t("card.viewDetails")}
         </Link>

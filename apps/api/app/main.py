@@ -14,7 +14,7 @@ from app.core.exceptions import (
     GoneError,
     NotFoundError,
 )
-from app.routes import dashboard, files, health, notifications, requests, telegram, users
+from app.routes import dashboard, files, health, notifications, request_attachments, requests, telegram, users
 
 settings = get_settings()
 
@@ -80,3 +80,4 @@ app.include_router(notifications.router, prefix="/notifications", tags=["notific
 app.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
 app.include_router(telegram.router, prefix="/notifications/telegram", tags=["telegram"])
 app.include_router(files.router, prefix="/files", tags=["files"])
+app.include_router(request_attachments.router, prefix="/request-attachments", tags=["request-attachments"])

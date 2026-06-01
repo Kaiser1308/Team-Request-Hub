@@ -19,12 +19,17 @@ export function NotificationSettings() {
   const publicKey = useWebPushPublicKey();
   const createSubscription = useCreateWebPushSubscription();
   const rows = preferences.data;
+  const webPushEnabled = isEnabled(rows, "web_push");
 
   async function enableWebPush() {
     if (!publicKey.data?.public_key) return;
     const subscription = await subscribeToWebPush(publicKey.data.public_key);
     await createSubscription.mutateAsync(subscription);
     updatePreferences.mutate({ web_push: true });
+  }
+
+  function disableWebPush() {
+    updatePreferences.mutate({ web_push: false });
   }
 
   return (
@@ -63,14 +68,27 @@ export function NotificationSettings() {
               <p className="text-sm font-medium text-[#111827]">Browser Push</p>
               <p className="text-xs text-[#6b7280]">Requires browser permission on this device.</p>
             </div>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={publicKey.isLoading || createSubscription.isPending || updatePreferences.isPending}
-              onClick={() => void enableWebPush()}
-            >
-              Enable browser notifications
-            </Button>
+            {webPushEnabled ? (
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                disabled={updatePreferences.isPending}
+                onClick={disableWebPush}
+              >
+                Disable browser notifications
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={publicKey.isLoading || createSubscription.isPending || updatePreferences.isPending}
+                onClick={() => void enableWebPush()}
+              >
+                Enable browser notifications
+              </Button>
+            )}
           </div>
           {createSubscription.isError ? (
             <p className="mt-2 text-xs text-red-600">

@@ -1,4 +1,4 @@
-from app.repositories import request_assignee_repository, user_repository
+from app.repositories import request_assignee_repository, request_attachment_repository, user_repository
 
 
 def enrich_requests_with_users(requests: list[dict]) -> list[dict]:
@@ -13,6 +13,11 @@ def enrich_requests_with_users(requests: list[dict]) -> list[dict]:
             for request in requests
             if request.get("id")
         }
+
+    try:
+        attachments_by_request = _group_attachments(request_ids)
+    except Exception:
+        attachments_by_request = {}
 
     user_ids: list[str] = []
     for request in requests:
@@ -34,8 +39,21 @@ def enrich_requests_with_users(requests: list[dict]) -> list[dict]:
         item["assignee"] = assignees[0] if assignees else fallback_assignee
         item["assigned_to"] = assignee_ids[0] if assignee_ids else request.get("assigned_to")
         item["assignee_ids"] = assignee_ids
+        item["attachments"] = attachments_by_request.get(request.get("id"), {"request": [], "done_reply": []})
         enriched.append(item)
     return enriched
+
+
+def _group_attachments(request_ids: list[str]) -> dict:
+    all_attachments = request_attachment_repository.list_by_request_ids(request_ids)
+    grouped: dict[str, dict[str, list]] = {}
+    for att in all_attachments:
+        rid = att.get("request_id")
+        ctx = att.get("context", "request")
+        if rid not in grouped:
+            grouped[rid] = {"request": [], "done_reply": []}
+        grouped[rid][ctx].append(att)
+    return grouped
 
 
 def enrich_request_with_users(request: dict) -> dict:

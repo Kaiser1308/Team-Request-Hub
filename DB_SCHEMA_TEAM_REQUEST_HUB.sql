@@ -398,7 +398,50 @@ create index if not exists idx_web_push_subscriptions_user_active
   on public.web_push_subscriptions(user_id, revoked_at);
 
 -- =========================================================
--- 10. Team Files
+-- 10. Request Attachments
+-- =========================================================
+
+do $$
+begin
+  if not exists (select 1 from pg_type where typname = 'request_attachment_context') then
+    create type request_attachment_context as enum ('request', 'done_reply');
+  end if;
+end $$;
+
+do $$
+begin
+  if not exists (select 1 from pg_type where typname = 'request_attachment_status') then
+    create type request_attachment_status as enum ('pending_upload', 'active', 'deleted');
+  end if;
+end $$;
+
+create table if not exists public.request_attachments (
+  id uuid primary key default gen_random_uuid(),
+  request_id uuid references public.internal_requests(id) on delete cascade,
+  context request_attachment_context not null,
+  status request_attachment_status not null default 'pending_upload',
+  name text not null check (char_length(trim(name)) > 0),
+  object_key text not null unique,
+  content_type text not null check (char_length(trim(content_type)) > 0),
+  size_bytes bigint not null check (size_bytes > 0),
+  uploaded_by uuid not null references public.users(id) on delete restrict,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_request_attachments_request_context_created_at
+  on public.request_attachments(request_id, context, created_at)
+  where status = 'active';
+
+create index if not exists idx_request_attachments_uploaded_by_created_at
+  on public.request_attachments(uploaded_by, created_at desc);
+
+create index if not exists idx_request_attachments_cleanup
+  on public.request_attachments(created_at)
+  where request_id is null and status in ('pending_upload', 'active');
+
+-- =========================================================
+-- 11. Team Files
 -- =========================================================
 
 do $$
@@ -502,7 +545,7 @@ create index if not exists idx_file_activity_logs_actor_created_at
   on public.file_activity_logs(actor_id, created_at desc);
 
 -- =========================================================
--- 11. Updated_at Trigger
+-- 12. Updated_at Trigger
 -- =========================================================
 
 create or replace function public.set_updated_at()
@@ -540,8 +583,14 @@ before update on public.notification_preferences
 for each row
 execute function public.set_updated_at();
 
+drop trigger if exists trg_request_attachments_set_updated_at on public.request_attachments;
+create trigger trg_request_attachments_set_updated_at
+before update on public.request_attachments
+for each row
+execute function public.set_updated_at();
+
 -- =========================================================
--- 12. Auto-create user profile after Supabase Auth signup
+-- 13. Auto-create user profile after Supabase Auth signup
 -- =========================================================
 -- New signups start inactive. A lead must approve the profile by setting is_active = true.
 -- This creates a default profile with role = fe.
@@ -579,7 +628,7 @@ for each row
 execute function public.handle_new_auth_user();
 
 -- =========================================================
--- 13. Row Level Security
+-- 14. Row Level Security
 -- =========================================================
 -- Architecture rule:
 -- FE must NOT query DB directly.
@@ -598,6 +647,7 @@ alter table public.telegram_link_tokens enable row level security;
 alter table public.notification_deliveries enable row level security;
 alter table public.notification_preferences enable row level security;
 alter table public.web_push_subscriptions enable row level security;
+alter table public.request_attachments enable row level security;
 alter table public.team_files enable row level security;
 alter table public.file_activity_logs enable row level security;
 
@@ -670,7 +720,7 @@ create policy "Users can update their own web push subscriptions"
   with check ((select auth.uid()) = user_id);
 
 -- =========================================================
--- 14. Realtime
+-- 15. Realtime
 -- =========================================================
 -- In Supabase dashboard, enable Realtime for:
 -- - notifications
@@ -684,7 +734,7 @@ create policy "Users can update their own web push subscriptions"
 -- Use dashboard toggle if unsure.
 
 -- =========================================================
--- 15. Seed examples
+-- 16. Seed examples
 -- =========================================================
 -- Do not run this blindly in production.
 -- Replace UUIDs with real auth.users IDs after login.
@@ -702,7 +752,7 @@ create policy "Users can update their own web push subscriptions"
 -- where email = 'frontend@example.com';
 
 -- =========================================================
--- 16. MVP Tables Summary
+-- 17. MVP Tables Summary
 -- =========================================================
 -- public.users
 -- public.internal_requests
@@ -713,5 +763,6 @@ create policy "Users can update their own web push subscriptions"
 -- public.notification_deliveries
 -- public.notification_preferences
 -- public.web_push_subscriptions
+-- public.request_attachments
 -- public.team_files
 -- public.file_activity_logs

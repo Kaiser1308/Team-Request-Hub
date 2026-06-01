@@ -13,4 +13,11 @@ def get_supabase_admin() -> Client:
             settings.supabase_url,
             settings.supabase_service_role_key,
         )
+        try:
+            import httpx
+            _admin_client.postgrest.session._transport = httpx.HTTPTransport(
+                http2=False,
+            )
+        except Exception:
+            pass
     return _admin_client

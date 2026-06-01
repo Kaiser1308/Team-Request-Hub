@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { AssigneeManagement } from "@/components/requests/assignee-management";
 import { RequestActions } from "@/components/requests/request-actions";
 import { AssigneeList } from "@/components/requests/assignee-list";
+import { AttachmentList } from "@/components/requests/attachment-list";
 import { RequestPriorityBadge } from "@/components/requests/request-priority-badge";
 import { RequestStatusBadge } from "@/components/requests/request-status-badge";
 import { RequestTimeline } from "@/components/requests/request-timeline";
@@ -87,28 +88,34 @@ export function RequestDetail({ requestId }: { requestId: string }) {
   );
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 sm:space-y-5">
       <Button asChild variant="outline">
         <Link href="/requests">{t("detail.backToRequests")}</Link>
       </Button>
 
-      <section className="rounded-lg border border-[#e5e7eb] bg-white p-5">
+      <section className="min-w-0 rounded-lg border border-[#e5e7eb] bg-white p-4 sm:p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div className="min-w-0">
-            <h1 className="text-page-title text-[#111827]">
+          <div className="min-w-0 space-y-2">
+            <h1 className="break-words text-page-title text-[#111827]">
               {request.title}
             </h1>
-            <p className="mt-2 text-body text-[#4b5563]">
-              {request.description}
-            </p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 lg:justify-end">
             <RequestStatusBadge status={request.status} />
             <RequestPriorityBadge priority={request.priority} />
           </div>
         </div>
 
-        <div className="mt-5 grid gap-3 text-body text-[#4b5563] sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-4">
+          <p className="text-caption text-[#6b7280] mb-1">{t("detail.description")}</p>
+          <div className="min-h-[80px] rounded-md border border-[#e5e7eb] bg-[#f9fafb] p-3">
+            <p className="whitespace-pre-wrap text-body text-[#4b5563]">
+              {request.description}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-5 grid gap-3 text-body text-[#4b5563] min-[390px]:grid-cols-2 lg:grid-cols-4">
           <div>
             <p className="text-caption text-[#6b7280]">{t("detail.creator")}</p>
             <p>{formatUserSummaryLabel(request.creator) ?? request.created_by}</p>
@@ -147,6 +154,8 @@ export function RequestDetail({ requestId }: { requestId: string }) {
             <p className="mt-1 text-body text-green-700">{request.reply}</p>
           </div>
         ) : null}
+
+        <AttachmentList attachments={request.attachments} />
 
         <div className="mt-5 border-t border-[#e5e7eb] pt-4">
           <h2 className="text-body-medium text-[#111827]">{t("detail.actions")}</h2>

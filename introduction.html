@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Team Request Hub - Product Introduction</title>
+  <style>
+    :root {
+      --black: #000000;
+      --light: #f5f5f7;
+      --text-dark: #1d1d1f;
+      --text-dark-soft: rgba(0, 0, 0, 0.8);
+      --text-dark-muted: rgba(0, 0, 0, 0.56);
+      --text-light: #ffffff;
+      --text-light-soft: rgba(255, 255, 255, 0.82);
+      --text-light-muted: rgba(255, 255, 255, 0.62);
+      --blue: #0071e3;
+      --blue-link: #0066cc;
+      --blue-link-dark: #2997ff;
+      --surface-dark: #272729;
+      --surface-dark-2: #2a2a2d;
+      --shadow-soft: rgba(0, 0, 0, 0.22) 3px 5px 30px 0;
+      --radius-card: 8px;
+      --radius-pill: 980px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      width: 100%;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      color: var(--text-dark);
+      background: var(--light);
+      line-height: 1.47;
+      letter-spacing: -0.22px;
+    }
+
+    .container {
+      width: min(100%, 1060px);
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .scene {
+      width: 100%;
+      padding: 104px 0;
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 700ms ease, transform 700ms ease;
+      transition-delay: 80ms;
+      will-change: opacity, transform;
+    }
+
+    .scene.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .scene-dark {
+      background: var(--black);
+      color: var(--text-light);
+    }
+
+    .scene-light {
+      background: var(--light);
+      color: var(--text-dark);
+    }
+
+    .eyebrow {
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.29;
+      letter-spacing: -0.22px;
+      margin-bottom: 14px;
+      opacity: 0.86;
+      text-transform: uppercase;
+    }
+
+    .hero {
+      min-height: 92vh;
+      display: flex;
+      align-items: center;
+      text-align: center;
+      opacity: 1;
+      transform: none;
+    }
+
+    .hero h1 {
+      font-family: "SF Pro Display", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: clamp(40px, 8vw, 56px);
+      line-height: 1.07;
+      letter-spacing: -0.28px;
+      font-weight: 600;
+      max-width: 920px;
+      margin: 0 auto;
+      text-wrap: balance;
+    }
+
+    .hero p {
+      margin: 20px auto 28px;
+      max-width: 760px;
+      color: var(--text-light-soft);
+      font-size: 21px;
+      font-family: "SF Pro Display", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      line-height: 1.19;
+      letter-spacing: 0.2px;
+      font-weight: 400;
+      text-wrap: pretty;
+    }
+
+    .cta-row {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      line-height: 1;
+      padding: 10px 18px;
+      border-radius: var(--radius-pill);
+      border: 1px solid transparent;
+      transition: 0.2s ease;
+      letter-spacing: -0.22px;
+    }
+
+    .btn-primary {
+      background: var(--blue);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: #1880ea;
+    }
+
+    .btn-outline {
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.72);
+      background: transparent;
+    }
+
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    .chips {
+      margin-top: 30px;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      color: var(--text-light-muted);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .section-head {
+      margin-bottom: 34px;
+    }
+
+    .section-head h2 {
+      font-family: "SF Pro Display", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: clamp(30px, 5vw, 40px);
+      line-height: 1.1;
+      letter-spacing: -0.22px;
+      font-weight: 600;
+    }
+
+    .section-head p {
+      margin-top: 10px;
+      font-size: 17px;
+      max-width: 760px;
+      text-wrap: pretty;
+    }
+
+    .scene-dark .section-head p {
+      color: var(--text-light-soft);
+    }
+
+    .scene-light .section-head p {
+      color: var(--text-dark-soft);
+    }
+
+    .feature-grid,
+    .grid-3,
+    .grid-4 {
+      display: grid;
+      gap: 14px;
+    }
+
+    .feature-grid { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    .grid-4 { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+
+    .card {
+      border-radius: var(--radius-card);
+      padding: 22px;
+    }
+
+    .scene-light .card {
+      background: #ffffff;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .scene-dark .card {
+      background: var(--surface-dark);
+    }
+
+    .card h3 {
+      font-family: "SF Pro Display", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 21px;
+      line-height: 1.19;
+      font-weight: 600;
+      letter-spacing: 0.23px;
+      margin-bottom: 8px;
+    }
+
+    .card p {
+      font-size: 15px;
+      line-height: 1.42;
+      text-wrap: pretty;
+    }
+
+    .scene-dark .card p { color: var(--text-light-soft); }
+    .scene-light .card p { color: var(--text-dark-soft); }
+
+    .meta-link {
+      margin-top: 10px;
+      display: inline-block;
+      color: var(--blue-link);
+      text-decoration: none;
+      font-size: 14px;
+      line-height: 1.43;
+      letter-spacing: -0.22px;
+    }
+
+    .scene-dark .meta-link { color: var(--blue-link-dark); }
+    .meta-link:hover { text-decoration: underline; }
+
+    .workflow {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .step {
+      padding: 18px;
+      border-radius: var(--radius-card);
+      background: #ffffff;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .step span {
+      display: inline-flex;
+      width: 34px;
+      height: 34px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #fff;
+      font-size: 14px;
+    }
+
+    .step h4 {
+      font-size: 17px;
+      margin-bottom: 4px;
+      color: var(--text-dark);
+    }
+
+    .step p {
+      font-size: 14px;
+      color: var(--text-dark-muted);
+    }
+
+    .legend {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      background: #fff;
+      border-radius: var(--radius-pill);
+      box-shadow: var(--shadow-soft);
+      padding: 7px 12px;
+      font-size: 12px;
+      color: var(--text-dark-soft);
+    }
+
+    .legend-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border-radius: var(--radius-card);
+      overflow: hidden;
+    }
+
+    .scene-dark table { background: var(--surface-dark-2); }
+    .scene-light table { background: #ffffff; box-shadow: var(--shadow-soft); }
+
+    th,
+    td {
+      font-size: 14px;
+      text-align: left;
+      padding: 13px 16px;
+      border-bottom: 1px solid rgba(125, 125, 130, 0.18);
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    .scene-dark th { color: #fff; }
+    .scene-dark td { color: var(--text-light-soft); }
+    .scene-light th { color: var(--text-dark); }
+    .scene-light td { color: var(--text-dark-soft); }
+
+    .check { color: #20b15a; font-weight: 700; }
+    .cross { color: rgba(255, 255, 255, 0.42); }
+    .scene-light .cross { color: rgba(0, 0, 0, 0.32); }
+
+    .arch-flow {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .arch-box {
+      background: #fff;
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-soft);
+      padding: 16px;
+      color: var(--text-dark);
+    }
+
+    .arch-box h4 {
+      font-size: 15px;
+      margin-bottom: 4px;
+    }
+
+    .arch-box p {
+      font-size: 13px;
+      color: var(--text-dark-muted);
+    }
+
+    .footer {
+      padding: 56px 0 64px;
+      text-align: center;
+      background: var(--black);
+      color: var(--text-light-muted);
+      font-size: 12px;
+      line-height: 1.47;
+      letter-spacing: -0.12px;
+    }
+
+    .scene-dark .eyebrow,
+    .scene-dark h2,
+    .scene-dark .card h3 {
+      color: var(--text-light);
+    }
+
+    .copy-tight {
+      max-width: 720px;
+    }
+
+    .copy-hero {
+      max-width: 780px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .lead-soft {
+      font-size: 19px;
+      line-height: 1.35;
+      letter-spacing: -0.3px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .scene {
+        opacity: 1;
+        transform: none;
+        transition: none;
+      }
+    }
+
+    @media (max-width: 834px) {
+      .scene { padding: 72px 0; }
+      .container { padding: 0 16px; }
+      .hero p { font-size: 18px; }
+      .card { padding: 18px; }
+      th,
+      td { padding: 11px 10px; font-size: 13px; }
+      .lead-soft { font-size: 17px; }
+    }
+  </style>
+</head>
+<body>
+  <section class="scene scene-dark hero">
+    <div class="container">
+      <p class="eyebrow">Internal Operations Platform</p>
+      <h1>Team Request Hub</h1>
+      <p class="copy-hero">Một trung tâm vận hành nội bộ cho đội ngũ kỹ thuật. Tạo yêu cầu, phân công đúng người, theo dõi tiến độ và kết thúc công việc với timeline rõ ràng, trách nhiệm rõ ràng.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="#overview">Learn more</a>
+        <a class="btn btn-outline" href="#architecture">Architecture</a>
+      </div>
+      <div class="chips">
+        <span class="chip">Next.js 15</span>
+        <span class="chip">FastAPI</span>
+        <span class="chip">Supabase PostgreSQL</span>
+        <span class="chip">MinIO</span>
+        <span class="chip">Telegram / Email / Web Push</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene scene-light" id="overview">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Overview</p>
+        <h2>Tổng quan sản phẩm</h2>
+        <p class="lead-soft copy-tight">Một hệ thống hai tầng được thiết kế cho nhịp làm việc thực tế: ít nhiễu, nhiều ngữ cảnh, và mọi thay đổi đều có dấu vết.</p>
+      </div>
+      <div class="feature-grid">
+        <article class="card"><h3>Tạo yêu cầu</h3><p>Mọi công việc bắt đầu bằng ngữ cảnh rõ: tiêu đề, mô tả, ưu tiên, người liên quan.</p></article>
+        <article class="card"><h3>Phân công linh hoạt</h3><p>Từ pool tự nhận đến reassignment đa assignee, luôn giữ được quyền kiểm soát.</p></article>
+        <article class="card"><h3>Workflow rõ ràng</h3><p>Mỗi request đi qua một luồng chuẩn để tránh mơ hồ trong chuyển giao công việc.</p></article>
+        <article class="card"><h3>Thông báo đa kênh</h3><p>Telegram, Email, Web Push hoạt động theo preference cá nhân của từng thành viên.</p></article>
+        <article class="card"><h3>File Explorer</h3><p>Một không gian tệp thống nhất cho cả nhóm, từ upload đến khôi phục dữ liệu.</p></article>
+        <article class="card"><h3>Phân quyền vai trò</h3><p>Backend xác thực quyền thực thi để mọi thao tác quan trọng luôn an toàn.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene scene-dark" id="workflow">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Request Lifecycle</p>
+        <h2>Luồng xử lý yêu cầu</h2>
+        <p class="lead-soft copy-tight">Rõ trạng thái. Rõ người chịu trách nhiệm. Rõ điểm kết thúc.</p>
+      </div>
+
+      <div class="grid-4">
+        <article class="card"><h3>01 Pending</h3><p>Yêu cầu mới tạo, chưa bắt đầu xử lý.</p></article>
+        <article class="card"><h3>02 Acknowledged</h3><p>Đã tiếp nhận và xác nhận sẽ xử lý.</p></article>
+        <article class="card"><h3>03 In Progress</h3><p>Yêu cầu đang được thực hiện.</p></article>
+        <article class="card"><h3>04 Done / Cancelled</h3><p>Kết thúc bằng phản hồi hoàn thành hoặc hủy.</p></article>
+      </div>
+
+      <a class="meta-link" href="#workflow-detail">Learn more &gt;</a>
+    </div>
+  </section>
+
+  <section class="scene scene-light" id="workflow-detail">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Status & Priority</p>
+        <h2>Trạng thái và mức ưu tiên</h2>
+        <p>Status và priority được thiết kế để đọc nhanh trong vài giây, nhưng vẫn đủ chặt cho theo dõi dài hạn.</p>
+      </div>
+
+      <div class="workflow">
+        <div class="step"><span style="background:#6b7280;">1</span><h4>Pending</h4><p>Chờ tiếp nhận hoặc tự nhận từ pool.</p></div>
+        <div class="step"><span style="background:#0071e3;">2</span><h4>Acknowledged</h4><p>Đã xác nhận xử lý.</p></div>
+        <div class="step"><span style="background:#2997ff;">3</span><h4>In Progress</h4><p>Đang triển khai công việc.</p></div>
+        <div class="step"><span style="background:#20b15a;">4</span><h4>Done</h4><p>Hoàn thành, có done reply.</p></div>
+      </div>
+
+      <div class="legend" style="margin-bottom: 16px;">
+        <span class="legend-item"><span class="legend-dot" style="background:#6b7280;"></span>pending</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#0071e3;"></span>acknowledged</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#2997ff;"></span>in_progress</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#20b15a;"></span>done</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#de3d3d;"></span>cancelled</span>
+      </div>
+
+      <div class="legend">
+        <span class="legend-item"><span class="legend-dot" style="background:#9ca3af;"></span>low</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#6b7280;"></span>medium</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span>high</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#dc2626;"></span>urgent</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene scene-dark" id="roles">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Permissions</p>
+        <h2>Vai trò và quyền hạn</h2>
+        <p class="copy-tight">Phân quyền là phần của kiến trúc, không phải phần của giao diện. Mọi quyền đều được kiểm chứng ở backend.</p>
+      </div>
+
+      <table>
+        <thead>
+          <tr><th>Chức năng</th><th>FE</th><th>BE</th><th>Lead</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Tạo yêu cầu</td><td class="check">Yes</td><td class="check">Yes</td><td class="check">Yes</td></tr>
+          <tr><td>Xem Assigned / Created / Pool</td><td class="check">Yes</td><td class="check">Yes</td><td class="check">Yes</td></tr>
+          <tr><td>Tự nhận yêu cầu</td><td class="check">Yes</td><td class="check">Yes</td><td class="check">Yes</td></tr>
+          <tr><td>View All Requests</td><td class="cross">No</td><td class="cross">No</td><td class="check">Yes</td></tr>
+          <tr><td>Reassign bất kỳ request</td><td class="cross">No</td><td class="cross">No</td><td class="check">Yes</td></tr>
+          <tr><td>Quản lý role / active user</td><td class="cross">No</td><td class="cross">No</td><td class="check">Yes</td></tr>
+          <tr><td>Restore / Purge files</td><td class="cross">No</td><td class="cross">No</td><td class="check">Yes</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="scene scene-light" id="notifications">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Notification Channels</p>
+        <h2>Thông báo đa kênh</h2>
+        <p>Một hệ thống thông báo đủ linh hoạt để theo kịp nhịp xử lý công việc và đủ tiết chế để không gây nhiễu.</p>
+      </div>
+
+      <div class="grid-3">
+        <article class="card"><h3>Telegram</h3><p>Link tài khoản qua deep link token và nhận alert theo ngôn ngữ người dùng.</p></article>
+        <article class="card"><h3>Email</h3><p>Gửi notification khi assigned/reassigned và các sự kiện workflow.</p></article>
+        <article class="card"><h3>Web Push</h3><p>Subscription theo thiết bị với VAPID key, phù hợp tác vụ thời gian thực.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene scene-dark" id="files">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Team Files</p>
+        <h2>Không gian tệp cho cả nhóm</h2>
+        <p class="copy-tight">Kho tệp nội bộ được xây theo hướng an toàn mặc định: upload có kiểm soát, soft-delete, và phục hồi trong khung thời gian rõ ràng.</p>
+      </div>
+
+      <div class="grid-4">
+        <article class="card"><h3>Browse & Search</h3><p>Duyệt cấu trúc thư mục và tìm kiếm theo tên trên toàn bộ tree.</p></article>
+        <article class="card"><h3>Upload / Download</h3><p>Tải lên trực tiếp object storage và tạo URL tải xuống tạm thời.</p></article>
+        <article class="card"><h3>Preview</h3><p>Xem trước image, PDF, Markdown, HTML với endpoint chuyên biệt.</p></article>
+        <article class="card"><h3>Batch Operations</h3><p>Hỗ trợ batch move/copy, rename, restore và purge theo quyền.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene scene-light" id="architecture">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">System Architecture</p>
+        <h2>Kiến trúc ứng dụng</h2>
+        <p>Một boundary rõ ràng giữa trải nghiệm và nghiệp vụ: frontend hiển thị, backend quyết định.</p>
+      </div>
+
+      <div class="arch-flow">
+        <article class="arch-box"><h4>Browser / Next.js UI</h4><p>Google OAuth và session client-side.</p></article>
+        <article class="arch-box"><h4>Supabase Auth</h4><p>Xác thực JWT và quản lý danh tính.</p></article>
+        <article class="arch-box"><h4>FastAPI Backend</h4><p>Routes → Services → Repositories.</p></article>
+        <article class="arch-box"><h4>Supabase PostgreSQL</h4><p>Lưu users, requests, files, notifications.</p></article>
+      </div>
+
+      <div class="grid-4">
+        <article class="card"><h3>Routes</h3><p>Lớp HTTP mỏng, chuẩn hóa input/output.</p></article>
+        <article class="card"><h3>Services</h3><p>Chứa quy tắc workflow, permission và side effects.</p></article>
+        <article class="card"><h3>Repositories</h3><p>Tập trung thao tác dữ liệu với Supabase tables.</p></article>
+        <article class="card"><h3>Notification Module</h3><p>Quản lý record + delivery qua Telegram/Email/Web Push.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene scene-dark" id="stack">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Technology</p>
+        <h2>Tech stack</h2>
+        <p>Stack được chọn để cân bằng tốc độ phát triển, tính ổn định và khả năng mở rộng theo thời gian.</p>
+      </div>
+      <div class="grid-4">
+        <article class="card"><h3>Frontend</h3><p>Next.js 15, React 19, TypeScript strict.</p></article>
+        <article class="card"><h3>UI Layer</h3><p>Tailwind CSS v4, shadcn/ui, TanStack Query v5.</p></article>
+        <article class="card"><h3>Backend</h3><p>FastAPI, Pydantic settings, service-oriented structure.</p></article>
+        <article class="card"><h3>Data & Auth</h3><p>Supabase PostgreSQL + Supabase Auth.</p></article>
+        <article class="card"><h3>Storage</h3><p>MinIO object storage (S3-compatible).</p></article>
+        <article class="card"><h3>Notifications</h3><p>Telegram Bot, Email, Web Push.</p></article>
+        <article class="card"><h3>Localization</h3><p>Bilingual UI (VI/EN), preferred language sync.</p></article>
+        <article class="card"><h3>Security</h3><p>JWT verification + backend authorization + RLS defense-in-depth.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene scene-light" id="screens">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Product Surfaces</p>
+        <h2>Các màn hình chính</h2>
+        <p class="copy-tight">Mỗi màn hình phục vụ một quyết định cụ thể, giảm thao tác thừa trong vận hành hàng ngày.</p>
+      </div>
+
+      <div class="grid-3">
+        <article class="card"><h3>Login</h3><p>Google OAuth, xử lý callback và màn pending approval.</p></article>
+        <article class="card"><h3>Dashboard</h3><p>Summary workload, urgent counts, recent activities.</p></article>
+        <article class="card"><h3>Assigned / Created / Pool / Done</h3><p>Các danh sách request theo context làm việc thực tế.</p></article>
+        <article class="card"><h3>Request Detail</h3><p>Status actions, done reply, timeline và history logs.</p></article>
+        <article class="card"><h3>Admin Users</h3><p>Lead-only role management và user approval.</p></article>
+        <article class="card"><h3>Files & Notifications</h3><p>File explorer và notification center tích hợp đa kênh.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene scene-dark" id="database">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Database Schema</p>
+        <h2>Cơ sở dữ liệu</h2>
+        <p>Schema tối ưu cho các truy vấn thường xuyên: request list, assignment membership, unread notifications và file path traversal.</p>
+      </div>
+
+      <div class="grid-4">
+        <article class="card"><h3>users</h3><p>Profile, role, active state, preferred language, Telegram link.</p></article>
+        <article class="card"><h3>internal_requests</h3><p>Core request records, priority, status, lifecycle timestamps.</p></article>
+        <article class="card"><h3>request_assignees</h3><p>Nguồn sự thật cho membership assignee hiện tại.</p></article>
+        <article class="card"><h3>assignment_history</h3><p>Audit trail cho assign, self-assign và reassign events.</p></article>
+        <article class="card"><h3>request_status_logs</h3><p>Lịch sử status transitions, done và cancelled actions.</p></article>
+        <article class="card"><h3>notifications</h3><p>User notification records gắn với workflow events.</p></article>
+        <article class="card"><h3>team_files</h3><p>Metadata cho file explorer, path, status, purge scheduling.</p></article>
+        <article class="card"><h3>notification_preferences</h3><p>Opt-in/out channel preferences theo từng user.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <p>Team Request Hub</p>
+      <p>Next.js · FastAPI · Supabase · MinIO</p>
+    </div>
+  </footer>
+  <script>
+    (function () {
+      var scenes = document.querySelectorAll('.scene:not(.hero)');
+      if (!('IntersectionObserver' in window)) {
+        scenes.forEach(function (scene) {
+          scene.classList.add('is-visible');
+        });
+        return;
+      }
+
+      var observer = new IntersectionObserver(function (entries, obs) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            obs.unobserve(entry.target);
+          }
+        });
+      }, {
+        root: null,
+        threshold: 0.12,
+        rootMargin: '0px 0px -12% 0px'
+      });
+
+      scenes.forEach(function (scene) {
+        observer.observe(scene);
+      });
+    })();
+  </script>
+</body>
+</html>

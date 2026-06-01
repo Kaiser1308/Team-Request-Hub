@@ -30,3 +30,6 @@ Thumbs.db
 
 # worktrees
 .worktrees/
+
+# local notes/docs
+*.md

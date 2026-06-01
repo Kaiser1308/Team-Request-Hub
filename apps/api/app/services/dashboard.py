@@ -11,7 +11,7 @@ def get_dashboard_summary(current_user: CurrentUser) -> dict:
 
     assigned_recent = []
     created_recent = []
-    pool_recent = []
+    pending_recent = []
     done_recent = []
 
     for request in enriched:
@@ -19,12 +19,12 @@ def get_dashboard_summary(current_user: CurrentUser) -> dict:
         created_by = request.get("created_by")
         is_assigned = request_assignment_read_model.is_assigned_to_user(request, current_user.id)
 
-        if is_assigned and status != "done":
+        if is_assigned and status not in ("done", "cancelled"):
             assigned_recent.append(request)
+            if status == "pending":
+                pending_recent.append(request)
         if created_by == current_user.id:
             created_recent.append(request)
-        if not request_assignment_read_model.has_current_assignees(request) and status == "pending":
-            pool_recent.append(request)
         if status == "done":
             if is_lead(current_user):
                 done_recent.append(request)
@@ -32,7 +32,7 @@ def get_dashboard_summary(current_user: CurrentUser) -> dict:
                 done_recent.append(request)
 
     urgent_ids = set()
-    for request in assigned_recent + created_recent + pool_recent:
+    for request in assigned_recent:
         if request.get("priority") == "urgent":
             urgent_ids.add(request.get("id"))
 
@@ -45,12 +45,12 @@ def get_dashboard_summary(current_user: CurrentUser) -> dict:
         "counts": {
             "assigned": len(assigned_recent),
             "created": len(created_recent),
-            "pool": len(pool_recent),
+            "pending": len(pending_recent),
             "done": len(done_recent),
             "urgent": len(urgent_ids),
         },
         "assigned_recent": assigned_recent[:10],
         "created_recent": created_recent[:10],
-        "pool_recent": pool_recent[:10],
+        "pending_recent": pending_recent[:10],
         "notifications_unread": len(unread_notifications),
     }

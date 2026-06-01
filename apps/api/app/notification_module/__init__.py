@@ -88,12 +88,16 @@ def create_link_token(user_id: str, token: str, expires_at: str) -> dict:
 
 def dispatch_telegram_delivery(*, notification: dict, request: dict) -> None:
     settings = get_settings()
+    logger.info("dispatch_telegram_delivery called for notification %s", notification.get("id"))
     if not settings.telegram_bot_token:
+        logger.warning("Telegram bot token not configured, skipping delivery")
         return
 
     user_id = notification["user_id"]
     profile = _store.get_user_telegram_profile(user_id)
+    logger.info("Telegram profile for user %s: %s", user_id, profile)
     if not profile or not profile.get("telegram_chat_id"):
+        logger.warning("No telegram_chat_id for user %s, skipping delivery", user_id)
         return
 
     notification_type = notification.get("type", "assigned")
@@ -256,12 +260,18 @@ def dispatch_web_push_delivery(*, notification: dict, request: dict) -> None:
 
 
 def dispatch_assignment_background(user_id: str, request: dict, is_reassigned: bool) -> None:
-    notification = {
-        "id": f"background-{request['id']}-{user_id}",
-        "user_id": user_id,
-        "type": "reassigned" if is_reassigned else "assigned",
-    }
-    dispatch_external_delivery(notification=notification, request=request)
+    logger.info("dispatch_assignment_background called for user %s, request %s", user_id, request.get("id"))
+    notification_type = "reassigned" if is_reassigned else "assigned"
+    real_notification = create_notification(
+        user_id=user_id,
+        request_id=request.get("id"),
+        notification_type=notification_type,
+        message=f"You were {'re' if is_reassigned else ''}assigned a request: {request.get('title', '')}",
+    )
+    if real_notification:
+        dispatch_external_delivery(notification=real_notification, request=request)
+    else:
+        logger.warning("Could not create notification record for user %s, request %s", user_id, request.get("id"))
 
 
 def notify_assigned(user_id: str, request: dict) -> dict | None:

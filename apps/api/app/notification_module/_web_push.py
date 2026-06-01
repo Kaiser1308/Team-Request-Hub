@@ -20,9 +20,14 @@ def build_web_push_payload(
         else "You have been reassigned a request" if reassigned
         else "You have been assigned a request"
     )
+    body = request["title"]
+    priority = request.get("priority", "")
+    if priority:
+        priority_map = {"low": "Thấp", "medium": "TB", "high": "Cao", "urgent": "Khẩn"} if is_vi else {}
+        body = f"[{priority_map.get(priority, priority.capitalize())}] {body}"
     return {
         "title": title,
-        "body": request["title"],
+        "body": body,
         "url": f"{app_base_url}/requests/{request['id']}",
         "tag": notification_id,
     }

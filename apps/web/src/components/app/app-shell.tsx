@@ -16,6 +16,7 @@ import {
   Users,
   PlusCircle,
   FolderOpen,
+  Settings,
   type LucideIcon,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -41,7 +42,8 @@ type NavLabelKey =
   | "users"
   | "newRequest"
   | "files"
-  | "notifications";
+  | "notifications"
+  | "settings";
 
 interface NavItem {
   href: string;
@@ -61,6 +63,7 @@ const navItems: NavItem[] = [
   { href: "/files", labelKey: "files", icon: FolderOpen },
   { href: "/admin/users", labelKey: "users", roles: ["lead"], icon: Users },
   { href: "/requests/new", labelKey: "newRequest", icon: PlusCircle },
+  { href: "/settings", labelKey: "settings", icon: Settings },
 ];
 
 function canSeeNavItem(item: NavItem, role?: Role) {
@@ -95,6 +98,7 @@ function getPageTitle(
     "/files": "files",
     "/admin/users": "users",
     "/notifications": "notifications",
+    "/settings": "settings",
   };
 
   const key = titleByKey[pathname];
@@ -198,7 +202,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         id="app-shell-navigation"
         aria-label={tShell("primaryNavigation")}
         className={cn(
-          "fixed inset-y-0 left-0 z-40 w-[240px] px-3 py-4 text-white transition-transform lg:translate-x-0 border-r-0 border-none",
+          "fixed inset-y-0 left-0 z-40 w-[min(82vw,240px)] px-3 py-4 text-white transition-transform lg:w-[240px] lg:translate-x-0 border-r-0 border-none",
           isMobileNavOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
@@ -255,7 +259,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       <div className="lg:pl-[240px]">
-        <header className="sticky top-[-1px] z-20 flex h-14 items-center border-b border-white/10 border-t-0 bg-gradient-to-r from-[#030303] via-[#111827] to-[#1e293b] outline-none px-4 sm:h-16 sm:px-6">
+        <header className="sticky top-[-1px] z-20 flex min-h-14 items-center border-b border-white/10 border-t-0 bg-gradient-to-r from-[#030303] via-[#111827] to-[#1e293b] px-3 py-2 outline-none sm:min-h-16 sm:px-6">
 
           <div className="flex min-w-0 flex-1 items-center gap-3">
             <Button
@@ -273,11 +277,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <p className="hidden text-sm font-semibold text-slate-100 sm:block">{pageTitle}</p>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex min-w-0 items-center justify-end gap-1.5 sm:gap-3">
             <Link
               href="/notifications"
               aria-label={tShell("openNotifications")}
-              className="inline-flex items-center gap-1 rounded-md border border-slate-700 bg-slate-800/80 px-2 py-1.5 text-xs text-slate-200 transition-colors hover:bg-slate-700/80 hover:text-white"
+              className="inline-flex h-9 shrink-0 items-center gap-1 rounded-md border border-slate-700 bg-slate-800/80 px-2 text-xs text-slate-200 transition-colors hover:bg-slate-700/80 hover:text-white"
             >
               <Bell className="h-3.5 w-3.5 text-slate-300" aria-hidden="true" />
               <span ref={unreadRef}>
@@ -296,16 +300,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               ) : null}
             </div>
             {currentUser?.role ? (
-              <span className="rounded-md border border-slate-700 bg-slate-800/80 px-2 py-1 text-xs font-bold uppercase tracking-wide text-slate-200">
+              <span className="hidden max-w-[88px] truncate rounded-md border border-slate-700 bg-slate-800/80 px-2 py-1 text-xs font-bold uppercase tracking-wide text-slate-200 min-[390px]:inline-block sm:max-w-none">
                 {tShell("roleLabel", { role: translateRole(currentUser.role) })}
                 {currentUser.role === "lead" ? ` — ${tShell("leadAccessEnabled")}` : ""}
               </span>
             ) : (
-              <span className="rounded-md border border-slate-700 bg-slate-800/80 px-2 py-1 text-xs font-bold uppercase tracking-wide text-slate-200">
+              <span className="hidden max-w-[88px] truncate rounded-md border border-slate-700 bg-slate-800/80 px-2 py-1 text-xs font-bold uppercase tracking-wide text-slate-200 min-[390px]:inline-block sm:max-w-none">
                 {tShell("rolePending")}
               </span>
             )}
-            <LogoutButton className="border-slate-700 text-slate-200 hover:bg-slate-800/80 hover:text-white" />
+            <LogoutButton className="h-9 shrink-0 border-slate-700 px-2 text-xs text-slate-200 hover:bg-slate-800/80 hover:text-white sm:px-3" />
           </div>
         </header>
 

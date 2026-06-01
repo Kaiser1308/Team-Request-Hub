@@ -48,11 +48,11 @@ export default function DashboardPage() {
 
   const assignedItems = summaryQuery.data?.assigned_recent ?? [];
   const createdItems = summaryQuery.data?.created_recent ?? [];
-  const poolItems = summaryQuery.data?.pool_recent ?? [];
+  const pendingItems = summaryQuery.data?.pending_recent ?? [];
   const counts = summaryQuery.data?.counts;
   const notificationsUnread = summaryQuery.data?.notifications_unread ?? 0;
 
-  const requestList = dedupeRequests([...assignedItems, ...createdItems, ...poolItems]);
+  const requestList = dedupeRequests([...assignedItems, ...createdItems, ...pendingItems]);
   const recentRequestItems = recentRequests(requestList);
 
   const isLoading = currentUserQuery.isLoading || summaryQuery.isLoading;
@@ -91,28 +91,28 @@ export default function DashboardPage() {
       <TelegramSettings />
 
       {isLead ? (
-        <section className="flex flex-wrap gap-2 text-sm">
-          <Link href="/all" className="rounded-md border border-[#d1d5db] bg-white px-3 py-2 text-[#111827] hover:bg-[#f9fafb]">
+        <section className="grid gap-2 text-sm min-[390px]:grid-cols-2 sm:flex sm:flex-wrap">
+          <Link href="/all" className="inline-flex min-h-10 items-center justify-center rounded-md border border-[#d1d5db] bg-white px-3 py-2 text-center text-[#111827] hover:bg-[#f9fafb] sm:justify-start">
             {t("allRequests")}
           </Link>
-          <Link href="/admin/users" className="rounded-md border border-[#d1d5db] bg-white px-3 py-2 text-[#111827] hover:bg-[#f9fafb]">
+          <Link href="/admin/users" className="inline-flex min-h-10 items-center justify-center rounded-md border border-[#d1d5db] bg-white px-3 py-2 text-center text-[#111827] hover:bg-[#f9fafb] sm:justify-start">
             {t("userManagement")}
           </Link>
         </section>
       ) : null}
 
-      <section className="grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
+      <section className="grid gap-2 min-[390px]:grid-cols-2 xl:grid-cols-5">
         {[
-          { label: t("assigned"), value: counts?.assigned ?? assignedItems.length },
-          { label: t("created"), value: counts?.created ?? createdItems.length },
-          { label: t("pool"), value: counts?.pool ?? poolItems.length },
-          { label: t("done"), value: counts?.done ?? 0 },
-          { label: t("urgent"), value: counts?.urgent ?? 0 },
+          { label: t("assigned"), value: counts?.assigned ?? 0, href: "/assigned" },
+          { label: t("created"), value: counts?.created ?? 0, href: "/requests" },
+          { label: t("pending"), value: counts?.pending ?? 0, href: "/assigned" },
+          { label: t("done"), value: counts?.done ?? 0, href: "/done" },
+          { label: t("urgent"), value: counts?.urgent ?? 0, href: "/assigned" },
         ].map((item) => (
-          <div key={item.label} className="rounded-lg border border-[#e5e7eb] bg-white px-3 py-2.5">
+          <Link key={item.label} href={item.href} className="min-w-0 rounded-lg border border-[#e5e7eb] bg-white px-3 py-2.5 hover:bg-[#f9fafb]">
             <p className="text-stat-label uppercase text-[#6b7280]">{item.label}</p>
             <p className="mt-1 text-stat-value text-[#111827]">{item.value}</p>
-          </div>
+          </Link>
         ))}
       </section>
 
@@ -127,11 +127,11 @@ export default function DashboardPage() {
           {recentRequestItems.length ? (
             <div className="divide-y divide-[#e5e7eb]">
               {recentRequestItems.map((request) => (
-                <div key={request.id} className="space-y-1 px-4 py-3">
+                <div key={request.id} className="min-w-0 space-y-1 px-4 py-3">
                   <Link href={`/requests/${request.id}`} className="line-clamp-1 text-body-medium text-[#111827] hover:text-[#2563eb]">
                     {request.title}
                   </Link>
-                  <p className="text-caption text-[#6b7280]">
+                  <p className="break-words text-caption text-[#6b7280]">
                     {translateStatus(t, request.status)} — {translatePriority(t, request.priority)} — {formatDate(request.updated_at, locale)}
                   </p>
                 </div>

@@ -43,14 +43,16 @@ export function RequestList({
   emptyMessage,
   forbiddenMessage,
   limit = 50,
+  defaultStatus = "all",
 }: {
   view: RequestView;
   emptyMessage: string;
   forbiddenMessage?: string;
   limit?: number;
+  defaultStatus?: "all" | RequestStatus;
 }) {
   const t = useTranslations("requests");
-  const [status, setStatus] = useState<"all" | RequestStatus>("all");
+  const [status, setStatus] = useState<"all" | RequestStatus>(defaultStatus);
   const [priority, setPriority] = useState<"all" | RequestPriority>("all");
   const { data, isLoading, isError, error, refetch, isFetching } =
     useRequests(view, limit);
@@ -110,28 +112,30 @@ export function RequestList({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 rounded-lg border border-[#e5e7eb] bg-white p-3 sm:flex-row">
-        <label className="grid gap-1 text-sm text-[#4b5563]">
-          {t("list.status")}
-          <select
-            className="h-10 rounded-md border border-[#e5e7eb] bg-white px-3 text-sm text-[#111827]"
-            value={status}
-            onChange={(event) =>
-              setStatus(event.target.value as "all" | RequestStatus)
-            }
-          >
-            {statusOptions.map((option) => (
-              <option key={option} value={option}>
-                {translateStatus(t, option)}
-              </option>
-            ))}
-          </select>
-        </label>
+      <div className="grid gap-3 rounded-lg border border-[#e5e7eb] bg-white p-3 sm:flex sm:flex-row">
+        {defaultStatus === "all" ? (
+          <label className="grid min-w-0 gap-1 text-sm text-[#4b5563] sm:min-w-40">
+            {t("list.status")}
+            <select
+              className="h-10 w-full rounded-md border border-[#e5e7eb] bg-white px-3 text-sm text-[#111827]"
+              value={status}
+              onChange={(event) =>
+                setStatus(event.target.value as "all" | RequestStatus)
+              }
+            >
+              {statusOptions.map((option) => (
+                <option key={option} value={option}>
+                  {translateStatus(t, option)}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
 
-        <label className="grid gap-1 text-sm text-[#4b5563]">
+        <label className="grid min-w-0 gap-1 text-sm text-[#4b5563] sm:min-w-40">
           {t("list.priority")}
           <select
-            className="h-10 rounded-md border border-[#e5e7eb] bg-white px-3 text-sm text-[#111827]"
+            className="h-10 w-full rounded-md border border-[#e5e7eb] bg-white px-3 text-sm text-[#111827]"
             value={priority}
             onChange={(event) =>
               setPriority(event.target.value as "all" | RequestPriority)

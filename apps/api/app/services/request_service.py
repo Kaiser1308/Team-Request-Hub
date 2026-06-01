@@ -22,7 +22,7 @@ from app.repositories import (
     request_assignee_repository,
     status_log_repository,
 )
-from app.services import request_assignment_engine, request_list_read_model, request_read_model_builder, request_transition_engine, users
+from app.services import request_attachment_service, request_assignment_engine, request_list_read_model, request_read_model_builder, request_transition_engine, users
 from app.utils.time import utc_now_iso
 
 CLOSED_STATUSES = request_transition_engine.CLOSED_STATUSES
@@ -137,6 +137,7 @@ def list_requests(
 
 def create_request(payload: InternalRequestCreate, current_user: CurrentUser) -> dict:
     data = payload.model_dump()
+    saved_attachment_ids = data.pop("attachment_ids", []) or []
     assignee_ids = list(dict.fromkeys(data.pop("assignee_ids", [])))
     assigned_to = data.get("assigned_to")
     if assigned_to and assigned_to not in assignee_ids:
@@ -162,7 +163,10 @@ def create_request(payload: InternalRequestCreate, current_user: CurrentUser) ->
             assigned_by=current_user.id,
             reason="Assigned on create",
         )
-        notification_module.notify_assigned(assignee_id, request)
+
+    request_attachment_service.link_attachments_to_request(
+        saved_attachment_ids, request["id"], current_user.id, "request"
+    )
 
     return enrich_request_with_users(request)
 
@@ -184,7 +188,11 @@ def update_request(
 
     data = payload.model_dump(exclude_unset=True)
     if not data:
-        return enrich_request_with_users(request)
+        request_attachment_service.link_attachments_to_request(
+            saved_attachment_ids, request["id"], current_user.id, "request"
+        )
+
+    return enrich_request_with_users(request)
 
     return enrich_request_with_users(request_repository.update_request(request_id, data))
 
@@ -316,6 +324,11 @@ def mark_done(
         to_status="done",
         changed_by=current_user.id,
         reason=None,
+    )
+
+    done_attachment_ids = [a for a in (payload.attachment_ids or []) if a]
+    request_attachment_service.link_attachments_to_request(
+        done_attachment_ids, request_id, current_user.id, "done_reply"
     )
 
     if updated_request["created_by"] != current_user.id:

@@ -1,6 +1,52 @@
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 from app.schemas.common import RequestPriority, RequestStatus
+
+RequestAttachmentContext = Literal["request", "done_reply"]
+RequestAttachmentStatus = Literal["pending_upload", "active", "deleted"]
+
+
+class RequestAttachmentUploadUrlRequest(BaseModel):
+    name: str = Field(min_length=1, max_length=255)
+    content_type: str = Field(min_length=1, max_length=120)
+    size_bytes: int = Field(gt=0)
+    context: RequestAttachmentContext
+
+
+class RequestAttachmentCompleteRequest(BaseModel):
+    size_bytes: int = Field(gt=0)
+
+
+class RequestAttachmentOut(BaseModel):
+    id: str
+    request_id: str | None = None
+    context: RequestAttachmentContext
+    status: RequestAttachmentStatus
+    name: str
+    content_type: str
+    size_bytes: int
+    uploaded_by: str
+    created_at: str
+    updated_at: str
+
+
+class RequestAttachmentUploadUrlOut(BaseModel):
+    attachment: RequestAttachmentOut
+    upload_url: str
+    method: str = "PUT"
+    expires_in_seconds: int
+
+
+class RequestAttachmentPreviewUrlOut(BaseModel):
+    url: str
+    expires_in_seconds: int
+
+
+class RequestAttachmentsGrouped(BaseModel):
+    request: list[RequestAttachmentOut] = Field(default_factory=list)
+    done_reply: list[RequestAttachmentOut] = Field(default_factory=list)
 
 
 class UserSummary(BaseModel):
@@ -18,6 +64,7 @@ class InternalRequestBase(BaseModel):
     assigned_to: str | None = None
     assignee_ids: list[str] = Field(default_factory=list)
     reference_links: list[str] = Field(default_factory=list)
+    attachment_ids: list[str] = Field(default_factory=list)
 
 
 class InternalRequestCreate(InternalRequestBase):
@@ -49,6 +96,7 @@ class StatusUpdateRequest(BaseModel):
 
 class DoneRequest(BaseModel):
     reply: str = Field(min_length=1)
+    attachment_ids: list[str] = Field(default_factory=list)
 
 
 class CancelRequest(BaseModel):
@@ -84,6 +132,7 @@ class InternalRequestOut(BaseModel):
     creator: UserSummary | None = None
     assignee: UserSummary | None = None
     assignees: list[UserSummary] = Field(default_factory=list)
+    attachments: RequestAttachmentsGrouped = Field(default_factory=RequestAttachmentsGrouped)
 
 
 class AssignmentHistoryOut(BaseModel):

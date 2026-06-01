@@ -22,6 +22,7 @@ export interface InternalRequestCreatePayload {
   assigned_to?: string | null;
   assignee_ids?: string[];
   reference_links: string[];
+  attachment_ids?: string[];
 }
 
 export interface AddAssigneePayload {
@@ -53,6 +54,7 @@ export interface StatusUpdatePayload {
 
 export interface DoneRequestPayload {
   reply: string;
+  attachment_ids?: string[];
 }
 
 export interface CancelRequestPayload {

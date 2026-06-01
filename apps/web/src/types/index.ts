@@ -55,6 +55,7 @@ export interface InternalRequest {
   creator?: UserSummary | null;
   assignee?: UserSummary | null;
   assignees?: UserSummary[];
+  attachments?: RequestAttachmentsGrouped;
 }
 
 export interface AssignmentHistory {
@@ -138,4 +139,22 @@ export type NotificationChannel = "telegram" | "email" | "web_push";
 export interface NotificationPreference {
   channel: NotificationChannel;
   enabled: boolean;
+}
+
+export interface RequestAttachment {
+  id: string;
+  request_id: string | null;
+  context: "request" | "done_reply";
+  status: "pending_upload" | "active" | "deleted";
+  name: string;
+  content_type: string;
+  size_bytes: number;
+  uploaded_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RequestAttachmentsGrouped {
+  request: RequestAttachment[];
+  done_reply: RequestAttachment[];
 }

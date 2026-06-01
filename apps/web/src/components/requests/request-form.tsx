@@ -3,11 +3,13 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { AttachmentUpload } from "@/components/requests/attachment-upload";
 import { Button } from "@/components/ui/button";
 import { UserMultiSelect } from "@/components/requests/user-multi-select";
 import { translatePriority } from "@/components/requests/translated-labels";
 import { useActiveUsers } from "@/hooks/use-users";
 import { useRequestActions } from "@/hooks/use-request-actions";
+import { useRequestFileUpload } from "@/hooks/use-request-attachments";
 import type { RequestPriority } from "@/types";
 
 const priorities: RequestPriority[] = ["low", "medium", "high", "urgent"];
@@ -46,6 +48,7 @@ export function RequestForm() {
   const [assigneeIds, setAssigneeIds] = useState<string[]>([]);
   const [titleError, setTitleError] = useState<string | null>(null);
   const [descriptionError, setDescriptionError] = useState<string | null>(null);
+  const attachmentHook = useRequestFileUpload("request");
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -63,6 +66,7 @@ export function RequestForm() {
     }
 
     try {
+      const attachmentIds = await attachmentHook.uploadAll();
       await actions.create.mutateAsync({
         title: title.trim(),
         description: description.trim(),
@@ -71,6 +75,7 @@ export function RequestForm() {
         reference_links: splitLineList(""),
         assigned_to: assigneeIds[0] || null,
         assignee_ids: assigneeIds,
+        attachment_ids: attachmentIds,
       });
       router.push("/requests");
     } catch {}
@@ -147,6 +152,11 @@ export function RequestForm() {
         <span className="text-xs font-normal text-[#6b7280]">
           {t("form.assigneeHelp")}
         </span>
+      </label>
+
+      <label className="grid gap-2 text-sm font-medium text-[#111827]">
+        {t("form.attachments")}
+        <AttachmentUpload hook={attachmentHook} />
       </label>
 
       {actions.create.error ? (

@@ -31,12 +31,29 @@ export function RequestTimeline({
   const activeUsersQuery = useActiveUsers();
 
   const events = [
-    ...assignmentHistory.map((item) => ({
-      id: `assignment-${item.id}`,
-      created_at: item.created_at,
-      title: t("timeline.assignmentChanged"),
-      detail: item.reason ?? t("timeline.assignedTo", { user: findUserLabel(activeUsersQuery.data, item.to_user_id) }),
-    })),
+    ...assignmentHistory.map((item) => {
+      const isRemoval = item.from_user_id && item.from_user_id === item.to_user_id;
+      const removedUser = findUserLabel(activeUsersQuery.data, item.to_user_id);
+      const byUser = findUserLabel(activeUsersQuery.data, item.assigned_by);
+
+      if (isRemoval) {
+        return {
+          id: `assignment-${item.id}`,
+          created_at: item.created_at,
+          title: t("timeline.assigneeRemoved"),
+          detail: item.reason
+            ? `${byUser} removed ${removedUser}: ${item.reason}`
+            : t("timeline.removedBy", { removed: removedUser, by: byUser }),
+        };
+      }
+
+      return {
+        id: `assignment-${item.id}`,
+        created_at: item.created_at,
+        title: t("timeline.assignmentChanged"),
+        detail: item.reason ?? t("timeline.assignedTo", { user: findUserLabel(activeUsersQuery.data, item.to_user_id) }),
+      };
+    }),
     ...statusLogs.map((item) => ({
       id: `status-${item.id}`,
       created_at: item.created_at,

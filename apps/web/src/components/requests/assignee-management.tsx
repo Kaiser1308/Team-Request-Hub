@@ -49,6 +49,8 @@ export function AssigneeManagement({ request }: { request: InternalRequest }) {
     setRemoveReasonByUser((current) => ({ ...current, [assignee.id]: "" }));
   }
 
+  const isAdding = actions.addAssignee.isPending;
+
   return (
     <div className="mt-4 grid gap-3 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] p-3">
       <div className="flex flex-col gap-2 sm:flex-row">
@@ -56,7 +58,7 @@ export function AssigneeManagement({ request }: { request: InternalRequest }) {
           className="h-10 flex-1 rounded-md border border-[#e5e7eb] bg-white px-3 text-sm"
           value={selectedUserId}
           onChange={(event) => setSelectedUserId(event.target.value)}
-          disabled={activeUsersQuery.isLoading || actions.addAssignee.isPending}
+          disabled={activeUsersQuery.isLoading || isAdding}
         >
           <option value="">{t("actions.selectTeammate")}</option>
           {availableUsers.map((user) => (
@@ -68,45 +70,71 @@ export function AssigneeManagement({ request }: { request: InternalRequest }) {
         <Button
           type="button"
           onClick={() => void addAssignee()}
-          disabled={!selectedUserId || actions.addAssignee.isPending}
+          disabled={!selectedUserId || isAdding}
         >
-          {t("actions.addAssignee")}
+          {isAdding ? t("actions.adding") : t("actions.addAssignee")}
         </Button>
       </div>
 
       <div className="grid gap-2">
         {assignees.map((assignee) => (
-          <div
+          <AssigneeRow
             key={assignee.id}
-            className="grid gap-2 rounded-md border border-[#e5e7eb] bg-white p-2 sm:grid-cols-[1fr_auto] sm:items-center"
-          >
-            <span className="text-sm text-[#4b5563]">
-              {formatUserSummaryLabel(assignee) ?? assignee.id}
-            </span>
-            {requiresReason ? (
-              <input
-                className="h-9 rounded-md border border-[#e5e7eb] px-2 text-sm"
-                placeholder={t("actions.reason")}
-                value={removeReasonByUser[assignee.id] ?? ""}
-                onChange={(event) =>
-                  setRemoveReasonByUser((current) => ({
-                    ...current,
-                    [assignee.id]: event.target.value,
-                  }))
-                }
-              />
-            ) : null}
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => void removeAssignee(assignee)}
-              disabled={actions.removeAssignee.isPending}
-            >
-              {t("actions.removeAssignee")}
-            </Button>
-          </div>
+            assignee={assignee}
+            requiresReason={requiresReason}
+            reason={removeReasonByUser[assignee.id] ?? ""}
+            onReasonChange={(value) =>
+              setRemoveReasonByUser((current) => ({ ...current, [assignee.id]: value }))
+            }
+            onRemove={() => void removeAssignee(assignee)}
+            isRemoving={actions.removeAssignee.isPending}
+          />
         ))}
       </div>
+    </div>
+  );
+}
+
+function AssigneeRow({
+  assignee,
+  requiresReason,
+  reason,
+  onReasonChange,
+  onRemove,
+  isRemoving,
+}: {
+  assignee: UserSummary;
+  requiresReason: boolean;
+  reason: string;
+  onReasonChange: (value: string) => void;
+  onRemove: () => void;
+  isRemoving: boolean;
+}) {
+  const t = useTranslations("requests");
+
+  return (
+    <div className="flex items-center gap-2 rounded-md border border-[#e5e7eb] bg-white p-2">
+      <span className="min-w-0 flex-1 truncate text-sm text-[#4b5563]">
+        {formatUserSummaryLabel(assignee) ?? assignee.id}
+      </span>
+      {requiresReason ? (
+        <input
+          className="h-7 w-32 rounded border border-[#e5e7eb] px-2 text-xs"
+          placeholder={t("actions.reason")}
+          value={reason}
+          onChange={(event) => onReasonChange(event.target.value)}
+        />
+      ) : null}
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        className="h-7 shrink-0 px-2 text-xs text-red-600 hover:bg-red-50 hover:text-red-700"
+        onClick={onRemove}
+        disabled={isRemoving}
+      >
+        {isRemoving ? "..." : t("actions.removeAssignee")}
+      </Button>
     </div>
   );
 }

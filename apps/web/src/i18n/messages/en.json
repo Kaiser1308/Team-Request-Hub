@@ -35,7 +35,12 @@
     "newRequest": "New request",
     "requestDetail": "Request detail",
     "files": "Files",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "settings": "Settings"
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Manage your account and notification preferences."
   },
   "appShell": {
     "waitingApprovalTitle": "Waiting for lead approval",
@@ -91,7 +96,7 @@
     "userManagement": "User management",
     "assigned": "Assigned",
     "created": "Created",
-    "pool": "Pool",
+    "pending": "Pending",
     "done": "Done",
     "urgent": "Urgent",
     "recentRequests": "Recent requests",
@@ -196,8 +201,16 @@
       "newTitle": "Create request",
       "newDescription": "Send a clear internal request to the team."
     },
+    "assignedTabs": {
+      "pending": "Assigned",
+      "acknowledged": "Acknowledged",
+      "in_progress": "In progress"
+    },
     "empty": {
       "assigned": "No requests are assigned to you.",
+      "assigned_pending": "No pending requests.",
+      "assigned_acknowledged": "No acknowledged requests.",
+      "assigned_in_progress": "No in-progress requests.",
       "created": "You have not created requests yet. Start by creating your first request.",
       "pool": "The request pool is empty. Check back when new requests are submitted.",
       "done": "No completed requests yet. Completed work will appear here.",
@@ -239,7 +252,8 @@
       "descriptionRequired": "Enter a request description.",
       "createError": "Could not create the request.",
       "creating": "Creating...",
-      "create": "Create request"
+      "create": "Create request",
+      "attachments": "Attachments (optional)"
     },
     "detail": {
       "loadError": "Could not load this request.",
@@ -252,6 +266,7 @@
       "done": "Done",
       "cancelled": "Cancelled",
       "doneReply": "Done reply",
+      "description": "Description",
       "actions": "Actions",
       "historyLoadError": "Could not load request history."
     },
@@ -287,8 +302,18 @@
       "cancelError": "Could not cancel this request.",
       "cancelling": "Cancelling...",
       "confirmCancel": "Confirm cancel"
-      ,"addAssignee": "Add assignee"
+      ,      "addAssignee": "Add assignee"
       ,"removeAssignee": "Remove"
+      ,"adding": "Adding..."
+      ,"attachments": "Attachments (optional)"
+    },
+    "attachments": {
+      "addFiles": "Add attachments",
+      "maxFiles": "Max 5 files, 50MB each",
+      "pasteHint": "Ctrl+V to paste screenshot",
+      "requestFiles": "Attachments",
+      "replyFiles": "Reply attachments",
+      "download": "View"
     },
     "timeline": {
       "loading": "Loading assignment and status history...",
@@ -296,6 +321,8 @@
       "title": "Assignment and status timeline",
       "assignmentChanged": "Assignment changed",
       "assignedTo": "Assigned to {user}",
+      "assigneeRemoved": "Assignee removed",
+      "removedBy": "{removed} was removed by {by}",
       "statusChanged": "Status changed",
       "statusChangeDetail": "{from} -> {to}"
     }
