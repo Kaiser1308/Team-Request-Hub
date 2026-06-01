@@ -33,6 +33,7 @@ Thumbs.db
 
 # local notes/docs
 *.md
+!/README.md
 
 # local agent/superpowers tooling
 .agents/
