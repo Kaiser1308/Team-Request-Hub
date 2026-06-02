@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { RequestList } from "@/components/requests/request-list";
+import { AllRequestsBoard } from "@/components/requests/all-requests-board";
 
 export default async function AllRequestsPage() {
   const t = await getTranslations("requests");
@@ -12,8 +12,7 @@ export default async function AllRequestsPage() {
           {t("views.allDescription")}
         </p>
       </div>
-      <RequestList
-        view="all"
+      <AllRequestsBoard
         emptyMessage={t("empty.all")}
         forbiddenMessage={t("forbidden.all")}
       />
