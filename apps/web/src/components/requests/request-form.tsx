@@ -177,9 +177,11 @@ export function RequestForm() {
         <Button
           type="submit"
           className="min-h-10 w-full sm:w-auto"
-          disabled={actions.create.isPending}
+          disabled={actions.create.isPending || attachmentHook.isUploading}
         >
-          {actions.create.isPending ? t("form.creating") : t("form.create")}
+          {actions.create.isPending || attachmentHook.isUploading
+            ? t("form.creating")
+            : t("form.create")}
         </Button>
       </div>
     </form>

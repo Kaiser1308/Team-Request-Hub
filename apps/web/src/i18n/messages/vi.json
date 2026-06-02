@@ -311,6 +311,9 @@
       "addFiles": "Thêm tệp đính kèm",
       "maxFiles": "Tối đa 5 tệp, 50MB/tệp",
       "pasteHint": "Ctrl+V để dán ảnh",
+      "uploading": "Đang tải lên...",
+      "uploadSuccess": "Upload thành công",
+      "allUploaded": "Upload file thành công",
       "requestFiles": "Tệp đính kèm",
       "replyFiles": "Tệp phản hồi",
       "download": "Nhấn để xem"

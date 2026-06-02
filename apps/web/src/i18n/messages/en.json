@@ -311,6 +311,9 @@
       "addFiles": "Add attachments",
       "maxFiles": "Max 5 files, 50MB each",
       "pasteHint": "Ctrl+V to paste screenshot",
+      "uploading": "Uploading...",
+      "uploadSuccess": "Upload successful",
+      "allUploaded": "File upload successful",
       "requestFiles": "Attachments",
       "replyFiles": "Reply attachments",
       "download": "View"
