@@ -49,8 +49,8 @@ export function RequestDetail({ requestId }: { requestId: string }) {
   if (requestQuery.isLoading) {
     return (
       <div className="grid gap-4">
-        <div className="h-40 animate-pulse rounded-lg border border-[#e5e7eb] bg-white" />
-        <div className="h-56 animate-pulse rounded-lg border border-[#e5e7eb] bg-white" />
+        <div className="h-40 animate-pulse rounded-lg border border-[#e3ded8] bg-white" />
+        <div className="h-56 animate-pulse rounded-lg border border-[#e3ded8] bg-white" />
       </div>
     );
   }
@@ -93,7 +93,7 @@ export function RequestDetail({ requestId }: { requestId: string }) {
         <Link href="/requests">{t("detail.backToRequests")}</Link>
       </Button>
 
-      <section className="min-w-0 rounded-lg border border-[#e5e7eb] bg-white p-4 sm:p-5">
+      <section className="app-surface min-w-0 rounded-lg p-4 sm:p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 space-y-2">
             <h1 className="break-words text-page-title text-[#111827]">
@@ -107,8 +107,8 @@ export function RequestDetail({ requestId }: { requestId: string }) {
         </div>
 
         <div className="mt-4">
-          <p className="text-caption text-[#6b7280] mb-1">{t("detail.description")}</p>
-          <div className="min-h-[80px] rounded-md border border-[#e5e7eb] bg-[#f9fafb] p-3">
+          <p className="text-caption text-[#615d59] mb-1">{t("detail.description")}</p>
+          <div className="app-surface-muted min-h-[80px] rounded-md p-3">
             <p className="whitespace-pre-wrap text-body text-[#4b5563]">
               {request.description}
             </p>
@@ -117,31 +117,31 @@ export function RequestDetail({ requestId }: { requestId: string }) {
 
         <div className="mt-5 grid gap-3 text-body text-[#4b5563] min-[390px]:grid-cols-2 lg:grid-cols-4">
           <div>
-            <p className="text-caption text-[#6b7280]">{t("detail.creator")}</p>
+            <p className="text-caption text-[#615d59]">{t("detail.creator")}</p>
             <p>{formatUserSummaryLabel(request.creator) ?? request.created_by}</p>
           </div>
           <div>
-            <p className="text-caption text-[#6b7280]">{t("detail.created")}</p>
+            <p className="text-caption text-[#615d59]">{t("detail.created")}</p>
             <p>{formatDate(request.created_at, locale, tCommon("notSet"))}</p>
           </div>
           <div>
-            <p className="text-caption text-[#6b7280]">{t("detail.assigned")}</p>
+            <p className="text-caption text-[#615d59]">{t("detail.assigned")}</p>
             <AssigneeList assignees={request.assignees} fallback={tCommon("notSet")} />
           </div>
           <div>
-            <p className="text-caption text-[#6b7280]">{t("detail.updated")}</p>
+            <p className="text-caption text-[#615d59]">{t("detail.updated")}</p>
             <p>{formatDate(request.updated_at, locale, tCommon("notSet"))}</p>
           </div>
           <div>
-            <p className="text-caption text-[#6b7280]">{t("detail.started")}</p>
+            <p className="text-caption text-[#615d59]">{t("detail.started")}</p>
             <p>{formatDate(request.started_at, locale, tCommon("notSet"))}</p>
           </div>
           <div>
-            <p className="text-caption text-[#6b7280]">{t("detail.done")}</p>
+            <p className="text-caption text-[#615d59]">{t("detail.done")}</p>
             <p>{formatDate(request.done_at, locale, tCommon("notSet"))}</p>
           </div>
           <div>
-            <p className="text-caption text-[#6b7280]">{t("detail.cancelled")}</p>
+            <p className="text-caption text-[#615d59]">{t("detail.cancelled")}</p>
             <p>{formatDate(request.cancelled_at, locale, tCommon("notSet"))}</p>
           </div>
         </div>
@@ -157,7 +157,7 @@ export function RequestDetail({ requestId }: { requestId: string }) {
 
         <AttachmentList attachments={request.attachments} />
 
-        <div className="mt-5 border-t border-[#e5e7eb] pt-4">
+        <div className="mt-5 border-t border-[#eee9e4] pt-4">
           <h2 className="text-body-medium text-[#111827]">{t("detail.actions")}</h2>
           <RequestActions request={request} />
         </div>

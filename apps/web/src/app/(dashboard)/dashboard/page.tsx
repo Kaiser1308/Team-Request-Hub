@@ -64,7 +64,7 @@ export default function DashboardPage() {
   const isLead = role === "lead";
 
   if (isLoading) {
-    return <div className="h-52 animate-pulse rounded-lg border border-[#e5e7eb] bg-white" />;
+    return <div className="h-52 animate-pulse rounded-lg border border-[#e3ded8] bg-white" />;
   }
 
   if (firstError) {
@@ -79,9 +79,9 @@ export default function DashboardPage() {
     <div className="space-y-5">
       <div className="space-y-3">
         <h1 className="text-page-title text-[#111827]">{t("title")}</h1>
-        <div className="rounded-lg border border-[#e5e7eb] bg-white px-4 py-3">
+        <div className="app-surface rounded-lg px-4 py-3">
           <p className="text-body-medium text-[#111827]">{userName}</p>
-          <p className="text-caption text-[#6b7280]">
+          <p className="text-caption text-[#615d59]">
             {role ? t("roleLabel", { role: role.toUpperCase() }) : t("rolePending")}
             {isLead ? ` - ${t("leadAccessEnabled")}` : ""}
           </p>
@@ -92,10 +92,10 @@ export default function DashboardPage() {
 
       {isLead ? (
         <section className="grid gap-2 text-sm min-[390px]:grid-cols-2 sm:flex sm:flex-wrap">
-          <Link href="/all" className="inline-flex min-h-10 items-center justify-center rounded-md border border-[#d1d5db] bg-white px-3 py-2 text-center text-[#111827] hover:bg-[#f9fafb] sm:justify-start">
+          <Link href="/all" className="inline-flex min-h-10 items-center justify-center rounded-md border border-[#e3ded8] bg-white px-3 py-2 text-center text-[#111827] hover:bg-[#fbfaf9] sm:justify-start">
             {t("allRequests")}
           </Link>
-          <Link href="/admin/users" className="inline-flex min-h-10 items-center justify-center rounded-md border border-[#d1d5db] bg-white px-3 py-2 text-center text-[#111827] hover:bg-[#f9fafb] sm:justify-start">
+          <Link href="/admin/users" className="inline-flex min-h-10 items-center justify-center rounded-md border border-[#e3ded8] bg-white px-3 py-2 text-center text-[#111827] hover:bg-[#fbfaf9] sm:justify-start">
             {t("userManagement")}
           </Link>
         </section>
@@ -109,43 +109,43 @@ export default function DashboardPage() {
           { label: t("done"), value: counts?.done ?? 0, href: "/done" },
           { label: t("urgent"), value: counts?.urgent ?? 0, href: "/assigned" },
         ].map((item) => (
-          <Link key={item.label} href={item.href} className="min-w-0 rounded-lg border border-[#e5e7eb] bg-white px-3 py-2.5 hover:bg-[#f9fafb]">
-            <p className="text-stat-label uppercase text-[#6b7280]">{item.label}</p>
+          <Link key={item.label} href={item.href} className="app-surface min-w-0 rounded-lg px-3 py-2.5 hover:bg-[#fbfaf9]">
+            <p className="text-stat-label uppercase text-[#615d59]">{item.label}</p>
             <p className="mt-1 text-stat-value text-[#111827]">{item.value}</p>
           </Link>
         ))}
       </section>
 
       <section className="grid gap-3 lg:grid-cols-2">
-        <div className="rounded-lg border border-[#e5e7eb] bg-white">
-          <div className="flex items-center justify-between border-b border-[#e5e7eb] px-4 py-3">
+        <div className="app-surface rounded-lg">
+          <div className="flex items-center justify-between border-b border-[#ede8e3] px-4 py-3">
             <h2 className="text-section-title text-[#111827]">{t("recentRequests")}</h2>
-            <Link href="/assigned" className="text-link text-[#2563eb] hover:underline">
+            <Link href="/assigned" className="text-link text-[#097fe8] hover:underline">
               {t("viewAssigned")}
             </Link>
           </div>
           {recentRequestItems.length ? (
-            <div className="divide-y divide-[#e5e7eb]">
+            <div className="divide-y divide-[#ede8e3]">
               {recentRequestItems.map((request) => (
                 <div key={request.id} className="min-w-0 space-y-1 px-4 py-3">
-                  <Link href={`/requests/${request.id}`} className="line-clamp-1 text-body-medium text-[#111827] hover:text-[#2563eb]">
+                  <Link href={`/requests/${request.id}`} className="line-clamp-1 text-body-medium text-[#111827] hover:text-[#097fe8]">
                     {request.title}
                   </Link>
-                  <p className="break-words text-caption text-[#6b7280]">
+                  <p className="break-words text-caption text-[#615d59]">
                     {translateStatus(t, request.status)} — {translatePriority(t, request.priority)} — {formatDate(request.updated_at, locale)}
                   </p>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="px-4 py-5 text-body text-[#6b7280]">{t("noRecentRequests")}</p>
+            <p className="px-4 py-5 text-body text-[#615d59]">{t("noRecentRequests")}</p>
           )}
         </div>
 
-        <div className="rounded-lg border border-[#e5e7eb] bg-white">
-          <div className="flex items-center justify-between border-b border-[#e5e7eb] px-4 py-3">
+        <div className="app-surface rounded-lg">
+          <div className="flex items-center justify-between border-b border-[#ede8e3] px-4 py-3">
             <h2 className="text-section-title text-[#111827]">{t("recentActivity")}</h2>
-            <Link href="/notifications" className="text-link text-[#2563eb] hover:underline">
+            <Link href="/notifications" className="text-link text-[#097fe8] hover:underline">
               {t("openNotifications")}
             </Link>
           </div>
@@ -155,7 +155,7 @@ export default function DashboardPage() {
               <p className="text-body text-[#111827]">{t("unreadNotifications", { count: notificationsUnread })}</p>
             </div>
           ) : (
-            <p className="px-4 py-5 text-body text-[#6b7280]">{t("noUnreadNotifications")}</p>
+            <p className="px-4 py-5 text-body text-[#615d59]">{t("noUnreadNotifications")}</p>
           )}
         </div>
       </section>

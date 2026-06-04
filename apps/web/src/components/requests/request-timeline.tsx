@@ -71,7 +71,7 @@ export function RequestTimeline({
 
   if (isLoading) {
     return (
-      <div className="rounded-lg border border-[#e5e7eb] bg-white p-4 text-sm text-[#6b7280]">
+      <div className="app-surface-muted rounded-lg p-4 text-body text-[#615d59]">
         {t("timeline.loading")}
       </div>
     );
@@ -79,7 +79,7 @@ export function RequestTimeline({
 
   if (errorMessage) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-body text-red-700">
         {errorMessage}
       </div>
     );
@@ -87,21 +87,21 @@ export function RequestTimeline({
 
   if (!events.length) {
     return (
-      <div className="rounded-lg border border-[#e5e7eb] bg-white p-4 text-sm text-[#6b7280]">
+      <div className="app-surface-muted rounded-lg p-4 text-body text-[#615d59]">
         {t("timeline.empty")}
       </div>
     );
   }
 
   return (
-    <div className="rounded-lg border border-[#e5e7eb] bg-white p-4">
-      <h2 className="text-base font-semibold">{t("timeline.title")}</h2>
+    <div className="app-surface rounded-lg p-4">
+      <h2 className="text-section-title text-[#111827]">{t("timeline.title")}</h2>
       <div className="mt-4 grid gap-4">
         {events.map((event) => (
-          <div key={event.id} className="border-l-2 border-[#e5e7eb] pl-4">
-            <p className="text-sm font-medium text-[#111827]">{event.title}</p>
-            <p className="mt-1 text-sm text-[#4b5563]">{event.detail}</p>
-            <p className="mt-1 text-xs text-[#6b7280]">
+          <div key={event.id} className="border-l-2 border-[#d8d2cc] pl-4">
+            <p className="text-body-medium text-[#111827]">{event.title}</p>
+            <p className="mt-1 text-body text-[#4b5563]">{event.detail}</p>
+            <p className="mt-1 text-caption text-[#615d59]">
               {formatDate(event.created_at, locale)}
             </p>
           </div>

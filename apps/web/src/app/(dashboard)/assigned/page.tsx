@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { RequestList } from "@/components/requests/request-list";
+import { PageHeader } from "@/components/shared/page-header";
 import { useRequests } from "@/hooks/use-requests";
 import { cn } from "@/lib/utils";
 
@@ -28,14 +29,12 @@ export default function AssignedPage() {
 
   return (
     <div className="space-y-5">
-      <div className="rounded-lg border border-[#e5e7eb] bg-white p-4 sm:p-5">
-        <h1 className="text-2xl font-semibold">{t("views.assignedTitle")}</h1>
-        <p className="mt-1 text-sm text-[#6b7280]">
-          {t("views.assignedDescription")}
-        </p>
-      </div>
+      <PageHeader
+        title={t("views.assignedTitle")}
+        description={t("views.assignedDescription")}
+      />
 
-      <div className="flex gap-1 rounded-lg border border-[#e5e7eb] bg-white p-1">
+      <div className="app-filter-surface flex gap-1 rounded-lg p-1">
         {tabs.map((tab) => (
           <button
             key={tab}

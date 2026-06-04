@@ -248,6 +248,40 @@
     background: rgb(255 255 255 / 10%);
     color: #ffffff;
   }
+
+  .app-surface {
+    border: 1px solid #e3ded8;
+    background: #ffffff;
+    box-shadow: rgba(0, 0, 0, 0.02) 0px 2px 8px;
+  }
+
+  .app-surface-muted {
+    border: 1px solid #e3ded8;
+    background: #fbfaf9;
+  }
+
+  .app-filter-surface {
+    border: 1px solid #e3ded8;
+    background: #ffffff;
+    box-shadow: rgba(0, 0, 0, 0.02) 0px 2px 8px;
+  }
+
+  .app-field {
+    border: 1px solid #d8d2cc;
+    background: #fbfaf9;
+    color: #111827;
+  }
+
+  .app-field:focus {
+    border-color: #097fe8;
+    background: #ffffff;
+    box-shadow: 0 0 0 2px rgb(9 127 232 / 15%);
+    outline: none;
+  }
+
+  .app-soft-text {
+    color: #615d59;
+  }
 }
 
 @keyframes skeleton-pulse {

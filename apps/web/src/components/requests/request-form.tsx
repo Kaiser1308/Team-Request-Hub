@@ -84,12 +84,12 @@ export function RequestForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="grid gap-5 rounded-lg border border-[#e5e7eb] bg-white p-4 sm:p-5"
+      className="app-surface grid gap-5 rounded-lg p-4 sm:p-5"
     >
       <label className="grid gap-2 text-sm font-medium text-[#111827]">
         {t("form.title")}
         <input
-          className="h-10 w-full rounded-md border border-[#e5e7eb] bg-white px-3 text-sm font-normal"
+          className="app-field h-10 w-full rounded-md px-3 text-sm font-normal transition placeholder:text-[#9ca3af]"
           value={title}
           onChange={(event) => setTitle(event.target.value)}
           required
@@ -107,7 +107,7 @@ export function RequestForm() {
       <label className="grid gap-2 text-sm font-medium text-[#111827]">
         {t("form.description")}
         <textarea
-          className="min-h-32 w-full rounded-md border border-[#e5e7eb] bg-white px-3 py-2 text-sm font-normal sm:min-h-36"
+          className="app-field min-h-32 w-full rounded-md px-3 py-2 text-sm font-normal transition placeholder:text-[#9ca3af] sm:min-h-36"
           value={description}
           onChange={(event) => setDescription(event.target.value)}
           required
@@ -127,7 +127,7 @@ export function RequestForm() {
       <label className="grid gap-2 text-sm font-medium text-[#111827]">
         {t("form.priority")}
         <select
-          className="h-10 w-full rounded-md border border-[#e5e7eb] bg-white px-3 text-sm font-normal"
+          className="app-field h-10 w-full rounded-md px-3 text-sm font-normal transition"
           value={priority}
           onChange={(event) =>
             setPriority(event.target.value as RequestPriority)
@@ -149,7 +149,7 @@ export function RequestForm() {
           onChange={setAssigneeIds}
           disabled={activeUsersQuery.isLoading}
         />
-        <span className="text-xs font-normal text-[#6b7280]">
+        <span className="text-xs font-normal text-[#615d59]">
           {t("form.assigneeHelp")}
         </span>
       </label>

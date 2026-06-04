@@ -39,10 +39,10 @@ export function LoadingState({ label = "Loading...", rows = 3 }: LoadingStatePro
 
   return (
     <div ref={containerRef} aria-live="polite" aria-busy="true" className="space-y-3">
-      <p className="text-sm text-muted-foreground">{label}</p>
+      <p className="text-body text-[#615d59]">{label}</p>
       <div className="space-y-2">
         {Array.from({ length: rows }).map((_, index) => (
-          <div key={index} data-loading-row className="h-16 rounded-md border border-border bg-muted/60" />
+          <div key={index} data-loading-row className="h-16 rounded-lg border border-[#e3ded8] bg-[#ede8e3]" />
         ))}
       </div>
     </div>

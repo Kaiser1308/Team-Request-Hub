@@ -171,9 +171,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   if (isError || !currentUser) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#f9fafb] px-4">
-        <div className="grid max-w-lg gap-4 rounded-lg border border-[#e5e7eb] bg-white p-8 text-center">
+        <div className="grid max-w-lg gap-4 app-surface rounded-lg p-8 text-center">
           <h1 className="text-2xl font-semibold">{tShell("unableToLoadUser")}</h1>
-          <p className="text-sm text-[#4b5563]">
+          <p className="text-body text-[#4b5563]">
             {error instanceof Error ? error.message : tShell("unableToLoadUser")}
           </p>
           <LogoutButton />
@@ -185,9 +185,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   if (currentUser?.is_active === false) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#f9fafb] px-4">
-        <div className="grid max-w-lg gap-4 rounded-lg border border-[#e5e7eb] bg-white p-8 text-center">
+        <div className="grid max-w-lg gap-4 app-surface rounded-lg p-8 text-center">
           <h1 className="text-2xl font-semibold">{tShell("waitingApprovalTitle")}</h1>
-          <p className="text-sm text-[#4b5563]">{tShell("waitingApprovalDescription")}</p>
+          <p className="text-body text-[#4b5563]">{tShell("waitingApprovalDescription")}</p>
           <LogoutButton />
         </div>
       </div>
@@ -209,7 +209,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         id="app-shell-navigation"
         aria-label={tShell("primaryNavigation")}
         className={cn(
-          "fixed inset-y-0 left-0 z-40 w-[min(82vw,240px)] px-3 py-4 text-white transition-transform lg:w-[240px] lg:translate-x-0 border-r-0 border-none",
+          "fixed inset-y-0 left-0 z-40 w-[min(82vw,240px)] px-3 py-4 text-white transition-transform lg:w-[240px] lg:translate-x-0",
           isMobileNavOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
