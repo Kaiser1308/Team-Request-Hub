@@ -67,6 +67,10 @@ class CreateUploadUrlTests(unittest.TestCase):
         self.assertEqual(result["upload_url"], "https://minio.example.com/put-url")
         self.assertEqual(result["method"], "PUT")
         self.assertEqual(result["expires_in_seconds"], 300)
+        created = mock_file_repo.create_file.call_args[0][0]
+        self.assertTrue(created["object_key"].endswith("-doc.pdf"))
+        self.assertFalse(created["object_key"].startswith("team-files/"))
+        mock_minio.presigned_put_url.assert_called_once_with(created["object_key"], 300)
 
 
 class CompleteUploadTests(unittest.TestCase):

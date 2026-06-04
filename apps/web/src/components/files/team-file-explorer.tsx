@@ -4,7 +4,8 @@ import { useState, useRef, useCallback, useEffect, type DragEvent } from "react"
 import { useRouter, useSearchParams } from "next/navigation";
 import { FileManager } from "@cubone/react-file-manager";
 import "@cubone/react-file-manager/dist/style.css";
-import { Upload } from "lucide-react";
+import { Loader2, XCircle, Upload } from "lucide-react";
+import { ApiError } from "@/lib/api/client";
 import { FilePreviewPanel } from "@/components/files/file-preview-panel";
 import { TrashPanel } from "@/components/files/trash-panel";
 import { Button } from "@/components/ui/button";
@@ -56,6 +57,12 @@ export function TeamFileExplorer() {
   const currentPathRef = useRef(currentPath);
   currentPathRef.current = currentPath;
   const [isDragOver, setIsDragOver] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<{
+    current: number;
+    total: number;
+    name: string;
+  } | null>(null);
   const dragCounterRef = useRef(0);
   const fileManagerRef = useRef<HTMLDivElement>(null);
   const [selectedFile, setSelectedFile] = useState<TeamFile | null>(null);
@@ -100,23 +107,40 @@ export function TeamFileExplorer() {
 
   async function uploadFiles(fileList: FileList | null) {
     if (!fileList) return;
-    for (const file of Array.from(fileList)) {
-      const upload = await mutations.createUploadUrl.mutateAsync({
-        parent_path: currentPath,
-        name: file.name,
-        size_bytes: file.size,
-        content_type: file.type || null,
-      });
-      const response = await fetch(upload.upload_url, {
-        method: upload.method,
-        body: file,
-      });
-      if (!response.ok)
-        throw new Error(`Upload failed: ${response.status}`);
-      await mutations.completeUpload.mutateAsync({
-        fileId: upload.file.id,
-        payload: { size_bytes: file.size },
-      });
+    const selectedFiles = Array.from(fileList);
+    if (selectedFiles.length === 0 || uploadProgress) return;
+
+    setUploadError(null);
+    setUploadProgress({ current: 0, total: selectedFiles.length, name: selectedFiles[0]?.name ?? "" });
+    try {
+      for (const [index, file] of selectedFiles.entries()) {
+        setUploadProgress({ current: index + 1, total: selectedFiles.length, name: file.name });
+        const upload = await mutations.createUploadUrl.mutateAsync({
+          parent_path: currentPath,
+          name: file.name,
+          size_bytes: file.size,
+          content_type: file.type || null,
+        });
+        const response = await fetch(upload.upload_url, {
+          method: upload.method,
+          body: file,
+        });
+        if (!response.ok) {
+          throw new Error(`Upload failed: ${response.status}`);
+        }
+        await mutations.completeUpload.mutateAsync({
+          fileId: upload.file.id,
+          payload: { size_bytes: file.size },
+        });
+      }
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 409) {
+        setUploadError(`${error.detail}. Rename the file or remove the existing one first.`);
+        return;
+      }
+      setUploadError(error instanceof Error ? error.message : "Unable to upload files");
+    } finally {
+      setUploadProgress(null);
     }
   }
 
@@ -175,19 +199,51 @@ export function TeamFileExplorer() {
               Trash
             </label>
           ) : null}
-          <Button asChild>
+          <Button asChild disabled={Boolean(uploadProgress)}>
             <label className="cursor-pointer">
-              <Upload className="mr-2 h-4 w-4" /> Upload
+              {uploadProgress ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Upload className="mr-2 h-4 w-4" />
+              )}
+              {uploadProgress ? "Uploading" : "Upload"}
               <input
                 type="file"
                 multiple
                 className="hidden"
-                onChange={(event) => void uploadFiles(event.target.files)}
+                disabled={Boolean(uploadProgress)}
+                onChange={(event) => {
+                  void uploadFiles(event.target.files);
+                  event.target.value = "";
+                }}
               />
             </label>
           </Button>
         </div>
       </div>
+
+      {uploadError ? (
+        <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <XCircle className="mt-0.5 h-4 w-4 shrink-0" />
+          <div className="flex-1">{uploadError}</div>
+          <button
+            type="button"
+            onClick={() => setUploadError(null)}
+            className="text-red-700 underline-offset-2 hover:underline"
+          >
+            Dismiss
+          </button>
+        </div>
+      ) : null}
+
+      {uploadProgress ? (
+        <div className="flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <div className="flex-1">
+            Uploading {uploadProgress.current}/{uploadProgress.total}: {uploadProgress.name}
+          </div>
+        </div>
+      ) : null}
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(360px,42%)]">
         <div
