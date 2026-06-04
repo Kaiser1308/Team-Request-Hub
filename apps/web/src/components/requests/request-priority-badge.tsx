@@ -6,10 +6,10 @@ import { translatePriority } from "@/components/requests/translated-labels";
 import type { RequestPriority } from "@/types";
 
 const priorityClassName: Record<RequestPriority, string> = {
-  low: "border-[#e5e7eb] bg-[#f9fafb] text-[#6b7280]",
-  medium: "border-[#d1d5db] bg-white text-[#374151]",
-  high: "border-amber-200 bg-amber-50 text-amber-700",
-  urgent: "border-red-200 bg-red-50 text-red-700",
+  low: "border-[#ddd7d1] bg-[#fbfaf9] text-[#7a746f]",
+  medium: "border-[#d8d2cc] bg-white text-[#4f4a45]",
+  high: "border-[#f1d3a3] bg-[#fff8ea] text-[#b45309]",
+  urgent: "border-[#f3b8b8] bg-[#fff1f1] text-[#c1121f]",
 };
 
 export function RequestPriorityBadge({
@@ -22,11 +22,11 @@ export function RequestPriorityBadge({
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-md border px-2 py-1 text-caption-strong",
+        "inline-flex max-w-full items-center rounded-full border px-1.5 py-0 text-[11px] font-semibold leading-5 tracking-[0.01em] shadow-[rgba(0,0,0,0.015)_0px_1px_1px]",
         priorityClassName[priority],
       )}
     >
-      {translatePriority(t, priority)}
+      <span className="truncate">{translatePriority(t, priority)}</span>
     </span>
   );
 }

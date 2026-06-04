@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { RequestList } from "@/components/requests/request-list";
+import { useRequests } from "@/hooks/use-requests";
 import { cn } from "@/lib/utils";
-import type { RequestStatus } from "@/types";
+
 
 type AssignedTab = "pending" | "acknowledged" | "in_progress";
 
@@ -13,6 +14,17 @@ const tabs: AssignedTab[] = ["pending", "acknowledged", "in_progress"];
 export default function AssignedPage() {
   const t = useTranslations("requests");
   const [activeTab, setActiveTab] = useState<AssignedTab>("pending");
+  const assignedQuery = useRequests("assigned");
+  const tabCounts = useMemo(() => {
+    return tabs.reduce<Record<AssignedTab, number>>(
+      (counts, tab) => {
+        counts[tab] =
+          assignedQuery.data?.filter((request) => request.status === tab).length ?? 0;
+        return counts;
+      },
+      { pending: 0, acknowledged: 0, in_progress: 0 },
+    );
+  }, [assignedQuery.data]);
 
   return (
     <div className="space-y-5">
@@ -36,7 +48,19 @@ export default function AssignedPage() {
                 : "text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#111827]",
             )}
           >
-            {t(`assignedTabs.${tab}`)}
+            <span className="inline-flex items-center justify-center gap-1.5">
+              <span>{t(`assignedTabs.${tab}`)}</span>
+              <span
+                className={cn(
+                  "inline-flex min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-bold leading-5",
+                  activeTab === tab
+                    ? "bg-red-500 text-white"
+                    : "bg-red-50 text-red-600",
+                )}
+              >
+                {tabCounts[tab]}
+              </span>
+            </span>
           </button>
         ))}
       </div>

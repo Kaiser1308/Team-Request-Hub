@@ -40,7 +40,17 @@
   },
   "settings": {
     "title": "Settings",
-    "description": "Manage your account and notification preferences."
+    "description": "Manage your account and notification preferences.",
+    "notificationChannels": "Notification channels",
+    "notificationChannelsDescription": "Choose where you want to receive assigned and reassigned request alerts.",
+    "email": "Email",
+    "emailInDevelopment": "Email notifications are in development.",
+    "telegram": "Telegram",
+    "browserPush": "Browser Push",
+    "browserPushDescription": "Requires browser permission on this device.",
+    "disableBrowserNotifications": "Disable browser notifications",
+    "enableBrowserNotifications": "Enable browser notifications",
+    "browserNotificationsError": "Could not enable browser notifications."
   },
   "appShell": {
     "waitingApprovalTitle": "Waiting for lead approval",
@@ -227,7 +237,13 @@
       "createRequest": "Create a request",
       "loadError": "Could not load requests.",
       "retry": "Retry",
-      "forbiddenDefault": "You do not have access to this request view."
+      "forbiddenDefault": "You do not have access to this request view.",
+      "searchAll": "Search all requests",
+      "searchAllPlaceholder": "Search title, description, sender, or receiver",
+      "sortBy": "Sort by",
+      "sortDefault": "Default order",
+      "sortCreator": "Sender",
+      "sortAssignee": "Receiver"
     },
     "card": {
       "creator": "Creator: {name}",

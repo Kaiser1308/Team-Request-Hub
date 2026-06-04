@@ -1,7 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import {
+  ArrowUpRight,
+  Clock3,
+  UserRound,
+  UsersRound,
+  type LucideIcon,
+} from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import type { ReactNode } from "react";
 import { AssigneeList } from "@/components/requests/assignee-list";
 import { formatUserSummaryLabel } from "@/components/requests/user-display";
 import { RequestPriorityBadge } from "@/components/requests/request-priority-badge";
@@ -23,6 +31,8 @@ export function RequestCard({ request }: { request: InternalRequest }) {
 
   const creatorLabel =
     formatUserSummaryLabel(request.creator) ?? t("card.unassigned");
+  const creatorCompact =
+    request.creator?.name ?? request.creator?.email ?? creatorLabel;
   const hasAssignees = Boolean(
     (request.assignees?.length ?? 0) > 0 || request.assigned_to,
   );
@@ -52,48 +62,73 @@ export function RequestCard({ request }: { request: InternalRequest }) {
   }
 
   return (
-    <article className="min-w-0 rounded-lg border border-[#e5e7eb] bg-white p-4">
-      <div className="flex flex-col gap-2 min-[390px]:flex-row min-[390px]:items-start min-[390px]:justify-between">
-        <div className="min-w-0 flex-1">
-          <h3 className="line-clamp-2 text-card-title text-[#111827]">
-            {request.title}
-          </h3>
-        </div>
-        <div className="flex shrink-0 flex-wrap gap-2 min-[390px]:justify-end">
-          <RequestStatusBadge status={request.status} />
-          <RequestPriorityBadge priority={request.priority} />
-        </div>
-      </div>
+    <Link
+      href={`/requests/${request.id}`}
+      aria-label={`${t("card.viewDetails")}: ${request.title}`}
+      className="group block min-w-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#097fe8] focus-visible:ring-offset-2"
+    >
+      <article className="min-w-0 overflow-hidden rounded-lg border border-[#e3ded8] bg-white shadow-[rgba(0,0,0,0.035)_0px_3px_14px,rgba(0,0,0,0.018)_0px_1px_3px] transition group-hover:-translate-y-0.5 group-hover:border-[#cfc7bf] group-hover:shadow-[rgba(0,0,0,0.055)_0px_9px_24px,rgba(0,0,0,0.025)_0px_2px_6px]">
+        <div className="grid min-w-0 gap-3 p-3.5">
+          <div className="grid min-w-0 gap-1.5">
+            <h3 className="line-clamp-2 min-w-0 break-words text-card-title text-[#111827]">
+              {request.title}
+            </h3>
+            <p className="line-clamp-2 min-h-10 break-words text-body text-[#615d59]">
+              {request.description}
+            </p>
+          </div>
 
-      <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 break-words text-caption text-[#6b7280]">
-        <span>{t("card.creator", { name: creatorLabel })}</span>
-        <span className="inline-flex items-center gap-1">
-          {t("card.assignee", { name: "" })}
-          <AssigneeList
-            assignees={request.assignees}
-            fallback={t("card.unassigned")}
-          />
-        </span>
-        <span>{timestampLabel}</span>
-      </div>
+          <div className="flex min-w-0 items-start justify-between gap-3">
+            <div className="flex min-w-0 flex-wrap gap-1">
+              <RequestStatusBadge status={request.status} />
+              <RequestPriorityBadge priority={request.priority} />
+            </div>
+            <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-md border border-[#e3ded8] bg-[#fbfaf9] text-[#097fe8] transition group-hover:border-[#b8d8f2] group-hover:bg-[#f2f9ff]">
+              <ArrowUpRight aria-hidden="true" className="size-3.5" />
+            </span>
+          </div>
 
-      <p className="mt-2 line-clamp-2 text-body text-[#4b5563]">
-        {request.description}
-      </p>
+          <div className="grid min-w-0 gap-1.5 rounded-md border border-[#ede8e3] bg-[#fbfaf9] px-2.5 py-2">
+            <KanbanInfoLine icon={UserRound}>
+              <span className="truncate">{creatorCompact}</span>
+            </KanbanInfoLine>
+            <KanbanInfoLine icon={UsersRound}>
+              <AssigneeList
+                assignees={request.assignees}
+                fallback={t("card.unassigned")}
+                variant="compact"
+              />
+            </KanbanInfoLine>
+            <KanbanInfoLine icon={Clock3}>
+              <span className="truncate">{timestampLabel}</span>
+            </KanbanInfoLine>
+          </div>
 
-      <div className="mt-3 grid gap-2 border-t border-[#f3f4f6] pt-3 min-[390px]:flex min-[390px]:items-center min-[390px]:justify-between min-[390px]:gap-3">
-        <div className="min-h-5 text-caption text-[#4b5563]">
-          {actionLabel
-            ? t("card.nextAction", { action: actionLabel })
-            : t("card.noFurtherAction")}
+          <div className="flex min-w-0 items-center justify-between gap-2 border-t border-[#eee9e4] pt-3">
+            <span className="min-w-0 truncate text-caption text-[#615d59]">
+              {actionLabel ?? t("card.noFurtherAction")}
+            </span>
+            <span className="shrink-0 text-link text-[#097fe8]">
+              {t("card.viewDetails")}
+            </span>
+          </div>
         </div>
-        <Link
-          href={`/requests/${request.id}`}
-          className="inline-flex min-h-9 items-center justify-center rounded-md text-link text-[#2563eb] hover:underline min-[390px]:shrink-0 min-[390px]:justify-start"
-        >
-          {t("card.viewDetails")}
-        </Link>
-      </div>
-    </article>
+      </article>
+    </Link>
+  );
+}
+
+function KanbanInfoLine({
+  icon: Icon,
+  children,
+}: {
+  icon: LucideIcon;
+  children: ReactNode;
+}) {
+  return (
+    <div className="flex min-w-0 items-center gap-2 text-caption text-[#615d59]">
+      <Icon aria-hidden="true" className="size-3.5 shrink-0 text-[#a39e98]" />
+      <div className="min-w-0 flex-1">{children}</div>
+    </div>
   );
 }
