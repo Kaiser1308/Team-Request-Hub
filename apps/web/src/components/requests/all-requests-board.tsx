@@ -7,6 +7,7 @@ import {
   translatePriority,
   translateStatus,
 } from "@/components/requests/translated-labels";
+import { AppSelect } from "@/components/ui/app-select";
 import { Button } from "@/components/ui/button";
 import { ApiError } from "@/lib/api/client";
 import { useRequests } from "@/hooks/use-requests";
@@ -193,48 +194,40 @@ export function AllRequestsBoard({
   return (
     <div className="space-y-4" aria-busy={isFetching}>
       <div className="grid gap-3 rounded-lg border border-[#e3ded8] bg-white p-3 shadow-[rgba(0,0,0,0.02)_0px_2px_8px] sm:grid-cols-[minmax(180px,1fr)_minmax(220px,2fr)_minmax(180px,1fr)]">
-        <label className="grid min-w-0 gap-1 text-sm text-[#4b5563]">
-          {t("list.priority")}
-          <select
-            className="h-10 w-full rounded-md border border-[#d8d2cc] bg-[#fbfaf9] px-3 text-sm text-[#111827] outline-none transition focus:border-[#097fe8] focus:bg-white focus:ring-2 focus:ring-[#097fe8]/15"
-            value={priority}
-            onChange={(event) =>
-              setPriority(event.target.value as "all" | RequestPriority)
-            }
-          >
-            {priorityOptions.map((option) => (
-              <option key={option} value={option}>
-                {translatePriority(t, option)}
-              </option>
-            ))}
-          </select>
-        </label>
+         <label className="grid min-w-0 gap-1 text-sm text-[#615d59]">
+           {t("list.priority")}
+           <AppSelect
+             value={priority}
+             onChange={(v) => setPriority(v)}
+             options={priorityOptions.map((option) => ({
+               value: option,
+               label: translatePriority(t, option),
+             }))}
+           />
+         </label>
 
-        <label className="grid min-w-0 gap-1 text-sm text-[#4b5563]">
-          {t("list.searchAll")}
-          <input
-            type="search"
-            className="h-10 w-full rounded-md border border-[#d8d2cc] bg-[#fbfaf9] px-3 text-sm text-[#111827] outline-none transition placeholder:text-[#9ca3af] focus:border-[#097fe8] focus:bg-white focus:ring-2 focus:ring-[#097fe8]/15"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder={t("list.searchAllPlaceholder")}
-          />
-        </label>
+         <label className="grid min-w-0 gap-1 text-sm text-[#615d59]">
+           {t("list.searchAll")}
+           <input
+             type="search"
+             className="app-field h-10 w-full px-3 text-sm text-[#111827] outline-none placeholder:text-[#9ca3af]"
+             value={search}
+             onChange={(event) => setSearch(event.target.value)}
+             placeholder={t("list.searchAllPlaceholder")}
+           />
+         </label>
 
-        <label className="grid min-w-0 gap-1 text-sm text-[#4b5563]">
-          {t("list.sortBy")}
-          <select
-            className="h-10 w-full rounded-md border border-[#d8d2cc] bg-[#fbfaf9] px-3 text-sm text-[#111827] outline-none transition focus:border-[#097fe8] focus:bg-white focus:ring-2 focus:ring-[#097fe8]/15"
-            value={sortBy}
-            onChange={(event) => setSortBy(event.target.value as SortOption)}
-          >
-            {sortOptions.map((option) => (
-              <option key={option} value={option}>
-                {t(`list.sort${option === "default" ? "Default" : option === "creator" ? "Creator" : "Assignee"}`)}
-              </option>
-            ))}
-          </select>
-        </label>
+         <label className="grid min-w-0 gap-1 text-sm text-[#615d59]">
+           {t("list.sortBy")}
+           <AppSelect
+             value={sortBy}
+             onChange={(v) => setSortBy(v)}
+             options={sortOptions.map((option) => ({
+               value: option,
+               label: t(`list.sort${option === "default" ? "Default" : option === "creator" ? "Creator" : "Assignee"}`),
+             }))}
+           />
+         </label>
       </div>
 
       {!data?.length ? (

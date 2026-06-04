@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { AttachmentUpload } from "@/components/requests/attachment-upload";
+import { AppSelect } from "@/components/ui/app-select";
 import { Button } from "@/components/ui/button";
 import { UserMultiSelect } from "@/components/requests/user-multi-select";
 import { translatePriority } from "@/components/requests/translated-labels";
@@ -126,19 +127,14 @@ export function RequestForm() {
 
       <label className="grid gap-2 text-sm font-medium text-[#111827]">
         {t("form.priority")}
-        <select
-          className="app-field h-10 w-full rounded-md px-3 text-sm font-normal transition"
+        <AppSelect
           value={priority}
-          onChange={(event) =>
-            setPriority(event.target.value as RequestPriority)
-          }
-        >
-          {priorities.map((item) => (
-            <option key={item} value={item}>
-              {translatePriority(t, item)}
-            </option>
-          ))}
-        </select>
+          onChange={(v) => setPriority(v)}
+          options={priorities.map((item) => ({
+            value: item,
+            label: translatePriority(t, item),
+          }))}
+        />
       </label>
 
       <label className="grid gap-2 text-sm font-medium text-[#111827]">

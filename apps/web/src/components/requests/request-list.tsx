@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { RequestCard } from "@/components/requests/request-card";
+import { AppSelect } from "@/components/ui/app-select";
 import { Button } from "@/components/ui/button";
 import { ApiError } from "@/lib/api/client";
 import {
@@ -116,37 +117,27 @@ export function RequestList({
         {defaultStatus === "all" ? (
           <label className="grid min-w-0 gap-1 text-sm text-[#615d59] sm:min-w-40">
             {t("list.status")}
-            <select
-              className="app-field h-10 w-full rounded-md px-3 text-sm text-[#111827] transition"
+            <AppSelect
               value={status}
-              onChange={(event) =>
-                setStatus(event.target.value as "all" | RequestStatus)
-              }
-            >
-              {statusOptions.map((option) => (
-                <option key={option} value={option}>
-                  {translateStatus(t, option)}
-                </option>
-              ))}
-            </select>
+              onChange={(v) => setStatus(v)}
+              options={statusOptions.map((option) => ({
+                value: option,
+                label: translateStatus(t, option),
+              }))}
+            />
           </label>
         ) : null}
 
         <label className="grid min-w-0 gap-1 text-sm text-[#615d59] sm:min-w-40">
           {t("list.priority")}
-          <select
-            className="app-field h-10 w-full rounded-md px-3 text-sm text-[#111827] transition"
+          <AppSelect
             value={priority}
-            onChange={(event) =>
-              setPriority(event.target.value as "all" | RequestPriority)
-            }
-          >
-            {priorityOptions.map((option) => (
-              <option key={option} value={option}>
-                {translatePriority(t, option)}
-              </option>
-            ))}
-          </select>
+            onChange={(v) => setPriority(v)}
+            options={priorityOptions.map((option) => ({
+              value: option,
+              label: translatePriority(t, option),
+            }))}
+          />
         </label>
       </div>
 

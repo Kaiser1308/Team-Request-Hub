@@ -268,15 +268,26 @@
 
   .app-field {
     border: 1px solid #d8d2cc;
-    background: #fbfaf9;
+    background-color: #fbfaf9;
     color: #111827;
+    border-radius: 0.5rem;
+    transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .app-field:hover {
+    border-color: #c0b8b0;
+    background-color: #f7f5f2;
   }
 
   .app-field:focus {
     border-color: #097fe8;
-    background: #ffffff;
-    box-shadow: 0 0 0 2px rgb(9 127 232 / 15%);
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgb(9 127 232 / 12%);
     outline: none;
+  }
+
+  .app-field::placeholder {
+    color: #9ca3af;
   }
 
   .app-soft-text {
