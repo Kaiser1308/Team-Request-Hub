@@ -18,8 +18,10 @@ os.environ.setdefault("SUPABASE_JWT_SECRET", "secret")
 from app.core.auth import clear_current_user_cache, get_current_user
 from app.schemas.users import CurrentUser
 
+_JWT_SECRET = os.environ["SUPABASE_JWT_SECRET"]
 
-def build_token(user_id="user-1", email="user@example.com", secret="secret"):
+
+def build_token(user_id="user-1", email="user@example.com", secret=None):
     return jwt.encode(
         {
             "sub": user_id,
@@ -28,7 +30,7 @@ def build_token(user_id="user-1", email="user@example.com", secret="secret"):
             "role": "authenticated",
             "iss": "supabase",
         },
-        secret,
+        secret or _JWT_SECRET,
         algorithm="HS256",
     )
 
@@ -241,7 +243,7 @@ class AuthTests(unittest.IsolatedAsyncioTestCase):
         credentials = HTTPAuthorizationCredentials(scheme="Bearer", credentials=token)
 
         with patch("app.core.auth.get_settings") as settings:
-            settings.return_value.supabase_jwt_secret = "secret"
+            settings.return_value.supabase_jwt_secret = _JWT_SECRET
             with self.assertRaises(HTTPException) as context:
                 await get_current_user(credentials)
 
