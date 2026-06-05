@@ -225,7 +225,10 @@
       "pool": "The request pool is empty. Check back when new requests are submitted.",
       "done": "No completed requests yet. Completed work will appear here.",
       "all": "No requests exist yet. New requests will appear here automatically.",
-      "filtered": "No requests match the selected filters."
+      "filtered": "No requests match the selected filters.",
+      "created_pending": "No pending requests you created.",
+      "created_acknowledged": "No acknowledged requests you created.",
+      "created_in_progress": "No in-progress requests you created."
     },
     "forbidden": {
       "pool": "Pool access is limited to backend teammates and leads.",
@@ -317,11 +320,11 @@
       "cancelReasonPlaceholder": "Optional cancellation reason",
       "cancelError": "Could not cancel this request.",
       "cancelling": "Cancelling...",
-      "confirmCancel": "Confirm cancel"
-      ,      "addAssignee": "Add assignee"
-      ,"removeAssignee": "Remove"
-      ,"adding": "Adding..."
-      ,"attachments": "Attachments (optional)"
+      "confirmCancel": "Confirm cancel",
+      "addAssignee": "Add assignee",
+      "removeAssignee": "Remove",
+      "adding": "Adding...",
+      "attachments": "Attachments (optional)"
     },
     "attachments": {
       "addFiles": "Add attachments",

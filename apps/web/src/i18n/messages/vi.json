@@ -225,7 +225,10 @@
       "pool": "Danh sách chờ trống. Hãy kiểm tra lại khi có yêu cầu mới.",
       "done": "Chưa có yêu cầu nào hoàn thành. Công việc đã hoàn thành sẽ hiển thị ở đây.",
       "all": "Chưa có yêu cầu nào. Yêu cầu mới sẽ tự động hiển thị ở đây.",
-      "filtered": "Không có yêu cầu nào phù hợp với bộ lọc đã chọn."
+      "filtered": "Không có yêu cầu nào phù hợp với bộ lọc đã chọn.",
+      "created_pending": "Không có yêu cầu nào đang chờ do bạn tạo.",
+      "created_acknowledged": "Không có yêu cầu nào đã nhận do bạn tạo.",
+      "created_in_progress": "Không có yêu cầu nào đang làm do bạn tạo."
     },
     "forbidden": {
       "pool": "Quyền truy cập danh sách chờ chỉ dành cho backend và lead.",
@@ -317,11 +320,11 @@
       "cancelReasonPlaceholder": "Lý do hủy không bắt buộc",
       "cancelError": "Không thể hủy yêu cầu này.",
       "cancelling": "Đang hủy...",
-      "confirmCancel": "Xác nhận hủy"
-      ,      "addAssignee": "Thêm người nhận"
-      ,"removeAssignee": "Gỡ"
-      ,"adding": "Đang thêm..."
-      ,"attachments": "Tệp đính kèm (tùy chọn)"
+      "confirmCancel": "Xác nhận hủy",
+      "addAssignee": "Thêm người nhận",
+      "removeAssignee": "Gỡ",
+      "adding": "Đang thêm...",
+      "attachments": "Tệp đính kèm (tùy chọn)"
     },
     "attachments": {
       "addFiles": "Thêm tệp đính kèm",
