@@ -57,10 +57,12 @@ export default function RequestsPage() {
               <span>{t(`assignedTabs.${tab}`)}</span>
               <span
                 className={cn(
-                  "inline-flex min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-bold leading-5",
+                  "inline-flex min-w-[1.375rem] items-center justify-center rounded-full px-1.5 text-[11px] font-bold leading-[1.375rem]",
                   activeTab === tab
-                    ? "bg-red-500 text-white"
-                    : "bg-red-50 text-red-600",
+                    ? "bg-white/20 text-white"
+                    : tabCounts[tab] > 0
+                      ? "bg-red-500 text-white shadow-sm"
+                      : "bg-red-50 text-red-400",
                 )}
               >
                 {tabCounts[tab]}
