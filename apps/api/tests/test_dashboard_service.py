@@ -157,9 +157,9 @@ class DashboardServiceTests(unittest.TestCase):
 
         self.assertEqual(result["counts"]["assigned"], 1)
         self.assertEqual(result["counts"]["created"], 2)
-        self.assertEqual(result["counts"]["pool"], 2)
+        self.assertEqual(result["counts"]["pending"], 1)
         self.assertEqual(result["counts"]["done"], 1)
-        self.assertEqual(result["counts"]["urgent"], 1)
+        self.assertEqual(result["counts"]["urgent"], 0)
 
     def test_lead_dashboard_sees_all_done(self):
         lead_user = CurrentUser(
@@ -229,6 +229,7 @@ class DashboardServiceTests(unittest.TestCase):
                 e = dict(r)
                 e["creator"] = {"id": r.get("created_by"), "name": "Creator"}
                 e["assignee"] = None
+                e["assignees"] = r.get("assignees", [])
                 enriched.append(e)
             return enriched
 
@@ -249,7 +250,7 @@ class DashboardServiceTests(unittest.TestCase):
             result = dashboard.get_dashboard_summary(current_user)
 
         self.assertEqual(result["counts"]["assigned"], 1)
-        self.assertEqual(result["counts"]["pool"], 0)
+        self.assertEqual(result["counts"]["pending"], 1)
 
 
 if __name__ == "__main__":

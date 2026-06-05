@@ -84,42 +84,23 @@ def list_created_requests(user_id: str, limit: int = 50) -> list[dict]:
 
 
 def list_pool_requests(limit: int = 50) -> list[dict]:
-    assignment_result = (
+    result = (
         get_supabase_admin()
-        .table("request_assignees")
-        .select("request_id")
+        .rpc("list_pool_requests", {"result_limit": limit})
         .execute()
     )
-    assigned_request_ids = list({row["request_id"] for row in (assignment_result.data or [])})
-
-    query = (
-        get_supabase_admin()
-        .table(REQUESTS_TABLE)
-        .select(REQUEST_LIST_COLUMNS)
-        .eq("status", "pending")
-    )
-    if assigned_request_ids:
-        query = query.not_.in_("id", assigned_request_ids)
-
-    result = query.order("created_at", desc=True).limit(limit).execute()
     return result.data or []
 
 
 def list_done_requests(limit: int = 50, user_id: str | None = None) -> list[dict]:
-    query = (
+    result = (
         get_supabase_admin()
-        .table(REQUESTS_TABLE)
-        .select(REQUEST_LIST_COLUMNS)
-        .eq("status", "done")
-        .order("created_at", desc=True)
-    )
-
-    if user_id is not None:
-        query = query.or_(
-            f"created_by.eq.{user_id},assigned_to.eq.{user_id},assigned_to.is.null"
+        .rpc(
+            "list_done_requests",
+            {"result_limit": limit, "current_user_id": user_id},
         )
-
-    result = query.limit(limit).execute()
+        .execute()
+    )
     return result.data or []
 
 
@@ -179,15 +160,10 @@ def get_dashboard_data(user_id: str) -> list[dict]:
     """Fetch all dashboard-relevant requests for a user in one DB round-trip."""
     result = (
         get_supabase_admin()
-        .table(REQUESTS_TABLE)
-        .select(REQUEST_LIST_COLUMNS)
-        .or_(
-            f"assigned_to.eq.{user_id},"
-            f"created_by.eq.{user_id},"
-            f"and(status.eq.pending,assigned_to.is.null)"
+        .rpc(
+            "get_dashboard_data",
+            {"current_user_id": user_id, "result_limit": 200},
         )
-        .order("created_at", desc=True)
-        .limit(200)
         .execute()
     )
     return result.data or []
