@@ -17,6 +17,7 @@ import {
   PlusCircle,
   FolderOpen,
   Settings,
+  BookOpen,
   type LucideIcon,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -42,6 +43,7 @@ type NavLabelKey =
   | "users"
   | "newRequest"
   | "files"
+  | "docs"
   | "notifications"
   | "settings";
 
@@ -61,6 +63,7 @@ const navItems: NavItem[] = [
   { href: "/done", labelKey: "done", icon: CheckCircle2 },
   { href: "/all", labelKey: "all", roles: ["lead"], icon: Database },
   { href: "/files", labelKey: "files", icon: FolderOpen },
+  { href: "/docs", labelKey: "docs", icon: BookOpen },
   { href: "/admin/users", labelKey: "users", roles: ["lead"], icon: Users },
   { href: "/requests/new", labelKey: "newRequest", icon: PlusCircle },
   { href: "/settings", labelKey: "settings", icon: Settings },
@@ -103,6 +106,7 @@ function getPageTitle(
     "/done": "done",
     "/all": "all",
     "/files": "files",
+    "/docs": "docs",
     "/admin/users": "users",
     "/notifications": "notifications",
     "/settings": "settings",
@@ -237,6 +241,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Link
                 key={item.href}
                 href={item.href}
+                target={item.href === "/docs" ? "_blank" : undefined}
+                rel={item.href === "/docs" ? "noopener noreferrer" : undefined}
                 onClick={() => {
                   setIsMobileNavOpen(false);
                   if (item.notificationTypes && item.notificationTypes.length > 0) {
