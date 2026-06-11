@@ -16,6 +16,7 @@ import {
   Calendar,
   ExternalLink,
   ChevronLeft,
+  BookOpen,
 } from "lucide-react";
 import { useFileContent, useFileTree } from "@/hooks/use-files";
 import type { TeamFile } from "@/types";
@@ -310,9 +311,22 @@ export default function DocsPage({ params }: PageProps) {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
-      {/* Sidebar navigation */}
-      <aside className="h-[calc(100vh-120px)] overflow-y-auto rounded-lg border border-slate-200 bg-white p-3 shadow-sm sticky top-20">
+    <div className="flex flex-col gap-6 max-w-7xl mx-auto w-full min-h-screen px-4 py-6 sm:px-6 sm:py-8">
+      <header className="flex items-center justify-between border-b border-slate-200 pb-4">
+        <div className="flex items-center gap-2.5">
+          <BookOpen className="h-6 w-6 text-slate-700" />
+          <h1 className="text-xl font-bold text-slate-800 tracking-tight">Team Request Hub — Docs</h1>
+        </div>
+        <Button asChild variant="outline" size="sm" className="hover:bg-slate-100 hover:text-slate-900 transition-colors">
+          <Link href="/dashboard">
+            Go to Dashboard
+          </Link>
+        </Button>
+      </header>
+
+      <div className="grid gap-6 lg:grid-cols-[260px_1fr] flex-1">
+        {/* Sidebar navigation */}
+        <aside className="h-[calc(100vh-180px)] overflow-y-auto rounded-lg border border-slate-200 bg-white p-3 shadow-sm sticky top-6">
         <div className="mb-4">
           <input
             type="text"
@@ -473,6 +487,7 @@ export default function DocsPage({ params }: PageProps) {
           )}
         </main>
       </div>
+    </div>
     </div>
   );
 }
