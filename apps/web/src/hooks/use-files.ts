@@ -66,6 +66,16 @@ export function useFileTree(includeDeleted = false) {
   });
 }
 
+export function useFileContent(fileId: string | undefined) {
+  return useQuery({
+    queryKey: [...queryKeys.files.all, "content", fileId] as const,
+    queryFn: () => getPreviewContent(fileId!),
+    enabled: !!fileId,
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+
 export function useFileMutations() {
   const queryClient = useQueryClient();
   const invalidate = () =>
