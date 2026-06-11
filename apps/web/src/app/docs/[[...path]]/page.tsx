@@ -17,10 +17,13 @@ import {
   ExternalLink,
   ChevronLeft,
   BookOpen,
+  List,
 } from "lucide-react";
 import { useFileContent, useFileTree } from "@/hooks/use-files";
 import type { TeamFile } from "@/types";
 import { Button } from "@/components/ui/button";
+import { slugify, getHeadingText, extractHeadings } from "@/lib/toc-utils";
+
 
 interface PageProps {
   params: Promise<{ path?: string[] }>;
@@ -199,6 +202,8 @@ export default function DocsPage({ params }: PageProps) {
   const treeQuery = useFileTree(false);
   const [search, setSearch] = useState("");
   const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set(["/docs"]));
+  const [activeId, setActiveId] = useState<string>("");
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   // Auto-expand parents of active document path
   useEffect(() => {
@@ -248,6 +253,40 @@ export default function DocsPage({ params }: PageProps) {
   const contentQuery = useFileContent(
     activeNode && !activeNode.is_directory ? activeNode.id : undefined,
   );
+
+  const headings = useMemo(() => {
+    return extractHeadings(contentQuery.data || "");
+  }, [contentQuery.data]);
+
+  useEffect(() => {
+    if (headings.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visibleEntries = entries.filter((e) => e.isIntersecting);
+        if (visibleEntries.length > 0) {
+          const sorted = visibleEntries.sort(
+            (a, b) => a.boundingClientRect.top - b.boundingClientRect.top
+          );
+          setActiveId(sorted[0].target.id);
+        }
+      },
+      {
+        rootMargin: "-80px 0px -60% 0px",
+        threshold: 0.1,
+      }
+    );
+
+    const elements = headings
+      .map((h) => document.getElementById(h.id))
+      .filter(Boolean);
+
+    elements.forEach((el) => observer.observe(el!));
+
+    return () => {
+      elements.forEach((el) => observer.unobserve(el!));
+    };
+  }, [headings]);
 
   // Build breadcrumbs path
   const breadcrumbs = useMemo(() => {
@@ -458,9 +497,21 @@ export default function DocsPage({ params }: PageProps) {
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{
-                      h1: (props) => <h1 className="text-2xl font-bold border-b border-slate-100 pb-2 mt-6 mb-4" {...props} />,
-                      h2: (props) => <h2 className="text-xl font-bold mt-5 mb-3" {...props} />,
-                      h3: (props) => <h3 className="text-lg font-semibold mt-4 mb-2" {...props} />,
+                      h1: (props) => {
+                        const text = getHeadingText(props.children);
+                        const id = slugify(text);
+                        return <h1 id={id} className="scroll-mt-20 text-2xl font-bold border-b border-slate-100 pb-2 mt-6 mb-4" {...props} />;
+                      },
+                      h2: (props) => {
+                        const text = getHeadingText(props.children);
+                        const id = slugify(text);
+                        return <h2 id={id} className="scroll-mt-20 text-xl font-bold mt-5 mb-3" {...props} />;
+                      },
+                      h3: (props) => {
+                        const text = getHeadingText(props.children);
+                        const id = slugify(text);
+                        return <h3 id={id} className="scroll-mt-20 text-lg font-semibold mt-4 mb-2" {...props} />;
+                      },
                       p: (props) => <p className="leading-7 text-slate-700 mb-4" {...props} />,
                       ul: (props) => <ul className="list-disc space-y-1.5 pl-6 mb-4 text-slate-700" {...props} />,
                       ol: (props) => <ol className="list-decimal space-y-1.5 pl-6 mb-4 text-slate-700" {...props} />,
@@ -488,6 +539,90 @@ export default function DocsPage({ params }: PageProps) {
         </main>
       </div>
     </div>
+
+    {/* Table of Contents Drawer (Desktop Hover / Mobile Toggle) */}
+    {headings.length > 0 && (
+      <>
+        {/* Mobile Floating Action Button (FAB) */}
+        <div className="lg:hidden fixed bottom-6 right-6 z-50">
+          <button
+            onClick={() => setIsMobileOpen(!isMobileOpen)}
+            className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-900 text-white shadow-lg hover:bg-slate-800 transition-all active:scale-95 duration-200 border border-slate-700/30 cursor-pointer"
+            aria-label="Toggle Table of Contents"
+          >
+            <List className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Backdrop overlay for mobile drawer */}
+        {isMobileOpen && (
+          <div
+            onClick={() => setIsMobileOpen(false)}
+            className="lg:hidden fixed inset-0 z-40 bg-black/20 backdrop-blur-xs transition-opacity duration-300"
+          />
+        )}
+
+        {/* Table of Contents Drawer Container */}
+        <aside
+          className={`fixed right-0 top-0 h-screen w-[300px] z-40 bg-white/80 backdrop-blur-md border-l border-slate-200/50 shadow-2xl transition-transform duration-300 ease-in-out
+            ${isMobileOpen ? "translate-x-0" : "translate-x-full"}
+            lg:translate-x-[276px] lg:hover:translate-x-0
+            group`}
+        >
+          {/* Desktop Vertical Hint Bar (hidden on mobile) */}
+          <div className="hidden lg:flex absolute left-0 top-0 h-full w-[24px] items-center justify-center border-r border-slate-200/40 bg-slate-50/65 cursor-pointer select-none group-hover:opacity-0 transition-opacity duration-200">
+            <div className="-rotate-90 origin-center whitespace-nowrap text-[9px] font-extrabold tracking-widest text-slate-400 uppercase">
+              Table of Contents
+            </div>
+          </div>
+
+          {/* Drawer Content */}
+          <div className="h-full overflow-y-auto p-6 lg:pl-10 pt-20">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-1.5">
+              <List className="h-3.5 w-3.5" /> On this page
+            </h3>
+            <nav className="space-y-2.5">
+              {headings.map((h) => {
+                const indentClass =
+                  h.level === 1
+                    ? "pl-0 font-medium text-xs text-slate-800"
+                    : h.level === 2
+                    ? "pl-3 text-[11px] text-slate-600"
+                    : "pl-6 text-[10px] text-slate-500";
+
+                const isActive = activeId === h.id;
+
+                return (
+                  <a
+                    key={h.id}
+                    href={`#${h.id}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const element = document.getElementById(h.id);
+                      if (element) {
+                        element.scrollIntoView({
+                          behavior: "smooth",
+                          block: "start",
+                        });
+                      }
+                      setIsMobileOpen(false);
+                    }}
+                    className={`block hover:text-slate-900 transition-colors relative ${indentClass} ${
+                      isActive ? "text-[#2563eb] font-semibold" : ""
+                    }`}
+                  >
+                    {isActive && (
+                      <span className="absolute -left-3 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-[#2563eb]" />
+                    )}
+                    {h.text}
+                  </a>
+                );
+              })}
+            </nav>
+          </div>
+        </aside>
+      </>
+    )}
     </div>
   );
 }

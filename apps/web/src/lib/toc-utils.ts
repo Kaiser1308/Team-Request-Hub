@@ -17,15 +17,12 @@ export function slugify(text: string): string {
 
 export function getHeadingText(children: React.ReactNode): string {
   if (!children) return "";
-  if (typeof children === "string") return children;
+  if (typeof children === "string" || typeof children === "number") return children.toString();
   if (Array.isArray(children)) {
     return children.map(getHeadingText).join("");
   }
-  if (typeof children === "object" && children !== null && "props" in children) {
-    const props = (children as React.ReactElement).props;
-    if (props && "children" in props) {
-      return getHeadingText(props.children);
-    }
+  if (React.isValidElement(children)) {
+    return getHeadingText((children as React.ReactElement<{ children?: React.ReactNode }>).props.children);
   }
   return "";
 }
