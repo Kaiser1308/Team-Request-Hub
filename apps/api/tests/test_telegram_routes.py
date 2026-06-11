@@ -13,6 +13,8 @@ from app.main import app
 
 client = TestClient(app)
 
+_JWT_SECRET = os.environ["SUPABASE_JWT_SECRET"]
+
 
 def _auth_headers():
     from jose import jwt as jose_jwt
@@ -25,7 +27,7 @@ def _auth_headers():
             "role": "authenticated",
             "iss": "supabase",
         },
-        "secret",
+        _JWT_SECRET,
         algorithm="HS256",
     )
     return {"Authorization": f"Bearer {token}"}

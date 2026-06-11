@@ -8,9 +8,9 @@ type ErrorStateProps = {
 
 export function ErrorState({ title = "Unable to load data", message, action }: ErrorStateProps) {
   return (
-    <div className="rounded-md border border-destructive/30 bg-destructive/5 px-4 py-4">
-      <h2 className="text-base font-semibold tracking-normal text-foreground">{title}</h2>
-      <p className="mt-1 text-sm text-muted-foreground">{message}</p>
+    <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-4">
+      <h2 className="text-section-title text-red-950">{title}</h2>
+      <p className="mt-1 text-body text-red-700">{message}</p>
       {action ? <div className="mt-3">{action}</div> : null}
     </div>
   )

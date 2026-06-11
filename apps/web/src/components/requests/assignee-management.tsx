@@ -55,7 +55,7 @@ export function AssigneeManagement({ request }: { request: InternalRequest }) {
     <div className="mt-4 grid gap-3 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] p-3">
       <div className="flex flex-col gap-2 sm:flex-row">
         <select
-          className="h-10 flex-1 rounded-md border border-[#e5e7eb] bg-white px-3 text-sm"
+          className="h-10 min-w-0 max-w-full rounded-md border border-[#e5e7eb] bg-white px-3 text-sm sm:flex-1"
           value={selectedUserId}
           onChange={(event) => setSelectedUserId(event.target.value)}
           disabled={activeUsersQuery.isLoading || isAdding}
@@ -113,13 +113,13 @@ function AssigneeRow({
   const t = useTranslations("requests");
 
   return (
-    <div className="flex items-center gap-2 rounded-md border border-[#e5e7eb] bg-white p-2">
-      <span className="min-w-0 flex-1 truncate text-sm text-[#4b5563]">
+    <div className="grid gap-2 rounded-md border border-[#e5e7eb] bg-white p-2 sm:flex sm:items-center">
+      <span className="min-w-0 truncate text-sm text-[#4b5563]">
         {formatUserSummaryLabel(assignee) ?? assignee.id}
       </span>
       {requiresReason ? (
         <input
-          className="h-7 w-32 rounded border border-[#e5e7eb] px-2 text-xs"
+          className="h-7 w-full rounded border border-[#e5e7eb] px-2 text-xs sm:w-32"
           placeholder={t("actions.reason")}
           value={reason}
           onChange={(event) => onReasonChange(event.target.value)}
@@ -129,7 +129,7 @@ function AssigneeRow({
         type="button"
         variant="ghost"
         size="sm"
-        className="h-7 shrink-0 px-2 text-xs text-red-600 hover:bg-red-50 hover:text-red-700"
+        className="h-7 shrink-0 justify-self-start px-2 text-xs text-red-600 hover:bg-red-50 hover:text-red-700"
         onClick={onRemove}
         disabled={isRemoving}
       >

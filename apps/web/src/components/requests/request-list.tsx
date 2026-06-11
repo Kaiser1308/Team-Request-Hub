@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { RequestCard } from "@/components/requests/request-card";
+import { AppSelect } from "@/components/ui/app-select";
 import { Button } from "@/components/ui/button";
 import { ApiError } from "@/lib/api/client";
 import {
@@ -72,12 +73,12 @@ export function RequestList({
         {Array.from({ length: 3 }).map((_, index) => (
           <div
             key={index}
-            className="rounded-lg border border-[#e5e7eb] bg-white p-4"
+            className="app-surface rounded-lg p-4"
           >
-            <div className="h-4 w-2/3 animate-pulse rounded bg-[#f3f4f6]" />
-            <div className="mt-3 h-3 w-full animate-pulse rounded bg-[#f3f4f6]" />
-            <div className="mt-2 h-3 w-5/6 animate-pulse rounded bg-[#f3f4f6]" />
-            <div className="mt-4 h-3 w-1/2 animate-pulse rounded bg-[#f3f4f6]" />
+            <div className="h-4 w-2/3 animate-pulse rounded bg-[#ede8e3]" />
+            <div className="mt-3 h-3 w-full animate-pulse rounded bg-[#ede8e3]" />
+            <div className="mt-2 h-3 w-5/6 animate-pulse rounded bg-[#ede8e3]" />
+            <div className="mt-4 h-3 w-1/2 animate-pulse rounded bg-[#ede8e3]" />
           </div>
         ))}
       </div>
@@ -112,46 +113,36 @@ export function RequestList({
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-3 rounded-lg border border-[#e5e7eb] bg-white p-3 sm:flex sm:flex-row">
+      <div className="app-filter-surface grid gap-3 rounded-lg p-3 sm:flex sm:flex-row">
         {defaultStatus === "all" ? (
-          <label className="grid min-w-0 gap-1 text-sm text-[#4b5563] sm:min-w-40">
+          <label className="grid min-w-0 gap-1 text-sm text-[#615d59] sm:min-w-40">
             {t("list.status")}
-            <select
-              className="h-10 w-full rounded-md border border-[#e5e7eb] bg-white px-3 text-sm text-[#111827]"
+            <AppSelect
               value={status}
-              onChange={(event) =>
-                setStatus(event.target.value as "all" | RequestStatus)
-              }
-            >
-              {statusOptions.map((option) => (
-                <option key={option} value={option}>
-                  {translateStatus(t, option)}
-                </option>
-              ))}
-            </select>
+              onChange={(v) => setStatus(v)}
+              options={statusOptions.map((option) => ({
+                value: option,
+                label: translateStatus(t, option),
+              }))}
+            />
           </label>
         ) : null}
 
-        <label className="grid min-w-0 gap-1 text-sm text-[#4b5563] sm:min-w-40">
+        <label className="grid min-w-0 gap-1 text-sm text-[#615d59] sm:min-w-40">
           {t("list.priority")}
-          <select
-            className="h-10 w-full rounded-md border border-[#e5e7eb] bg-white px-3 text-sm text-[#111827]"
+          <AppSelect
             value={priority}
-            onChange={(event) =>
-              setPriority(event.target.value as "all" | RequestPriority)
-            }
-          >
-            {priorityOptions.map((option) => (
-              <option key={option} value={option}>
-                {translatePriority(t, option)}
-              </option>
-            ))}
-          </select>
+            onChange={(v) => setPriority(v)}
+            options={priorityOptions.map((option) => ({
+              value: option,
+              label: translatePriority(t, option),
+            }))}
+          />
         </label>
       </div>
 
       {!filteredRequests.length ? (
-        <div className="rounded-lg border border-[#e5e7eb] bg-white p-6 text-sm text-[#6b7280]">
+        <div className="app-surface-muted rounded-lg p-6 text-body text-[#615d59]">
           <p>
             {data?.length
               ? t("empty.filtered")

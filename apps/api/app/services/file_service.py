@@ -121,7 +121,7 @@ def create_upload_url(payload: UploadUrlRequest, current_user: CurrentUser) -> d
         raise BadRequestError(f"File size exceeds maximum of {MAX_FILE_SIZE_BYTES} bytes")
 
     ext = get_extension(name)
-    object_key = f"team-files/{uuid4()}-{name}"
+    object_key = f"{uuid4()}-{name}"
     now = utc_now_iso()
 
     file = file_repository.create_file({
@@ -421,7 +421,7 @@ def batch_copy_files(payload: BatchCopyFilesRequest, current_user: CurrentUser) 
 
         new_object_key = None
         if not src.get("is_directory") and src.get("object_key"):
-            new_object_key = f"team-files/{uuid4()}-{new_name}"
+            new_object_key = f"{uuid4()}-{new_name}"
             minio_storage.copy_object(src["object_key"], new_object_key)
 
         copied = file_repository.create_file({

@@ -52,14 +52,16 @@ function AttachmentItem({ attachment }: { attachment: RequestAttachment }) {
   }
 
   return (
-    <li className="flex items-center gap-2 rounded-md border border-[#e5e7eb] bg-white px-3 py-2 text-sm">
-      <span className="min-w-0 flex-1 truncate">{attachment.name}</span>
-      <span className="shrink-0 text-xs text-[#6b7280]">
-        {formatFileSize(attachment.size_bytes)}
-      </span>
-      <Button type="button" variant="ghost" size="sm" onClick={handleDownload}>
-        {t("download")}
-      </Button>
+    <li className="grid gap-1.5 rounded-md border border-[#e5e7eb] bg-white px-3 py-2 text-sm sm:flex sm:items-center sm:gap-2">
+      <span className="min-w-0 truncate">{attachment.name}</span>
+      <div className="flex items-center gap-2">
+        <span className="shrink-0 text-xs text-[#6b7280]">
+          {formatFileSize(attachment.size_bytes)}
+        </span>
+        <Button type="button" variant="ghost" size="sm" onClick={handleDownload}>
+          {t("download")}
+        </Button>
+      </div>
     </li>
   );
 }

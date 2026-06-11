@@ -87,16 +87,39 @@ class TestCreateRequest(unittest.TestCase):
         with (
             patch("app.services.request_service.users.ensure_active_user") as ensure_active,
             patch("app.services.request_service.request_repository.create_request", return_value=created),
+            patch("app.services.request_service.request_assignee_repository.add_assignees"),
             patch("app.services.request_service.assignment_repository.create_assignment_history") as record,
-            patch("app.services.request_service.notification_module.notify_assigned") as notify,
             patch("app.services.request_read_model_builder.user_repository.list_user_summaries", return_value={}),
         ):
             result = request_service.create_request(payload, _user())
 
         ensure_active.assert_called_once_with("assignee-1")
         record.assert_called_once()
-        notify.assert_called_once_with("assignee-1", created)
         self.assertEqual(result["assigned_to"], "assignee-1")
+
+    def test_create_request_fails_when_assignee_membership_cannot_be_recorded(self):
+        payload = InternalRequestCreate(
+            title="New Request",
+            description="Please help",
+            assigned_to="assignee-1",
+        )
+        created = _request(id="new-1", assigned_to="assignee-1")
+
+        with (
+            patch("app.services.request_service.users.ensure_active_user"),
+            patch("app.services.request_service.request_repository.create_request", return_value=created),
+            patch(
+                "app.services.request_service.request_assignee_repository.add_assignees",
+                side_effect=RuntimeError("membership write failed"),
+            ),
+            patch("app.services.request_service.assignment_repository.create_assignment_history") as record,
+            patch("app.services.request_service.notification_module.notify_assigned") as notify,
+        ):
+            with self.assertRaises(RuntimeError):
+                request_service.create_request(payload, _user())
+
+        record.assert_not_called()
+        notify.assert_not_called()
 
     def test_create_request_without_assignee_skips_assignment(self):
         payload = InternalRequestCreate(
@@ -125,6 +148,7 @@ class TestSelfAssignRequest(unittest.TestCase):
         with (
             patch("app.services.request_service.request_repository.get_request_or_404", return_value=req),
             patch("app.services.request_service.request_repository.assign_if_unassigned", return_value=updated),
+            patch("app.services.request_service.request_assignee_repository.add_assignee"),
             patch("app.services.request_service.assignment_repository.create_assignment_history") as record,
             patch("app.services.request_service.notification_module.notify_request_picked_up") as notify,
             patch("app.services.request_read_model_builder.user_repository.list_user_summaries", return_value={}),
@@ -133,6 +157,26 @@ class TestSelfAssignRequest(unittest.TestCase):
 
         self.assertEqual(result["assigned_to"], "user-1")
         record.assert_called_once()
+
+    def test_self_assign_fails_when_assignee_membership_cannot_be_recorded(self):
+        req = _request(assigned_to=None)
+        updated = {**req, "assigned_to": "user-1"}
+
+        with (
+            patch("app.services.request_service.request_repository.get_request_or_404", return_value=req),
+            patch("app.services.request_service.request_repository.assign_if_unassigned", return_value=updated),
+            patch(
+                "app.services.request_service.request_assignee_repository.add_assignee",
+                side_effect=RuntimeError("membership write failed"),
+            ),
+            patch("app.services.request_service.assignment_repository.create_assignment_history") as record,
+            patch("app.services.request_service.notification_module.notify_request_picked_up") as notify,
+        ):
+            with self.assertRaises(RuntimeError):
+                request_service.self_assign_request("req-1", _user())
+
+        record.assert_not_called()
+        notify.assert_not_called()
 
     def test_self_assign_already_assigned_raises_conflict(self):
         req = _request(created_by="user-1", assigned_to="other-user")
@@ -160,6 +204,7 @@ class TestSelfAssignRequest(unittest.TestCase):
         with (
             patch("app.services.request_service.request_repository.get_request_or_404", return_value=req),
             patch("app.services.request_service.request_repository.assign_if_unassigned", return_value=updated),
+            patch("app.services.request_service.request_assignee_repository.add_assignee"),
             patch("app.services.request_service.assignment_repository.create_assignment_history"),
             patch("app.services.request_service.notification_module.notify_request_picked_up") as notify,
             patch("app.services.request_read_model_builder.user_repository.list_user_summaries", return_value={}),
@@ -175,6 +220,7 @@ class TestSelfAssignRequest(unittest.TestCase):
         with (
             patch("app.services.request_service.request_repository.get_request_or_404", return_value=req),
             patch("app.services.request_service.request_repository.assign_if_unassigned", return_value=updated),
+            patch("app.services.request_service.request_assignee_repository.add_assignee"),
             patch("app.services.request_service.assignment_repository.create_assignment_history"),
             patch("app.services.request_service.notification_module.notify_request_picked_up") as notify,
             patch("app.services.request_read_model_builder.user_repository.list_user_summaries", return_value={}),
@@ -304,11 +350,13 @@ class TestUpdateRequest(unittest.TestCase):
 
         with (
             patch("app.services.request_service.request_repository.get_request_or_404", return_value=req),
-            patch("app.services.request_service.request_repository.update_request", return_value=updated),
+            patch("app.services.request_service.request_repository.update_request", return_value=updated) as update,
+            patch("app.services.request_read_model_builder.request_attachment_repository.list_by_request_ids", return_value=[]),
             patch("app.services.request_read_model_builder.user_repository.list_user_summaries", return_value={}),
         ):
             result = request_service.update_request("req-1", payload, _user())
 
+        update.assert_called_once_with("req-1", {"title": "Updated"})
         self.assertEqual(result["title"], "Updated")
 
     def test_update_closed_request_raises_bad_request(self):
@@ -335,10 +383,13 @@ class TestUpdateRequest(unittest.TestCase):
 
         with (
             patch("app.services.request_service.request_repository.get_request_or_404", return_value=req),
+            patch("app.services.request_service.request_repository.update_request") as update,
+            patch("app.services.request_read_model_builder.request_attachment_repository.list_by_request_ids", return_value=[]),
             patch("app.services.request_read_model_builder.user_repository.list_user_summaries", return_value={}),
         ):
             result = request_service.update_request("req-1", payload, _user())
 
+        update.assert_not_called()
         self.assertEqual(result["title"], req["title"])
 
 

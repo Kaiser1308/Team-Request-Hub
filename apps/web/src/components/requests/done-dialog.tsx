@@ -123,14 +123,18 @@ export function DoneDialog({ requestId }: { requestId: string }) {
     }
 
     function handleEscape(event: KeyboardEvent) {
-      if (event.key === 'Escape' && !actions.markDone.isPending) {
+      if (
+        event.key === 'Escape' &&
+        !actions.markDone.isPending &&
+        !attachmentHook.isUploading
+      ) {
         void closeDialog();
       }
     }
 
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
-  }, [isMounted, actions.markDone.isPending, closeDialog]);
+  }, [isMounted, actions.markDone.isPending, attachmentHook.isUploading, closeDialog]);
 
   if (!isMounted) {
     return (
@@ -145,7 +149,11 @@ export function DoneDialog({ requestId }: { requestId: string }) {
       ref={overlayRef}
       className='fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4'
       onClick={(event) => {
-        if (event.target === event.currentTarget && !actions.markDone.isPending) {
+        if (
+          event.target === event.currentTarget &&
+          !actions.markDone.isPending &&
+          !attachmentHook.isUploading
+        ) {
           void closeDialog();
         }
       }}
@@ -189,13 +197,18 @@ export function DoneDialog({ requestId }: { requestId: string }) {
         ) : null}
 
         <div className="mt-3 flex gap-2">
-          <Button type="submit" disabled={actions.markDone.isPending || isClosing}>
-            {actions.markDone.isPending ? t("actions.submitting") : t("actions.submitReply")}
+          <Button
+            type="submit"
+            disabled={actions.markDone.isPending || attachmentHook.isUploading || isClosing}
+          >
+            {actions.markDone.isPending || attachmentHook.isUploading
+              ? t("actions.submitting")
+              : t("actions.submitReply")}
           </Button>
           <Button
             type='button'
             variant='outline'
-            disabled={actions.markDone.isPending || isClosing}
+            disabled={actions.markDone.isPending || attachmentHook.isUploading || isClosing}
             onClick={() => void closeDialog()}
           >
             {tCommon("close")}

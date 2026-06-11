@@ -8,12 +8,14 @@ import {
   useWebPushPublicKey,
 } from "@/hooks/use-notifications";
 import { subscribeToWebPush } from "@/lib/web-push";
+import { useTranslations } from "next-intl";
 
 function isEnabled(preferences: { channel: string; enabled: boolean }[] | undefined, channel: string) {
   return preferences?.find((item) => item.channel === channel)?.enabled ?? true;
 }
 
 export function NotificationSettings() {
+  const t = useTranslations("settings");
   const preferences = useNotificationPreferences();
   const updatePreferences = useUpdateNotificationPreferences();
   const publicKey = useWebPushPublicKey();
@@ -35,25 +37,28 @@ export function NotificationSettings() {
   return (
     <section className="rounded-lg border border-[#e5e7eb] bg-white p-4 sm:p-5">
       <div>
-        <h2 className="text-lg font-semibold text-[#111827]">Notification channels</h2>
+        <h2 className="text-lg font-semibold text-[#111827]">{t("notificationChannels")}</h2>
         <p className="mt-1 text-sm text-[#6b7280]">
-          Choose where you want to receive assigned and reassigned request alerts.
+          {t("notificationChannelsDescription")}
         </p>
       </div>
 
       <div className="mt-4 grid gap-3">
-        <label className="flex items-center justify-between rounded-md border border-[#e5e7eb] p-3">
-          <span className="text-sm font-medium text-[#111827]">Email</span>
+        <label className="flex items-center justify-between gap-3 rounded-md border border-[#e5e7eb] bg-[#f9fafb] p-3">
+          <span className="grid gap-0.5">
+            <span className="text-sm font-medium text-[#111827]">{t("email")}</span>
+            <span id="email-notification-development" className="text-xs text-[#dc2626]">{t("emailInDevelopment")}</span>
+          </span>
           <input
             type="checkbox"
             checked={isEnabled(rows, "email")}
-            disabled={preferences.isLoading || updatePreferences.isPending}
-            onChange={(event) => updatePreferences.mutate({ email: event.target.checked })}
+            disabled
+            aria-describedby="email-notification-development"
           />
         </label>
 
         <label className="flex items-center justify-between rounded-md border border-[#e5e7eb] p-3">
-          <span className="text-sm font-medium text-[#111827]">Telegram</span>
+          <span className="text-sm font-medium text-[#111827]">{t("telegram")}</span>
           <input
             type="checkbox"
             checked={isEnabled(rows, "telegram")}
@@ -65,8 +70,8 @@ export function NotificationSettings() {
         <div className="rounded-md border border-[#e5e7eb] p-3">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-medium text-[#111827]">Browser Push</p>
-              <p className="text-xs text-[#6b7280]">Requires browser permission on this device.</p>
+              <p className="text-sm font-medium text-[#111827]">{t("browserPush")}</p>
+              <p className="text-xs text-[#6b7280]">{t("browserPushDescription")}</p>
             </div>
             {webPushEnabled ? (
               <Button
@@ -76,7 +81,7 @@ export function NotificationSettings() {
                 disabled={updatePreferences.isPending}
                 onClick={disableWebPush}
               >
-                Disable browser notifications
+                {t("disableBrowserNotifications")}
               </Button>
             ) : (
               <Button
@@ -86,7 +91,7 @@ export function NotificationSettings() {
                 disabled={publicKey.isLoading || createSubscription.isPending || updatePreferences.isPending}
                 onClick={() => void enableWebPush()}
               >
-                Enable browser notifications
+                {t("enableBrowserNotifications")}
               </Button>
             )}
           </div>
@@ -94,7 +99,7 @@ export function NotificationSettings() {
             <p className="mt-2 text-xs text-red-600">
               {createSubscription.error instanceof Error
                 ? createSubscription.error.message
-                : "Could not enable browser notifications."}
+                : t("browserNotificationsError")}
             </p>
           ) : null}
         </div>

@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { RequestList } from "@/components/requests/request-list";
+import { PageHeader } from "@/components/shared/page-header";
+import { useRequests } from "@/hooks/use-requests";
 import { cn } from "@/lib/utils";
-import type { RequestStatus } from "@/types";
+
 
 type AssignedTab = "pending" | "acknowledged" | "in_progress";
 
@@ -13,17 +15,26 @@ const tabs: AssignedTab[] = ["pending", "acknowledged", "in_progress"];
 export default function AssignedPage() {
   const t = useTranslations("requests");
   const [activeTab, setActiveTab] = useState<AssignedTab>("pending");
+  const assignedQuery = useRequests("assigned");
+  const tabCounts = useMemo(() => {
+    return tabs.reduce<Record<AssignedTab, number>>(
+      (counts, tab) => {
+        counts[tab] =
+          assignedQuery.data?.filter((request) => request.status === tab).length ?? 0;
+        return counts;
+      },
+      { pending: 0, acknowledged: 0, in_progress: 0 },
+    );
+  }, [assignedQuery.data]);
 
   return (
     <div className="space-y-5">
-      <div className="rounded-lg border border-[#e5e7eb] bg-white p-4 sm:p-5">
-        <h1 className="text-2xl font-semibold">{t("views.assignedTitle")}</h1>
-        <p className="mt-1 text-sm text-[#6b7280]">
-          {t("views.assignedDescription")}
-        </p>
-      </div>
+      <PageHeader
+        title={t("views.assignedTitle")}
+        description={t("views.assignedDescription")}
+      />
 
-      <div className="flex gap-1 rounded-lg border border-[#e5e7eb] bg-white p-1">
+      <div className="app-filter-surface flex gap-1 rounded-lg p-1">
         {tabs.map((tab) => (
           <button
             key={tab}
@@ -36,7 +47,21 @@ export default function AssignedPage() {
                 : "text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#111827]",
             )}
           >
-            {t(`assignedTabs.${tab}`)}
+            <span className="inline-flex items-center justify-center gap-1.5">
+              <span>{t(`assignedTabs.${tab}`)}</span>
+              <span
+                className={cn(
+                  "inline-flex min-w-[1.375rem] items-center justify-center rounded-full px-1.5 text-[11px] font-bold leading-[1.375rem]",
+                  activeTab === tab
+                    ? "bg-white/20 text-white"
+                    : tabCounts[tab] > 0
+                      ? "bg-red-500 text-white shadow-sm"
+                      : "bg-red-50 text-red-400",
+                )}
+              >
+                {tabCounts[tab]}
+              </span>
+            </span>
           </button>
         ))}
       </div>

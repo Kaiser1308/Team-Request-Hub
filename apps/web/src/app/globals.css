@@ -248,6 +248,51 @@
     background: rgb(255 255 255 / 10%);
     color: #ffffff;
   }
+
+  .app-surface {
+    border: 1px solid #e3ded8;
+    background: #ffffff;
+    box-shadow: rgba(0, 0, 0, 0.02) 0px 2px 8px;
+  }
+
+  .app-surface-muted {
+    border: 1px solid #e3ded8;
+    background: #fbfaf9;
+  }
+
+  .app-filter-surface {
+    border: 1px solid #e3ded8;
+    background: #ffffff;
+    box-shadow: rgba(0, 0, 0, 0.02) 0px 2px 8px;
+  }
+
+  .app-field {
+    border: 1px solid #d8d2cc;
+    background-color: #fbfaf9;
+    color: #111827;
+    border-radius: 0.5rem;
+    transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .app-field:hover {
+    border-color: #c0b8b0;
+    background-color: #f7f5f2;
+  }
+
+  .app-field:focus {
+    border-color: #097fe8;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgb(9 127 232 / 12%);
+    outline: none;
+  }
+
+  .app-field::placeholder {
+    color: #9ca3af;
+  }
+
+  .app-soft-text {
+    color: #615d59;
+  }
 }
 
 @keyframes skeleton-pulse {

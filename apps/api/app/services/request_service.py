@@ -150,11 +150,7 @@ def create_request(payload: InternalRequestCreate, current_user: CurrentUser) ->
 
     data.update({"created_by": current_user.id, "status": "pending"})
     request = request_repository.create_request(data)
-
-    try:
-        request_assignee_repository.add_assignees(request["id"], assignee_ids, current_user.id)
-    except Exception:
-        pass
+    request_assignee_repository.add_assignees(request["id"], assignee_ids, current_user.id)
     for assignee_id in assignee_ids:
         assignment_repository.create_assignment_history(
             request_id=request["id"],
@@ -188,11 +184,7 @@ def update_request(
 
     data = payload.model_dump(exclude_unset=True)
     if not data:
-        request_attachment_service.link_attachments_to_request(
-            saved_attachment_ids, request["id"], current_user.id, "request"
-        )
-
-    return enrich_request_with_users(request)
+        return enrich_request_with_users(request)
 
     return enrich_request_with_users(request_repository.update_request(request_id, data))
 
@@ -209,10 +201,7 @@ def self_assign_request(request_id: str, current_user: CurrentUser) -> dict:
         )
 
     updated_request = request_repository.assign_if_unassigned(request_id, current_user.id)
-    try:
-        request_assignee_repository.add_assignee(request_id, current_user.id, current_user.id)
-    except Exception:
-        pass
+    request_assignee_repository.add_assignee(request_id, current_user.id, current_user.id)
     assignment_repository.create_assignment_history(
         request_id=request_id,
         from_user_id=None,

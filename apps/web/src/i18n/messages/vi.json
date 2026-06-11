@@ -35,12 +35,23 @@
     "newRequest": "Tạo yêu cầu mới",
     "requestDetail": "Chi tiết yêu cầu",
     "files": "Tệp",
+    "docs": "Tài liệu",
     "notifications": "Thông báo",
     "settings": "Cài đặt"
   },
   "settings": {
     "title": "Cài đặt",
-    "description": "Quản lý tài khoản và tùy chọn thông báo."
+    "description": "Quản lý tài khoản và tùy chọn thông báo.",
+    "notificationChannels": "Kênh thông báo",
+    "notificationChannelsDescription": "Chọn nơi bạn muốn nhận cảnh báo khi được giao hoặc giao lại yêu cầu.",
+    "email": "Email",
+    "emailInDevelopment": "Thông báo Email đang trong giai đoạn phát triển.",
+    "telegram": "Telegram",
+    "browserPush": "Thông báo trình duyệt",
+    "browserPushDescription": "Cần quyền thông báo của trình duyệt trên thiết bị này.",
+    "disableBrowserNotifications": "Tắt thông báo trình duyệt",
+    "enableBrowserNotifications": "Bật thông báo trình duyệt",
+    "browserNotificationsError": "Không thể bật thông báo trình duyệt."
   },
   "appShell": {
     "waitingApprovalTitle": "Đang chờ lead duyệt",
@@ -215,7 +226,10 @@
       "pool": "Danh sách chờ trống. Hãy kiểm tra lại khi có yêu cầu mới.",
       "done": "Chưa có yêu cầu nào hoàn thành. Công việc đã hoàn thành sẽ hiển thị ở đây.",
       "all": "Chưa có yêu cầu nào. Yêu cầu mới sẽ tự động hiển thị ở đây.",
-      "filtered": "Không có yêu cầu nào phù hợp với bộ lọc đã chọn."
+      "filtered": "Không có yêu cầu nào phù hợp với bộ lọc đã chọn.",
+      "created_pending": "Không có yêu cầu nào đang chờ do bạn tạo.",
+      "created_acknowledged": "Không có yêu cầu nào đã nhận do bạn tạo.",
+      "created_in_progress": "Không có yêu cầu nào đang làm do bạn tạo."
     },
     "forbidden": {
       "pool": "Quyền truy cập danh sách chờ chỉ dành cho backend và lead.",
@@ -227,7 +241,13 @@
       "createRequest": "Tạo yêu cầu",
       "loadError": "Không thể tải danh sách yêu cầu.",
       "retry": "Thử lại",
-      "forbiddenDefault": "Bạn không có quyền truy cập vào danh sách yêu cầu này."
+      "forbiddenDefault": "Bạn không có quyền truy cập vào danh sách yêu cầu này.",
+      "searchAll": "Tìm tất cả yêu cầu",
+      "searchAllPlaceholder": "Tìm tiêu đề, mô tả, người gửi hoặc người nhận",
+      "sortBy": "Sắp xếp theo",
+      "sortDefault": "Thứ tự mặc định",
+      "sortCreator": "Người gửi",
+      "sortAssignee": "Người nhận"
     },
     "card": {
       "creator": "Người tạo: {name}",
@@ -301,16 +321,19 @@
       "cancelReasonPlaceholder": "Lý do hủy không bắt buộc",
       "cancelError": "Không thể hủy yêu cầu này.",
       "cancelling": "Đang hủy...",
-      "confirmCancel": "Xác nhận hủy"
-      ,      "addAssignee": "Thêm người nhận"
-      ,"removeAssignee": "Gỡ"
-      ,"adding": "Đang thêm..."
-      ,"attachments": "Tệp đính kèm (tùy chọn)"
+      "confirmCancel": "Xác nhận hủy",
+      "addAssignee": "Thêm người nhận",
+      "removeAssignee": "Gỡ",
+      "adding": "Đang thêm...",
+      "attachments": "Tệp đính kèm (tùy chọn)"
     },
     "attachments": {
       "addFiles": "Thêm tệp đính kèm",
       "maxFiles": "Tối đa 5 tệp, 50MB/tệp",
       "pasteHint": "Ctrl+V để dán ảnh",
+      "uploading": "Đang tải lên...",
+      "uploadSuccess": "Upload thành công",
+      "allUploaded": "Upload file thành công",
       "requestFiles": "Tệp đính kèm",
       "replyFiles": "Tệp phản hồi",
       "download": "Nhấn để xem"

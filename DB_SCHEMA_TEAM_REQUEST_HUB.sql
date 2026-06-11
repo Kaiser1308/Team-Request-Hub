@@ -230,6 +230,189 @@ create index if not exists idx_request_assignees_request_assigned_at
 create index if not exists idx_request_assignees_user_assigned_at
   on public.request_assignees(user_id, assigned_at desc);
 
+create index if not exists idx_request_assignees_assigned_by
+  on public.request_assignees(assigned_by);
+
+create or replace function public.list_pool_requests(result_limit integer default 50)
+returns table (
+  id uuid,
+  title text,
+  description text,
+  tags text[],
+  priority request_priority,
+  status request_status,
+  created_by uuid,
+  assigned_to uuid,
+  reference_links text[],
+  reply text,
+  acknowledged_at timestamptz,
+  started_at timestamptz,
+  done_at timestamptz,
+  cancelled_at timestamptz,
+  created_at timestamptz,
+  updated_at timestamptz
+)
+language sql
+stable
+set search_path = public
+as $$
+  select
+    r.id,
+    r.title,
+    r.description,
+    r.tags,
+    r.priority,
+    r.status,
+    r.created_by,
+    r.assigned_to,
+    r.reference_links,
+    r.reply,
+    r.acknowledged_at,
+    r.started_at,
+    r.done_at,
+    r.cancelled_at,
+    r.created_at,
+    r.updated_at
+  from public.internal_requests r
+  where r.status = 'pending'
+    and not exists (
+      select 1
+      from public.request_assignees ra
+      where ra.request_id = r.id
+    )
+  order by r.created_at desc
+  limit greatest(1, least(coalesce(result_limit, 50), 100));
+$$;
+
+revoke all on function public.list_pool_requests(integer) from public;
+grant execute on function public.list_pool_requests(integer) to service_role;
+
+create or replace function public.list_done_requests(result_limit integer default 50, current_user_id uuid default null)
+returns table (
+  id uuid,
+  title text,
+  description text,
+  tags text[],
+  priority request_priority,
+  status request_status,
+  created_by uuid,
+  assigned_to uuid,
+  reference_links text[],
+  reply text,
+  acknowledged_at timestamptz,
+  started_at timestamptz,
+  done_at timestamptz,
+  cancelled_at timestamptz,
+  created_at timestamptz,
+  updated_at timestamptz
+)
+language sql
+stable
+set search_path = public
+as $$
+  select
+    r.id,
+    r.title,
+    r.description,
+    r.tags,
+    r.priority,
+    r.status,
+    r.created_by,
+    r.assigned_to,
+    r.reference_links,
+    r.reply,
+    r.acknowledged_at,
+    r.started_at,
+    r.done_at,
+    r.cancelled_at,
+    r.created_at,
+    r.updated_at
+  from public.internal_requests r
+  where r.status = 'done'
+    and (
+      current_user_id is null
+      or r.created_by = current_user_id
+      or exists (
+        select 1
+        from public.request_assignees ra
+        where ra.request_id = r.id
+          and ra.user_id = current_user_id
+      )
+    )
+  order by r.created_at desc
+  limit greatest(1, least(coalesce(result_limit, 50), 100));
+$$;
+
+revoke execute on function public.list_done_requests(integer, uuid) from public;
+revoke execute on function public.list_done_requests(integer, uuid) from anon;
+revoke execute on function public.list_done_requests(integer, uuid) from authenticated;
+grant execute on function public.list_done_requests(integer, uuid) to service_role;
+
+create or replace function public.get_dashboard_data(current_user_id uuid, result_limit integer default 200)
+returns table (
+  id uuid,
+  title text,
+  description text,
+  tags text[],
+  priority request_priority,
+  status request_status,
+  created_by uuid,
+  assigned_to uuid,
+  reference_links text[],
+  reply text,
+  acknowledged_at timestamptz,
+  started_at timestamptz,
+  done_at timestamptz,
+  cancelled_at timestamptz,
+  created_at timestamptz,
+  updated_at timestamptz
+)
+language sql
+stable
+set search_path = public
+as $$
+  select
+    r.id,
+    r.title,
+    r.description,
+    r.tags,
+    r.priority,
+    r.status,
+    r.created_by,
+    r.assigned_to,
+    r.reference_links,
+    r.reply,
+    r.acknowledged_at,
+    r.started_at,
+    r.done_at,
+    r.cancelled_at,
+    r.created_at,
+    r.updated_at
+  from public.internal_requests r
+  where r.created_by = current_user_id
+    or exists (
+      select 1
+      from public.request_assignees ra
+      where ra.request_id = r.id
+        and ra.user_id = current_user_id
+    )
+    or (
+      r.status = 'pending'
+      and not exists (
+        select 1
+        from public.request_assignees ra
+        where ra.request_id = r.id
+      )
+    )
+  order by r.created_at desc
+  limit greatest(1, least(coalesce(result_limit, 200), 200));
+$$;
+
+revoke execute on function public.get_dashboard_data(uuid, integer) from public;
+revoke execute on function public.get_dashboard_data(uuid, integer) from anon;
+revoke execute on function public.get_dashboard_data(uuid, integer) from authenticated;
+grant execute on function public.get_dashboard_data(uuid, integer) to service_role;
+
 insert into public.request_assignees (request_id, user_id, assigned_by, assigned_at)
 select id, assigned_to, created_by, created_at
 from public.internal_requests

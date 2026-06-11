@@ -35,12 +35,23 @@
     "newRequest": "New request",
     "requestDetail": "Request detail",
     "files": "Files",
+    "docs": "Documentation",
     "notifications": "Notifications",
     "settings": "Settings"
   },
   "settings": {
     "title": "Settings",
-    "description": "Manage your account and notification preferences."
+    "description": "Manage your account and notification preferences.",
+    "notificationChannels": "Notification channels",
+    "notificationChannelsDescription": "Choose where you want to receive assigned and reassigned request alerts.",
+    "email": "Email",
+    "emailInDevelopment": "Email notifications are in development.",
+    "telegram": "Telegram",
+    "browserPush": "Browser Push",
+    "browserPushDescription": "Requires browser permission on this device.",
+    "disableBrowserNotifications": "Disable browser notifications",
+    "enableBrowserNotifications": "Enable browser notifications",
+    "browserNotificationsError": "Could not enable browser notifications."
   },
   "appShell": {
     "waitingApprovalTitle": "Waiting for lead approval",
@@ -215,7 +226,10 @@
       "pool": "The request pool is empty. Check back when new requests are submitted.",
       "done": "No completed requests yet. Completed work will appear here.",
       "all": "No requests exist yet. New requests will appear here automatically.",
-      "filtered": "No requests match the selected filters."
+      "filtered": "No requests match the selected filters.",
+      "created_pending": "No pending requests you created.",
+      "created_acknowledged": "No acknowledged requests you created.",
+      "created_in_progress": "No in-progress requests you created."
     },
     "forbidden": {
       "pool": "Pool access is limited to backend teammates and leads.",
@@ -227,7 +241,13 @@
       "createRequest": "Create a request",
       "loadError": "Could not load requests.",
       "retry": "Retry",
-      "forbiddenDefault": "You do not have access to this request view."
+      "forbiddenDefault": "You do not have access to this request view.",
+      "searchAll": "Search all requests",
+      "searchAllPlaceholder": "Search title, description, sender, or receiver",
+      "sortBy": "Sort by",
+      "sortDefault": "Default order",
+      "sortCreator": "Sender",
+      "sortAssignee": "Receiver"
     },
     "card": {
       "creator": "Creator: {name}",
@@ -301,16 +321,19 @@
       "cancelReasonPlaceholder": "Optional cancellation reason",
       "cancelError": "Could not cancel this request.",
       "cancelling": "Cancelling...",
-      "confirmCancel": "Confirm cancel"
-      ,      "addAssignee": "Add assignee"
-      ,"removeAssignee": "Remove"
-      ,"adding": "Adding..."
-      ,"attachments": "Attachments (optional)"
+      "confirmCancel": "Confirm cancel",
+      "addAssignee": "Add assignee",
+      "removeAssignee": "Remove",
+      "adding": "Adding...",
+      "attachments": "Attachments (optional)"
     },
     "attachments": {
       "addFiles": "Add attachments",
       "maxFiles": "Max 5 files, 50MB each",
       "pasteHint": "Ctrl+V to paste screenshot",
+      "uploading": "Uploading...",
+      "uploadSuccess": "Upload successful",
+      "allUploaded": "File upload successful",
       "requestFiles": "Attachments",
       "replyFiles": "Reply attachments",
       "download": "View"

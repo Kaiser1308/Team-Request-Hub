@@ -17,6 +17,7 @@ import {
   PlusCircle,
   FolderOpen,
   Settings,
+  BookOpen,
   type LucideIcon,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -42,6 +43,7 @@ type NavLabelKey =
   | "users"
   | "newRequest"
   | "files"
+  | "docs"
   | "notifications"
   | "settings";
 
@@ -61,6 +63,7 @@ const navItems: NavItem[] = [
   { href: "/done", labelKey: "done", icon: CheckCircle2 },
   { href: "/all", labelKey: "all", roles: ["lead"], icon: Database },
   { href: "/files", labelKey: "files", icon: FolderOpen },
+  { href: "/docs", labelKey: "docs", icon: BookOpen },
   { href: "/admin/users", labelKey: "users", roles: ["lead"], icon: Users },
   { href: "/requests/new", labelKey: "newRequest", icon: PlusCircle },
   { href: "/settings", labelKey: "settings", icon: Settings },
@@ -71,7 +74,14 @@ function canSeeNavItem(item: NavItem, role?: Role) {
 }
 
 function isActivePath(pathname: string, href: string) {
-  if (pathname === "/requests/new" && href === "/requests") return false;
+  if (pathname.startsWith("/requests/new")) {
+    return href === "/requests/new";
+  }
+
+  if (pathname.startsWith("/requests/")) {
+    return href === "/requests";
+  }
+
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
@@ -96,6 +106,7 @@ function getPageTitle(
     "/done": "done",
     "/all": "all",
     "/files": "files",
+    "/docs": "docs",
     "/admin/users": "users",
     "/notifications": "notifications",
     "/settings": "settings",
@@ -164,9 +175,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   if (isError || !currentUser) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#f9fafb] px-4">
-        <div className="grid max-w-lg gap-4 rounded-lg border border-[#e5e7eb] bg-white p-8 text-center">
+        <div className="grid max-w-lg gap-4 app-surface rounded-lg p-8 text-center">
           <h1 className="text-2xl font-semibold">{tShell("unableToLoadUser")}</h1>
-          <p className="text-sm text-[#4b5563]">
+          <p className="text-body text-[#4b5563]">
             {error instanceof Error ? error.message : tShell("unableToLoadUser")}
           </p>
           <LogoutButton />
@@ -178,9 +189,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   if (currentUser?.is_active === false) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#f9fafb] px-4">
-        <div className="grid max-w-lg gap-4 rounded-lg border border-[#e5e7eb] bg-white p-8 text-center">
+        <div className="grid max-w-lg gap-4 app-surface rounded-lg p-8 text-center">
           <h1 className="text-2xl font-semibold">{tShell("waitingApprovalTitle")}</h1>
-          <p className="text-sm text-[#4b5563]">{tShell("waitingApprovalDescription")}</p>
+          <p className="text-body text-[#4b5563]">{tShell("waitingApprovalDescription")}</p>
           <LogoutButton />
         </div>
       </div>
@@ -202,7 +213,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         id="app-shell-navigation"
         aria-label={tShell("primaryNavigation")}
         className={cn(
-          "fixed inset-y-0 left-0 z-40 w-[min(82vw,240px)] px-3 py-4 text-white transition-transform lg:w-[240px] lg:translate-x-0 border-r-0 border-none",
+          "fixed inset-y-0 left-0 z-40 w-[min(82vw,240px)] px-3 py-4 text-white transition-transform lg:w-[240px] lg:translate-x-0",
           isMobileNavOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
@@ -230,6 +241,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Link
                 key={item.href}
                 href={item.href}
+                target={item.href === "/docs" ? "_blank" : undefined}
+                rel={item.href === "/docs" ? "noopener noreferrer" : undefined}
                 onClick={() => {
                   setIsMobileNavOpen(false);
                   if (item.notificationTypes && item.notificationTypes.length > 0) {

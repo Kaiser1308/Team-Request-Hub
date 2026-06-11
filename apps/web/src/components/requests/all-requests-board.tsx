@@ -7,6 +7,7 @@ import {
   translatePriority,
   translateStatus,
 } from "@/components/requests/translated-labels";
+import { AppSelect } from "@/components/ui/app-select";
 import { Button } from "@/components/ui/button";
 import { ApiError } from "@/lib/api/client";
 import { useRequests } from "@/hooks/use-requests";
@@ -27,6 +28,71 @@ const priorityOptions: Array<"all" | RequestPriority> = [
   "high",
   "urgent",
 ];
+
+type SortOption = "default" | "creator" | "assignee";
+
+const sortOptions: SortOption[] = ["default", "creator", "assignee"];
+
+const statusHeaderClassName: Record<RequestStatus, { header: string; count: string }> = {
+  pending: {
+    header: "border-[#d8d2cc] bg-[#f3f4f6] text-[#374151]",
+    count: "border-[#d1d5db] bg-white text-[#374151]",
+  },
+  acknowledged: {
+    header: "border-[#bfdbfe] bg-[#eff6ff] text-[#1d4ed8]",
+    count: "border-[#bfdbfe] bg-white text-[#1d4ed8]",
+  },
+  in_progress: {
+    header: "border-[#fde68a] bg-[#fffbeb] text-[#b45309]",
+    count: "border-[#fde68a] bg-white text-[#b45309]",
+  },
+  done: {
+    header: "border-[#bbf7d0] bg-[#f0fdf4] text-[#15803d]",
+    count: "border-[#bbf7d0] bg-white text-[#15803d]",
+  },
+  cancelled: {
+    header: "border-[#fecaca] bg-[#fef2f2] text-[#b91c1c]",
+    count: "border-[#fecaca] bg-white text-[#b91c1c]",
+  },
+};
+
+function normalizeSearchValue(value: string) {
+  return value.trim().toLocaleLowerCase();
+}
+
+function userLabel(user: InternalRequest["creator"] | undefined | null) {
+  return user?.name ?? user?.email ?? "";
+}
+
+function assigneeLabel(request: InternalRequest) {
+  const assigneeLabels = request.assignees
+    ?.map((assignee) => userLabel(assignee))
+    .filter(Boolean);
+
+  if (assigneeLabels?.length) {
+    return assigneeLabels.join(", ");
+  }
+
+  return userLabel(request.assignee);
+}
+
+function requestSearchText(request: InternalRequest) {
+  return normalizeSearchValue(
+    [
+      request.title,
+      request.description,
+      userLabel(request.creator),
+      assigneeLabel(request),
+    ].join(" "),
+  );
+}
+
+function compareOptionalText(left: string, right: string) {
+  if (!left && !right) return 0;
+  if (!left) return 1;
+  if (!right) return -1;
+  return left.localeCompare(right, undefined, { sensitivity: "base" });
+}
 
 function groupRequestsByStatus(requests: InternalRequest[]) {
   return statusColumns.reduce<Record<RequestStatus, InternalRequest[]>>(
@@ -55,14 +121,36 @@ export function AllRequestsBoard({
 }) {
   const t = useTranslations("requests");
   const [priority, setPriority] = useState<"all" | RequestPriority>("all");
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState<SortOption>("default");
   const { data, isLoading, isError, error, refetch, isFetching } =
     useRequests("all", limit);
 
   const filteredRequests = useMemo(() => {
-    return (data ?? []).filter((request) => {
-      return priority === "all" || request.priority === priority;
+    const normalizedSearch = normalizeSearchValue(search);
+    const nextRequests = (data ?? []).filter((request) => {
+      const priorityMatches = priority === "all" || request.priority === priority;
+      const searchMatches =
+        normalizedSearch.length === 0 ||
+        requestSearchText(request).includes(normalizedSearch);
+
+      return priorityMatches && searchMatches;
     });
-  }, [data, priority]);
+
+    if (sortBy === "creator") {
+      return [...nextRequests].sort((left, right) =>
+        compareOptionalText(userLabel(left.creator), userLabel(right.creator)),
+      );
+    }
+
+    if (sortBy === "assignee") {
+      return [...nextRequests].sort((left, right) =>
+        compareOptionalText(assigneeLabel(left), assigneeLabel(right)),
+      );
+    }
+
+    return nextRequests;
+  }, [data, priority, search, sortBy]);
 
   const groupedRequests = useMemo(
     () => groupRequestsByStatus(filteredRequests),
@@ -105,58 +193,81 @@ export function AllRequestsBoard({
 
   return (
     <div className="space-y-4" aria-busy={isFetching}>
-      <div className="rounded-lg border border-[#e5e7eb] bg-white p-3">
-        <label className="grid min-w-0 gap-1 text-sm text-[#4b5563] sm:max-w-48">
-          {t("list.priority")}
-          <select
-            className="h-10 w-full rounded-md border border-[#e5e7eb] bg-white px-3 text-sm text-[#111827]"
-            value={priority}
-            onChange={(event) =>
-              setPriority(event.target.value as "all" | RequestPriority)
-            }
-          >
-            {priorityOptions.map((option) => (
-              <option key={option} value={option}>
-                {translatePriority(t, option)}
-              </option>
-            ))}
-          </select>
-        </label>
+      <div className="grid gap-3 rounded-lg border border-[#e3ded8] bg-white p-3 shadow-[rgba(0,0,0,0.02)_0px_2px_8px] sm:grid-cols-[minmax(180px,1fr)_minmax(220px,2fr)_minmax(180px,1fr)]">
+         <label className="grid min-w-0 gap-1 text-sm text-[#615d59]">
+           {t("list.priority")}
+           <AppSelect
+             value={priority}
+             onChange={(v) => setPriority(v)}
+             options={priorityOptions.map((option) => ({
+               value: option,
+               label: translatePriority(t, option),
+             }))}
+           />
+         </label>
+
+         <label className="grid min-w-0 gap-1 text-sm text-[#615d59]">
+           {t("list.searchAll")}
+           <input
+             type="search"
+             className="app-field h-10 w-full px-3 text-sm text-[#111827] outline-none placeholder:text-[#9ca3af]"
+             value={search}
+             onChange={(event) => setSearch(event.target.value)}
+             placeholder={t("list.searchAllPlaceholder")}
+           />
+         </label>
+
+         <label className="grid min-w-0 gap-1 text-sm text-[#615d59]">
+           {t("list.sortBy")}
+           <AppSelect
+             value={sortBy}
+             onChange={(v) => setSortBy(v)}
+             options={sortOptions.map((option) => ({
+               value: option,
+               label: t(`list.sort${option === "default" ? "Default" : option === "creator" ? "Creator" : "Assignee"}`),
+             }))}
+           />
+         </label>
       </div>
 
       {!data?.length ? (
-        <div className="rounded-lg border border-[#e5e7eb] bg-white p-6 text-sm text-[#6b7280]">
+        <div className="rounded-lg border border-[#e3ded8] bg-white p-6 text-sm text-[#615d59]">
           {emptyMessage}
         </div>
       ) : !filteredRequests.length ? (
-        <div className="rounded-lg border border-[#e5e7eb] bg-white p-6 text-sm text-[#6b7280]">
+        <div className="rounded-lg border border-[#e3ded8] bg-white p-6 text-sm text-[#615d59]">
           {t("empty.filtered")}
         </div>
       ) : (
-        <div className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-5">
+        <div className="flex gap-4 overflow-x-auto pb-3">
           {statusColumns.map((status) => {
             const requests = groupedRequests[status];
+            const statusHeaderClass = statusHeaderClassName[status];
             return (
               <section
                 key={status}
-                className="min-w-0 rounded-lg border border-[#e5e7eb] bg-[#f9fafb]"
+                className="flex max-h-[calc(100vh-260px)] min-h-[520px] w-[340px] shrink-0 flex-col overflow-hidden rounded-lg border border-[#e3ded8] bg-[#f6f5f4] shadow-[rgba(0,0,0,0.025)_0px_2px_10px]"
               >
-                <div className="flex items-center justify-between border-b border-[#e5e7eb] bg-white px-3 py-2">
-                  <h2 className="text-section-title text-[#111827]">
+                <div
+                  className={`flex shrink-0 items-center justify-between gap-3 border-b px-3 py-2.5 ${statusHeaderClass.header}`}
+                >
+                  <h2 className="truncate text-section-title">
                     {translateStatus(t, status)}
                   </h2>
-                  <span className="rounded-full bg-[#f3f4f6] px-2 py-0.5 text-caption-strong text-[#4b5563]">
+                  <span
+                    className={`shrink-0 rounded-full border px-2 py-0.5 text-caption-strong ${statusHeaderClass.count}`}
+                  >
                     {requests.length}
                   </span>
                 </div>
 
-                <div className="grid gap-3 p-3">
+                <div className="grid content-start gap-3 overflow-y-auto p-3 [scrollbar-color:#cfc7bf_transparent]">
                   {requests.length ? (
                     requests.map((request) => (
                       <RequestCard key={request.id} request={request} />
                     ))
                   ) : (
-                    <div className="rounded-md border border-dashed border-[#d1d5db] bg-white p-3 text-sm text-[#6b7280]">
+                    <div className="rounded-md border border-dashed border-[#d8d2cc] bg-[#fbfaf9] p-3 text-sm text-[#615d59]">
                       {t("empty.filtered")}
                     </div>
                   )}
@@ -172,16 +283,16 @@ export function AllRequestsBoard({
 
 function AllRequestsBoardSkeleton() {
   return (
-    <div className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-5">
+    <div className="flex gap-4 overflow-x-auto pb-3">
       {statusColumns.map((status) => (
         <div
           key={status}
-          className="rounded-lg border border-[#e5e7eb] bg-white p-3"
+          className="min-h-[520px] w-[340px] shrink-0 rounded-lg border border-[#e3ded8] bg-[#fbfaf9] p-3"
         >
-          <div className="h-4 w-2/3 animate-pulse rounded bg-[#f3f4f6]" />
+          <div className="h-4 w-2/3 animate-pulse rounded bg-[#ede8e3]" />
           <div className="mt-4 grid gap-3">
-            <div className="h-28 animate-pulse rounded bg-[#f3f4f6]" />
-            <div className="h-28 animate-pulse rounded bg-[#f3f4f6]" />
+            <div className="h-28 animate-pulse rounded bg-[#ede8e3]" />
+            <div className="h-28 animate-pulse rounded bg-[#ede8e3]" />
           </div>
         </div>
       ))}

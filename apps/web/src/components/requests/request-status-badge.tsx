@@ -6,11 +6,11 @@ import { translateStatus } from "@/components/requests/translated-labels";
 import type { RequestStatus } from "@/types";
 
 const statusClassName: Record<RequestStatus, string> = {
-  pending: "border-[#d1d5db] bg-[#f3f4f6] text-[#374151]",
-  acknowledged: "border-blue-200 bg-blue-50 text-blue-700",
-  in_progress: "border-blue-300 bg-blue-100 text-blue-800 font-semibold",
-  done: "border-green-200 bg-green-50 text-green-700",
-  cancelled: "border-red-200 bg-red-50 text-red-600",
+  pending: "border-[#d8d2cc] bg-[#f7f5f2] text-[#615d59]",
+  acknowledged: "border-[#b8d8f2] bg-[#f2f9ff] text-[#097fe8]",
+  in_progress: "border-[#9bc8f0] bg-[#e8f4ff] text-[#005bab]",
+  done: "border-[#bfe8cf] bg-[#effaf3] text-[#12833a]",
+  cancelled: "border-[#f1c4c4] bg-[#fff3f3] text-[#b42318]",
 };
 
 export function RequestStatusBadge({ status }: { status: RequestStatus }) {
@@ -19,11 +19,11 @@ export function RequestStatusBadge({ status }: { status: RequestStatus }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-md border px-2 py-1 text-caption-strong",
+        "inline-flex max-w-full items-center rounded-full border px-1.5 py-0 text-[11px] font-semibold leading-5 tracking-[0.01em] shadow-[rgba(0,0,0,0.015)_0px_1px_1px]",
         statusClassName[status],
       )}
     >
-      {translateStatus(t, status)}
+      <span className="truncate">{translateStatus(t, status)}</span>
     </span>
   );
 }
