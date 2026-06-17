@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta, timezone
+
 from fastapi import HTTPException, status
 
 from app import notification_module
@@ -32,6 +34,7 @@ MAX_REQUEST_LIST_LIMIT = 100
 DEFAULT_HISTORY_LIST_LIMIT = 50
 MAX_HISTORY_LIST_LIMIT = 100
 ALLOWED_STATUS_TRANSITIONS = request_transition_engine.ALLOWED_STATUS_TRANSITIONS
+PURGE_AFTER_DAYS = 7
 
 
 def is_lead(current_user: CurrentUser) -> bool:
@@ -305,7 +308,7 @@ def mark_done(
 
     updated_request = request_repository.update_request(
         request_id,
-        {"status": "done", "reply": payload.reply, "done_at": utc_now_iso()},
+        {"status": "done", "reply": payload.reply, "done_at": utc_now_iso(), "purge_after": (datetime.now(timezone.utc) + timedelta(days=PURGE_AFTER_DAYS)).isoformat()},
     )
     status_log_repository.create_status_log(
         request_id=request_id,
@@ -337,7 +340,7 @@ def cancel_request(
 
     updated_request = request_repository.update_request(
         request_id,
-        {"status": "cancelled", "cancelled_at": utc_now_iso()},
+        {"status": "cancelled", "cancelled_at": utc_now_iso(), "purge_after": (datetime.now(timezone.utc) + timedelta(days=PURGE_AFTER_DAYS)).isoformat()},
     )
     status_log_repository.create_status_log(
         request_id=request_id,
@@ -421,3 +424,46 @@ def remove_request_assignee(
         reason=reason,
     )
     return enrich_request_with_users(request_repository.get_request_or_404(request_id))
+
+
+def _purge_expired_requests() -> int:
+    from app.repositories import request_attachment_repository
+    from app.services import minio_storage
+
+    now_iso = utc_now_iso()
+    expired = request_repository.list_requests_ready_for_purge(now_iso)
+
+    request_ids = [r["id"] for r in expired]
+    if not request_ids:
+        return 0
+
+    attachments = request_attachment_repository.list_by_request_ids(request_ids)
+    for att in attachments:
+        object_key = att.get("object_key")
+        if object_key:
+            try:
+                minio_storage.delete_object(object_key)
+            except Exception:
+                pass
+
+    purged_count = 0
+    for req in expired:
+        try:
+            request_repository.delete_request(req["id"])
+            purged_count += 1
+        except Exception:
+            pass
+
+    return purged_count
+
+
+def purge_expired_requests(current_user: CurrentUser) -> dict:
+    from app.core.permissions import is_lead
+    if not is_lead(current_user):
+        from app.core.exceptions import ForbiddenError
+        raise ForbiddenError("Only leads can perform this action")
+    return {"purged": _purge_expired_requests()}
+
+
+def purge_expired_requests_no_user() -> dict:
+    return {"purged": _purge_expired_requests()}
