@@ -157,3 +157,7 @@ class RequestStatusLogOut(BaseModel):
     changed_by: str
     reason: str | None = None
     created_at: str
+
+
+class PurgeExpiredResponse(BaseModel):
+    purged: int
