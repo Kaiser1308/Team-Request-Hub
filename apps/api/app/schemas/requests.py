@@ -159,5 +159,5 @@ class RequestStatusLogOut(BaseModel):
     created_at: str
 
 
-class PurgeExpiredResponse(BaseModel):
-    purged: int
+class PurgeExpiredOut(BaseModel):
+    purged: int = Field(ge=0)
