@@ -1,15 +1,18 @@
+import logging
+
 from datetime import datetime, timedelta, timezone
 
 from fastapi import HTTPException, status
 
 from app import notification_module
+from app.core.exceptions import ForbiddenError
 from app.core.permissions import (
     ensure_can_cancel,
     ensure_can_reassign,
     ensure_can_view_request,
     ensure_is_assignee_or_lead,
 )
-from app.repositories import request_repository
+from app.repositories import request_attachment_repository, request_repository
 from app.schemas.requests import (
     CancelRequest,
     DoneRequest,
@@ -24,8 +27,10 @@ from app.repositories import (
     request_assignee_repository,
     status_log_repository,
 )
-from app.services import request_attachment_service, request_assignment_engine, request_list_read_model, request_read_model_builder, request_transition_engine, users
+from app.services import minio_storage, request_attachment_service, request_assignment_engine, request_list_read_model, request_read_model_builder, request_transition_engine, users
 from app.utils.time import utc_now_iso
+
+logger = logging.getLogger("app.purge")
 
 CLOSED_STATUSES = request_transition_engine.CLOSED_STATUSES
 ACTIVE_STATUSES = request_transition_engine.ACTIVE_STATUSES
@@ -427,9 +432,6 @@ def remove_request_assignee(
 
 
 def _purge_expired_requests() -> int:
-    from app.repositories import request_attachment_repository
-    from app.services import minio_storage
-
     now_iso = utc_now_iso()
     expired = request_repository.list_requests_ready_for_purge(now_iso)
 
@@ -443,24 +445,22 @@ def _purge_expired_requests() -> int:
         if object_key:
             try:
                 minio_storage.delete_object(object_key)
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.warning("Failed to delete MinIO object %s: %s", object_key, exc)
 
     purged_count = 0
     for req in expired:
         try:
             request_repository.delete_request(req["id"])
             purged_count += 1
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning("Failed to delete request %s: %s", req["id"], exc)
 
     return purged_count
 
 
 def purge_expired_requests(current_user: CurrentUser) -> dict:
-    from app.core.permissions import is_lead
     if not is_lead(current_user):
-        from app.core.exceptions import ForbiddenError
         raise ForbiddenError("Only leads can perform this action")
     return {"purged": _purge_expired_requests()}
 
