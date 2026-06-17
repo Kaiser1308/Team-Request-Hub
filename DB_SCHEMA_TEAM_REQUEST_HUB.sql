@@ -624,6 +624,28 @@ create index if not exists idx_request_attachments_cleanup
   where request_id is null and status in ('pending_upload', 'active');
 
 -- =========================================================
+-- 10b. Request Attachment Activity Logs
+-- =========================================================
+
+create table if not exists public.request_attachment_activity_logs (
+  id uuid primary key default gen_random_uuid(),
+  request_id uuid not null references public.internal_requests(id) on delete cascade,
+  attachment_id uuid not null references public.request_attachments(id) on delete cascade,
+  actor_id uuid not null references public.users(id) on delete restrict,
+  action text not null check (action in ('add', 'remove')),
+  name text not null check (char_length(trim(name)) > 0),
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_request_attachment_activity_request_created_at
+  on public.request_attachment_activity_logs(request_id, created_at desc);
+
+create index if not exists idx_request_attachment_activity_actor_created_at
+  on public.request_attachment_activity_logs(actor_id, created_at desc);
+
+alter table public.request_attachment_activity_logs enable row level security;
+
+-- =========================================================
 -- 11. Team Files
 -- =========================================================
 
