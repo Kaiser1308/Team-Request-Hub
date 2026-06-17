@@ -49,6 +49,10 @@ class RequestAttachmentsGrouped(BaseModel):
     done_reply: list[RequestAttachmentOut] = Field(default_factory=list)
 
 
+class RequestAttachmentsUpdate(BaseModel):
+    attachment_ids: list[str] = Field(default_factory=list)
+
+
 class UserSummary(BaseModel):
     id: str
     email: str | None = None

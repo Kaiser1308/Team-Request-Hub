@@ -13,12 +13,14 @@ from app.schemas.requests import (
     InternalRequestUpdate,
     ReassignRequest,
     RemoveAssigneeRequest,
+    RequestAttachmentsGrouped,
+    RequestAttachmentsUpdate,
     RequestStatusLogOut,
     StatusUpdateRequest,
 )
 from app.schemas.users import CurrentUser
 from app import notification_module
-from app.services import request_service
+from app.services import request_attachment_service, request_service
 
 router = APIRouter()
 
@@ -203,3 +205,27 @@ async def list_status_logs(
 ):
     require_active_current_user(current_user)
     return request_service.list_status_logs(request_id, current_user, limit=limit)
+
+
+@router.post("/{request_id}/attachments", response_model=RequestAttachmentsGrouped)
+async def add_request_attachments(
+    request_id: str,
+    payload: RequestAttachmentsUpdate,
+    current_user: Annotated[CurrentUser, Depends(get_current_user)],
+):
+    require_active_current_user(current_user)
+    return request_attachment_service.add_attachments_to_request(
+        request_id, payload.attachment_ids, current_user
+    )
+
+
+@router.delete("/{request_id}/attachments/{attachment_id}", response_model=RequestAttachmentsGrouped)
+async def remove_request_attachment(
+    request_id: str,
+    attachment_id: str,
+    current_user: Annotated[CurrentUser, Depends(get_current_user)],
+):
+    require_active_current_user(current_user)
+    return request_attachment_service.remove_attachment_from_request(
+        request_id, attachment_id, current_user
+    )
