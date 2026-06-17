@@ -50,6 +50,9 @@ Supabase RLS is enabled as defense-in-depth, but product authorization lives in 
 
 ## Request Attachments
 
-- Active `fe`, `be`, and `lead` users can upload attachments (presigned URL flow) and preview attachments.
+- Active `fe`, `be`, and `lead` users can upload attachments (presigned URL flow), preview attachments, and download attachments.
 - Attachments are scoped to request or done-reply context.
 - Attachment IDs are referenced during request creation (`attachment_ids`) and done reply submission (`attachment_ids`).
+- After submission, the request **creator** or a **lead** can add or remove `request`-context attachments while the request is open (`pending`, `acknowledged`, `in_progress`). Management is blocked once the request is `done` or `cancelled`.
+- Removing an attachment hard-deletes its object from MinIO and records an audit entry in `request_attachment_activity_logs`.
+- A request may have at most 5 active `request`-context attachments.
