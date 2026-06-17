@@ -66,3 +66,16 @@ def list_cleanup_candidates(before_iso: str) -> list[dict]:
         .execute()
     )
     return result.data or []
+
+
+def count_active_by_request(request_id: str, context: str) -> int:
+    result = (
+        get_supabase_admin()
+        .table(TABLE)
+        .select("id", count="exact")
+        .eq("request_id", request_id)
+        .eq("context", context)
+        .eq("status", "active")
+        .execute()
+    )
+    return result.count or 0
