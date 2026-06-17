@@ -1,5 +1,7 @@
+import asyncio
 import time
 import logging
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -18,7 +20,32 @@ from app.routes import dashboard, files, health, notifications, request_attachme
 
 settings = get_settings()
 
-app = FastAPI(title=settings.app_name)
+PURGE_INTERVAL_HOURS = 1
+
+
+async def purge_scheduler():
+    await asyncio.sleep(60)
+    while True:
+        try:
+            from app.services.request_service import purge_expired_requests_no_user
+            purge_expired_requests_no_user()
+        except Exception:
+            pass
+        await asyncio.sleep(PURGE_INTERVAL_HOURS * 3600)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    task = asyncio.create_task(purge_scheduler())
+    yield
+    task.cancel()
+    try:
+        await task
+    except asyncio.CancelledError:
+        pass
+
+
+app = FastAPI(title=settings.app_name, lifespan=lifespan)
 
 logger = logging.getLogger("app.request_timing")
 
