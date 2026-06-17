@@ -11,6 +11,7 @@ from app.schemas.requests import (
     InternalRequestCreate,
     InternalRequestOut,
     InternalRequestUpdate,
+    PurgeExpiredOut,
     ReassignRequest,
     RemoveAssigneeRequest,
     RequestAttachmentsGrouped,
@@ -229,3 +230,11 @@ async def remove_request_attachment(
     return request_attachment_service.remove_attachment_from_request(
         request_id, attachment_id, current_user
     )
+
+
+@router.post("/purge-expired", response_model=PurgeExpiredOut)
+async def purge_expired(
+    current_user: Annotated[CurrentUser, Depends(get_current_user)],
+):
+    require_active_current_user(current_user)
+    return request_service.purge_expired_requests(current_user)
