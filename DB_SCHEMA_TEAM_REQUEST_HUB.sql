@@ -182,7 +182,7 @@ create index if not exists idx_internal_requests_pool
   on public.internal_requests(created_at desc)
   where assigned_to is null and status = 'pending';
 
-create index if not exists idx_requests_purge
+create index if not exists idx_internal_requests_status_purge_after
   on public.internal_requests(status, purge_after)
   where status in ('done', 'cancelled');
 
