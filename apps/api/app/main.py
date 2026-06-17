@@ -17,6 +17,7 @@ from app.core.exceptions import (
     NotFoundError,
 )
 from app.routes import dashboard, files, health, notifications, request_attachments, requests, telegram, users
+from app.services.request_service import purge_expired_requests_no_user
 
 settings = get_settings()
 
@@ -27,10 +28,9 @@ async def purge_scheduler():
     await asyncio.sleep(60)
     while True:
         try:
-            from app.services.request_service import purge_expired_requests_no_user
-            purge_expired_requests_no_user()
+            await asyncio.to_thread(purge_expired_requests_no_user)
         except Exception:
-            pass
+            logging.getLogger("app.purge").exception("Purge scheduler failed")
         await asyncio.sleep(PURGE_INTERVAL_HOURS * 3600)
 
 
