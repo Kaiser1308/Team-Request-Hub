@@ -80,6 +80,26 @@ def create_preview_url(attachment_id: str, current_user: CurrentUser) -> dict:
     }
 
 
+def create_download_url(attachment_id: str, current_user: CurrentUser) -> dict:
+    attachment = request_attachment_repository.get_attachment_or_404(attachment_id)
+    if attachment["status"] != "active":
+        raise NotFoundError("Attachment not found")
+
+    filename = str(attachment.get("name") or "download").replace("\\", "_").replace('"', "_")
+    url = minio_storage.presigned_get_url(
+        attachment["object_key"],
+        PRESIGNED_EXPIRY_SECONDS,
+        response_headers={
+            "response-content-disposition": f'attachment; filename="{filename}"',
+        },
+    )
+
+    return {
+        "url": url,
+        "expires_in_seconds": PRESIGNED_EXPIRY_SECONDS,
+    }
+
+
 def link_attachments_to_request(attachment_ids: list[str], request_id: str, user_id: str, context: str) -> None:
     if not attachment_ids:
         return

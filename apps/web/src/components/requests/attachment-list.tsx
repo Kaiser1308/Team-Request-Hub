@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { getPreviewUrl } from "@/lib/api/request-attachments";
+import { getDownloadUrl, getPreviewUrl } from "@/lib/api/request-attachments";
 import { formatFileSize } from "@/lib/format";
 import type { RequestAttachment, RequestAttachmentsGrouped } from "@/types";
 
@@ -46,9 +46,19 @@ export function AttachmentList({ attachments }: AttachmentListProps) {
 function AttachmentItem({ attachment }: { attachment: RequestAttachment }) {
   const t = useTranslations("requests.attachments");
 
-  async function handleDownload() {
+  async function handleView() {
     const { url } = await getPreviewUrl(attachment.id);
     window.open(url, "_blank");
+  }
+
+  async function handleDownload() {
+    const { url } = await getDownloadUrl(attachment.id);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = attachment.name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   return (
@@ -58,6 +68,9 @@ function AttachmentItem({ attachment }: { attachment: RequestAttachment }) {
         <span className="shrink-0 text-xs text-[#6b7280]">
           {formatFileSize(attachment.size_bytes)}
         </span>
+        <Button type="button" variant="ghost" size="sm" onClick={handleView}>
+          {t("view")}
+        </Button>
         <Button type="button" variant="ghost" size="sm" onClick={handleDownload}>
           {t("download")}
         </Button>

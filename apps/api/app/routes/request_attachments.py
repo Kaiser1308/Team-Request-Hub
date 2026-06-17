@@ -39,3 +39,8 @@ async def complete_upload(attachment_id: str, payload: RequestAttachmentComplete
 @router.post("/{attachment_id}/preview-url", response_model=RequestAttachmentPreviewUrlOut)
 async def create_preview_url(attachment_id: str, current_user: CurrentUser = Depends(active_user)):
     return request_attachment_service.create_preview_url(attachment_id, current_user)
+
+
+@router.post("/{attachment_id}/download-url", response_model=RequestAttachmentPreviewUrlOut)
+async def create_download_url(attachment_id: str, current_user: CurrentUser = Depends(active_user)):
+    return request_attachment_service.create_download_url(attachment_id, current_user)

@@ -43,3 +43,10 @@ export function getPreviewUrl(attachmentId: string) {
     { method: "POST" },
   );
 }
+
+export function getDownloadUrl(attachmentId: string) {
+  return apiFetch<PreviewUrlResponse>(
+    `/request-attachments/${attachmentId}/download-url`,
+    { method: "POST" },
+  );
+}

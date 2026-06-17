@@ -336,7 +336,8 @@
       "allUploaded": "File upload successful",
       "requestFiles": "Attachments",
       "replyFiles": "Reply attachments",
-      "download": "View"
+      "view": "View",
+      "download": "Download"
     },
     "timeline": {
       "loading": "Loading assignment and status history...",

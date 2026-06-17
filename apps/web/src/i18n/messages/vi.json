@@ -336,7 +336,8 @@
       "allUploaded": "Upload file thành công",
       "requestFiles": "Tệp đính kèm",
       "replyFiles": "Tệp phản hồi",
-      "download": "Nhấn để xem"
+      "view": "Xem",
+      "download": "Tải về"
     },
     "timeline": {
       "loading": "Đang tải lịch sử giao việc và trạng thái...",
