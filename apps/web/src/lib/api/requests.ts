@@ -2,6 +2,7 @@ import { apiFetch } from "@/lib/api/client";
 import type {
   AssignmentHistory,
   InternalRequest,
+  RequestAttachmentsGrouped,
   RequestPriority,
   RequestStatus,
   RequestStatusLog,
@@ -165,4 +166,21 @@ export function getAssignmentHistory(requestId: string) {
 
 export function getStatusLogs(requestId: string) {
   return apiFetch<RequestStatusLog[]>(`/requests/${requestId}/status-logs`);
+}
+
+export function addRequestAttachments(requestId: string, attachmentIds: string[]) {
+  return apiFetch<RequestAttachmentsGrouped>(
+    `/requests/${requestId}/attachments`,
+    {
+      method: "POST",
+      body: JSON.stringify({ attachment_ids: attachmentIds }),
+    },
+  );
+}
+
+export function removeRequestAttachment(requestId: string, attachmentId: string) {
+  return apiFetch<RequestAttachmentsGrouped>(
+    `/requests/${requestId}/attachments/${attachmentId}`,
+    { method: "DELETE" },
+  );
 }
