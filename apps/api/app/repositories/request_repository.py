@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from app.core.exceptions import ConflictError, DomainError, NotFoundError
 
 from app.db.supabase import get_supabase_admin
@@ -22,6 +24,7 @@ REQUEST_LIST_COLUMNS = ",".join(
         "cancelled_at",
         "created_at",
         "updated_at",
+        "purge_after",
     ]
 )
 
@@ -114,6 +117,25 @@ def list_all_requests(limit: int = 50) -> list[dict]:
         .execute()
     )
     return result.data or []
+
+
+def list_requests_ready_for_purge(now_iso: str | None = None) -> list[dict]:
+    if now_iso is None:
+        now_iso = datetime.now(timezone.utc).isoformat()
+    result = (
+        get_supabase_admin()
+        .table(REQUESTS_TABLE)
+        .select("id")
+        .in_("status", ["done", "cancelled"])
+        .not_.is_("purge_after", "null")
+        .lte("purge_after", now_iso)
+        .execute()
+    )
+    return result.data or []
+
+
+def delete_request(request_id: str) -> None:
+    get_supabase_admin().table(REQUESTS_TABLE).delete().eq("id", request_id).execute()
 
 
 def create_request(data: dict) -> dict:
