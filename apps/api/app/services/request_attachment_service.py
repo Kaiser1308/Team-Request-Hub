@@ -197,3 +197,43 @@ def add_attachments_to_request(
         })
 
     return _grouped_attachments_for_request(request_id)
+
+
+def remove_attachment_from_request(
+    request_id: str,
+    attachment_id: str,
+    current_user: CurrentUser,
+) -> dict:
+    request = request_repository.get_request_or_404(request_id)
+    _ensure_can_manage_attachments(request, current_user)
+    _ensure_request_open(request)
+
+    attachment = request_attachment_repository.get_attachment_or_404(attachment_id)
+    if (
+        attachment.get("request_id") != request_id
+        or attachment.get("context") != "request"
+        or attachment.get("status") != "active"
+    ):
+        raise NotFoundError("Attachment not found")
+
+    name = attachment.get("name")
+    object_key = attachment.get("object_key")
+    now = utc_now_iso()
+
+    if object_key:
+        minio_storage.delete_object(object_key)
+
+    request_attachment_repository.update_attachment(attachment_id, {
+        "status": "deleted",
+        "updated_at": now,
+    })
+    request_attachment_activity_repository.create_activity({
+        "request_id": request_id,
+        "attachment_id": attachment_id,
+        "actor_id": current_user.id,
+        "action": "remove",
+        "name": name,
+        "created_at": now,
+    })
+
+    return _grouped_attachments_for_request(request_id)
