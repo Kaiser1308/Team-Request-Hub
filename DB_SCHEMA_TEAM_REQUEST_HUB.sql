@@ -124,6 +124,7 @@ create table if not exists public.internal_requests (
 
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
+  purge_after timestamptz,
 
   constraint internal_requests_done_requires_reply
     check (
@@ -180,6 +181,10 @@ create index if not exists idx_internal_requests_tags
 create index if not exists idx_internal_requests_pool
   on public.internal_requests(created_at desc)
   where assigned_to is null and status = 'pending';
+
+create index if not exists idx_requests_purge
+  on public.internal_requests(status, purge_after)
+  where status in ('done', 'cancelled');
 
 -- =========================================================
 -- 4. Assignment History
