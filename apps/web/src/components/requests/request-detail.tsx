@@ -86,6 +86,12 @@ export function RequestDetail({ requestId }: { requestId: string }) {
         assigneeIds.includes(currentUser.id) ||
         currentUser.id === request.assigned_to),
   );
+  const canManageAttachments = Boolean(
+    currentUser &&
+      (currentUser.role === "lead" || currentUser.id === request.created_by) &&
+      request.status !== "done" &&
+      request.status !== "cancelled",
+  );
 
   return (
     <div className="space-y-4 sm:space-y-5">
@@ -155,7 +161,11 @@ export function RequestDetail({ requestId }: { requestId: string }) {
           </div>
         ) : null}
 
-        <AttachmentList attachments={request.attachments} />
+        <AttachmentList
+          attachments={request.attachments}
+          requestId={request.id}
+          canManage={canManageAttachments}
+        />
 
         <div className="mt-5 border-t border-[#eee9e4] pt-4">
           <h2 className="text-body-medium text-[#111827]">{t("detail.actions")}</h2>

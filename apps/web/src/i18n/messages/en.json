@@ -337,7 +337,10 @@
       "requestFiles": "Attachments",
       "replyFiles": "Reply attachments",
       "view": "View",
-      "download": "Download"
+      "download": "Download",
+      "remove": "Remove",
+      "save": "Save",
+      "confirmRemove": "Remove this attachment?"
     },
     "timeline": {
       "loading": "Loading assignment and status history...",

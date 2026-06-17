@@ -337,7 +337,10 @@
       "requestFiles": "Tệp đính kèm",
       "replyFiles": "Tệp phản hồi",
       "view": "Xem",
-      "download": "Tải về"
+      "download": "Tải về",
+      "remove": "Xóa",
+      "save": "Lưu",
+      "confirmRemove": "Xóa tệp đính kèm này?"
     },
     "timeline": {
       "loading": "Đang tải lịch sử giao việc và trạng thái...",
