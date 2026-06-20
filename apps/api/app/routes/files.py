@@ -94,6 +94,15 @@ async def delete_file(file_id: str, current_user: CurrentUser = Depends(active_u
     return file_service.soft_delete_file(file_id, current_user)
 
 
+@router.delete("/{file_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def hard_delete_file(
+    file_id: str,
+    current_user: CurrentUser = Depends(active_user),
+) -> Response:
+    file_service.hard_delete_file(file_id, current_user)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
 @router.post("/{file_id}/restore", response_model=TeamFileOut)
 async def restore_file(file_id: str, current_user: CurrentUser = Depends(active_user)):
     return file_service.restore_file(file_id, current_user)
