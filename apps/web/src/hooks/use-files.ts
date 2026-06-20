@@ -11,6 +11,7 @@ import {
   getDownloadUrl,
   getPreviewContent,
   getPreviewUrl,
+  hardDeleteFile,
   listFileActivity,
   listFiles,
   listAllFiles,
@@ -138,6 +139,10 @@ export function useFileMutations() {
     }),
     deleteFile: useMutation({
       mutationFn: (fileId: string) => deleteFile(fileId),
+      onSuccess: invalidate,
+    }),
+    hardDeleteFile: useMutation({
+      mutationFn: (fileId: string) => hardDeleteFile(fileId),
       onSuccess: invalidate,
     }),
     restoreFile: useMutation({

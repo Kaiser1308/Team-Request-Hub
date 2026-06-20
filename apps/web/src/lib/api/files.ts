@@ -1,4 +1,4 @@
-import { apiFetch, apiFetchText } from "@/lib/api/client";
+import { apiFetch, apiFetchText, apiFetchVoid } from "@/lib/api/client";
 import type { FileActivityLog, TeamFile } from "@/types";
 
 export interface CreateFolderPayload {
@@ -143,6 +143,10 @@ export function deleteFile(fileId: string) {
   return apiFetch<TeamFile>(`/files/${fileId}/delete`, {
     method: "POST",
   });
+}
+
+export function hardDeleteFile(fileId: string) {
+  return apiFetchVoid(`/files/${fileId}`, { method: "DELETE" });
 }
 
 export function restoreFile(fileId: string) {

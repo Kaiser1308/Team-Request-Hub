@@ -93,3 +93,24 @@ export async function apiFetchText(path: string, options?: RequestInit): Promise
 
   return res.text();
 }
+
+export async function apiFetchVoid(path: string, options?: RequestInit): Promise<void> {
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${BASE_URL}${path}`, {
+    ...options,
+    headers: { ...headers, ...options?.headers },
+  });
+
+  if (!res.ok) {
+    let detail = `API error: ${res.status}`;
+    try {
+      const body = await res.json();
+      if (body?.detail) {
+        detail = body.detail;
+      }
+    } catch {
+      // response body is not JSON
+    }
+    throw new ApiError(res.status, detail);
+  }
+}
