@@ -17,7 +17,7 @@ The executable schema lives in `DB_SCHEMA_TEAM_REQUEST_HUB.sql` and targets Supa
 - `public.request_attachments`: MinIO-backed files attached while creating requests or submitting done replies, with pending upload state and request/done-reply context.
 - `public.request_attachment_activity_logs`: audit trail for request attachment management (add/remove actions), with `action` check constraint (`add` | `remove`), `name` snapshot, and `created_at`.
 - `public.team_files`: team file explorer records with directory hierarchy, unique `path`, MinIO object references, soft-delete, and purge scheduling.
-- `public.file_activity_logs`: audit trail for file operations including upload, rename, move, delete, restore, and purge events.
+- `public.file_activity_logs`: audit trail for file operations including upload, rename, move, delete, restore, purge, and hard delete events.
 
 ## Performance Indexes
 
@@ -50,7 +50,7 @@ Key composite indexes:
 - `request_attachment_context`: `request`, `done_reply`.
 - `request_attachment_status`: `pending_upload`, `active`, `deleted`.
 - `team_file_status`: `pending_upload`, `active`, `deleted`, `purged`.
-- `team_file_action`: `create_folder`, `upload`, `complete_upload`, `rename`, `move`, `delete`, `restore`, `purge`, `download`, `preview`.
+- `team_file_action`: `create_folder`, `upload`, `complete_upload`, `rename`, `move`, `delete`, `restore`, `purge`, `hard_delete`, `download`, `preview`.
 - `team_file_target_type`: `file`, `folder`.
 
 ## Auth Profile Trigger

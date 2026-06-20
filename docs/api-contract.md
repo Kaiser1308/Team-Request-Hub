@@ -387,12 +387,13 @@ PATCH  /files/{file_id}/move
 POST   /files/batch-copy
 POST   /files/batch-move
 POST   /files/{file_id}/delete
+DELETE /files/{file_id}
 POST   /files/{file_id}/restore
 POST   /files/purge-expired
 GET    /files/activity?file_id=...
 ```
 
-All active users can browse, search, create folders, upload, download, preview, rename, move, batch-move, and soft-delete files. Only `lead` users can batch-copy, restore from trash, and purge files. Deleted files are retained for 7 days in trash before permanent purge.
+All active users can browse, search, create folders, upload, download, preview, rename, move, batch-move, soft-delete, and hard-delete files. Only `lead` users can batch-copy, restore from trash, and purge files. Deleted files are retained for 7 days in trash before permanent purge.
 
 Uploads use two-step presigned URL flow: request an upload URL, then PUT the file directly to MinIO, then complete the upload. Max file size is 200MB.
 
@@ -511,7 +512,9 @@ Request:
 }
 ```
 
-`POST /files/{file_id}/delete` — soft-delete. File goes to trash, retained 7 days.
+`POST /files/{file_id}/delete` — soft-delete. File goes to trash, retained 7 days. Available to every active user.
+
+`DELETE /files/{file_id}` — hard delete. Permanently and irreversibly removes the file or folder (and all descendants for a folder) from MinIO and `team_files`. Storage objects are deleted before metadata so a storage failure leaves metadata intact for retry. Returns `204 No Content`. Available to every active user.
 
 `POST /files/{file_id}/restore` — restore from trash. Lead-only.
 

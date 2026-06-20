@@ -44,8 +44,9 @@ Supabase RLS is enabled as defense-in-depth, but product authorization lives in 
 
 ## Team Files
 
-- Active `fe`, `be`, and `lead` users can browse, search, create folders, upload, download, preview, rename, move, batch-move, and soft-delete files.
-- Only `lead` users can batch-copy, restore from trash, and purge expired files.
+- Active `fe`, `be`, and `lead` users can browse, search, create folders, upload, download, preview, rename, move, batch-move, soft-delete, and hard-delete active files and folders.
+- Hard delete permanently removes a file or folder subtree from MinIO and `team_files`; it cannot be undone.
+- Only `lead` users can batch-copy, restore from trash, view the trash panel, and purge expired files.
 - Deleted files are retained for 7 days before purge eligibility.
 
 ## Request Attachments

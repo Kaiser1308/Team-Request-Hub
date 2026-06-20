@@ -115,7 +115,7 @@ Request attachments allow files to be attached during request creation or done r
 
 ## File Service
 
-File operations use MinIO (S3-compatible) for object storage with a two-step presigned URL upload flow. File metadata lives in `public.team_files` and `public.file_activity_logs`. The service module `app/services/file_service.py` orchestrates file workflows, while `app/services/file_tree.py` owns path normalization, name validation, descendant-prefix safety, and folder self-move prevention. Soft-delete uses 7-day purge scheduling. `app/services/minio_storage.py` handles all MinIO interactions.
+File operations use MinIO (S3-compatible) for object storage with a two-step presigned URL upload flow. File metadata lives in `public.team_files` and `public.file_activity_logs`. The service module `app/services/file_service.py` orchestrates file workflows, while `app/services/file_tree.py` owns path normalization, name validation, descendant-prefix safety, and folder self-move prevention. Soft-delete uses 7-day purge scheduling. Hard delete (`hard_delete_file`) permanently removes a file or folder subtree: the service deletes each non-null MinIO object first so a storage failure leaves metadata intact for retry, records one `hard_delete` audit event on the root target with deleted file/folder counts, then physically deletes all selected `team_files` rows in one repository call. `app/services/minio_storage.py` handles all MinIO interactions.
 
 ## Current State
 
@@ -131,7 +131,7 @@ File operations use MinIO (S3-compatible) for object storage with a two-step pre
 - Dashboard summary endpoint provides bounded workload data per active user.
 - Telegram integration supports account linking, message delivery, and webhook handling.
 - Notification delivery supports Telegram, Email, and Web Push for assignment and reassignment events, with per-user channel preferences.
-- Team file explorer supports browse, search, upload, download, preview, rename, move, copy, batch operations, soft-delete, restore, and purge.
+- Team file explorer supports browse, search, upload, download, preview, rename, move, copy, batch operations, soft-delete, hard delete, restore, and purge.
 - Bilingual i18n (VI/EN) is implemented in the frontend with `src/i18n/config.ts`.
 - User language preference is stored in `preferred_language` column and synced via `PATCH /users/me/language`.
 
