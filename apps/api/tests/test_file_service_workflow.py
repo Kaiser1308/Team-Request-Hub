@@ -1,7 +1,7 @@
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, call
 
-from app.core.exceptions import BadRequestError, GoneError
+from app.core.exceptions import BadRequestError, DomainError, GoneError
 from app.schemas.files import CompleteUploadRequest, CreateFolderRequest, MoveFileRequest, RenameFileRequest, UploadUrlRequest
 from app.schemas.users import CurrentUser
 from app.services import file_service
@@ -253,6 +253,109 @@ class PurgeExpiredTests(unittest.TestCase):
         update_call = mock_file_repo.update_file.call_args[0][1]
         self.assertEqual(update_call["status"], "purged")
         self.assertIsNone(update_call["object_key"])
+
+
+class HardDeleteTests(unittest.TestCase):
+    @patch("app.services.file_service.minio_storage")
+    @patch("app.services.file_service.file_activity_repository")
+    @patch("app.services.file_service.file_repository")
+    def test_hard_delete_folder_removes_descendants_and_objects(
+        self, mock_file_repo, mock_activity_repo, mock_minio
+    ):
+        folder = {
+            "id": "folder-1",
+            "path": "/docs",
+            "is_directory": True,
+            "object_key": None,
+            "status": "active",
+        }
+        descendants = [
+            {"id": "file-1", "path": "/docs/a.pdf", "is_directory": False, "object_key": "docs/a.pdf"},
+            {"id": "folder-2", "path": "/docs/nested", "is_directory": True, "object_key": None},
+            {"id": "file-2", "path": "/docs/nested/b.png", "is_directory": False, "object_key": "docs/nested/b.png"},
+        ]
+        mock_file_repo.get_file_or_404.return_value = folder
+        mock_file_repo.list_descendants.return_value = descendants
+
+        result = file_service.hard_delete_file("folder-1", _lead())
+
+        self.assertIsNone(result)
+        mock_file_repo.list_descendants.assert_called_once_with("/docs/")
+        mock_minio.delete_object.assert_has_calls([
+            call("docs/a.pdf"),
+            call("docs/nested/b.png"),
+        ])
+        mock_file_repo.delete_files.assert_called_once_with([
+            "folder-1", "file-1", "folder-2", "file-2",
+        ])
+        activity_data = mock_activity_repo.create_activity.call_args.args[0]
+        self.assertEqual(activity_data["action"], "hard_delete")
+        self.assertEqual(activity_data["metadata"], {"files_deleted": 2, "folders_deleted": 2})
+
+    @patch("app.services.file_service.minio_storage")
+    @patch("app.services.file_service.file_activity_repository")
+    @patch("app.services.file_service.file_repository")
+    def test_hard_delete_single_file_removes_object_and_metadata(
+        self, mock_file_repo, mock_activity_repo, mock_minio
+    ):
+        file = {
+            "id": "file-1",
+            "path": "/doc.pdf",
+            "is_directory": False,
+            "object_key": "doc.pdf",
+            "status": "active",
+        }
+        mock_file_repo.get_file_or_404.return_value = file
+
+        result = file_service.hard_delete_file("file-1", _fe_user())
+
+        self.assertIsNone(result)
+        mock_file_repo.list_descendants.assert_not_called()
+        mock_minio.delete_object.assert_called_once_with("doc.pdf")
+        mock_file_repo.delete_files.assert_called_once_with(["file-1"])
+
+    @patch("app.services.file_service.minio_storage")
+    @patch("app.services.file_service.file_activity_repository")
+    @patch("app.services.file_service.file_repository")
+    def test_hard_delete_soft_deleted_file(
+        self, mock_file_repo, mock_activity_repo, mock_minio
+    ):
+        file = {
+            "id": "file-1",
+            "path": "/doc.pdf",
+            "is_directory": False,
+            "object_key": "doc.pdf",
+            "status": "deleted",
+        }
+        mock_file_repo.get_file_or_404.return_value = file
+
+        result = file_service.hard_delete_file("file-1", _fe_user())
+
+        self.assertIsNone(result)
+        mock_minio.delete_object.assert_called_once_with("doc.pdf")
+        mock_file_repo.delete_files.assert_called_once_with(["file-1"])
+
+    @patch("app.services.file_service.minio_storage")
+    @patch("app.services.file_service.file_activity_repository")
+    @patch("app.services.file_service.file_repository")
+    def test_minio_failure_prevents_audit_and_metadata_deletion(
+        self, mock_file_repo, mock_activity_repo, mock_minio
+    ):
+        file = {
+            "id": "file-1",
+            "path": "/doc.pdf",
+            "is_directory": False,
+            "object_key": "doc.pdf",
+            "status": "active",
+        }
+        mock_file_repo.get_file_or_404.return_value = file
+        mock_minio.delete_object.side_effect = DomainError("MinIO delete failed")
+
+        with self.assertRaises(DomainError):
+            file_service.hard_delete_file("file-1", _fe_user())
+
+        mock_activity_repo.create_activity.assert_not_called()
+        mock_file_repo.delete_files.assert_not_called()
 
 
 if __name__ == "__main__":

@@ -259,6 +259,33 @@ def soft_delete_file(file_id: str, current_user: CurrentUser) -> dict:
     return updated
 
 
+def hard_delete_file(file_id: str, current_user: CurrentUser) -> None:
+    file = file_repository.get_file_or_404(file_id)
+    targets = [file]
+    if file.get("is_directory"):
+        targets.extend(
+            file_repository.list_descendants(file_tree.descendant_prefix(file["path"]))
+        )
+
+    for target in targets:
+        object_key = target.get("object_key")
+        if object_key:
+            minio_storage.delete_object(object_key)
+
+    files_deleted = sum(not target.get("is_directory") for target in targets)
+    folders_deleted = sum(bool(target.get("is_directory")) for target in targets)
+    activity(
+        current_user.id,
+        file,
+        "hard_delete",
+        metadata={
+            "files_deleted": files_deleted,
+            "folders_deleted": folders_deleted,
+        },
+    )
+    file_repository.delete_files([target["id"] for target in targets])
+
+
 def restore_file(file_id: str, current_user: CurrentUser) -> dict:
     ensure_lead(current_user)
     file = file_repository.get_file_or_404(file_id)

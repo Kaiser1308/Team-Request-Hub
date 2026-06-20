@@ -77,5 +77,47 @@ class FileServicePermissionTests(unittest.TestCase):
         self.assertEqual(result["name"], "new.txt")
 
 
+class HardDeletePermissionTests(unittest.TestCase):
+    def _file(self):
+        return {
+            "id": "f-1",
+            "name": "doc.pdf",
+            "path": "/doc.pdf",
+            "is_directory": False,
+            "object_key": "doc.pdf",
+            "status": "active",
+        }
+
+    @patch("app.services.file_service.minio_storage")
+    @patch("app.services.file_service.file_repository")
+    @patch("app.services.file_service.file_activity_repository")
+    def test_fe_can_hard_delete(self, mock_activity_repo, mock_file_repo, mock_minio):
+        mock_file_repo.get_file_or_404.return_value = self._file()
+
+        result = file_service.hard_delete_file("f-1", _fe_user())
+
+        self.assertIsNone(result)
+
+    @patch("app.services.file_service.minio_storage")
+    @patch("app.services.file_service.file_repository")
+    @patch("app.services.file_service.file_activity_repository")
+    def test_be_can_hard_delete(self, mock_activity_repo, mock_file_repo, mock_minio):
+        mock_file_repo.get_file_or_404.return_value = self._file()
+
+        result = file_service.hard_delete_file("f-1", _be_user())
+
+        self.assertIsNone(result)
+
+    @patch("app.services.file_service.minio_storage")
+    @patch("app.services.file_service.file_repository")
+    @patch("app.services.file_service.file_activity_repository")
+    def test_lead_can_hard_delete(self, mock_activity_repo, mock_file_repo, mock_minio):
+        mock_file_repo.get_file_or_404.return_value = self._file()
+
+        result = file_service.hard_delete_file("f-1", _lead())
+
+        self.assertIsNone(result)
+
+
 if __name__ == "__main__":
     unittest.main()
