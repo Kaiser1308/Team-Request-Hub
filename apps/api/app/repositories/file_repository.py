@@ -98,6 +98,30 @@ def update_file(file_id: str, data: dict) -> dict:
     return result.data[0]
 
 
+def list_descendants(path_prefix: str) -> list[dict]:
+    result = (
+        get_supabase_admin()
+        .table(TABLE)
+        .select(COLUMNS)
+        .like("path", f"{path_prefix}%")
+        .execute()
+    )
+    return result.data or []
+
+
+def delete_files(file_ids: list[str]) -> list[dict]:
+    if not file_ids:
+        return []
+    result = (
+        get_supabase_admin()
+        .table(TABLE)
+        .delete()
+        .in_("id", file_ids)
+        .execute()
+    )
+    return result.data or []
+
+
 def update_descendants(path_prefix: str, data: dict) -> list[dict]:
     result = (
         get_supabase_admin()
