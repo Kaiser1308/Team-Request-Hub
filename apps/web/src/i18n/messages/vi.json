@@ -18,6 +18,13 @@
     "english": "English",
     "notSet": "Chưa đặt"
   },
+  "files": {
+    "hardDelete": "Xóa vĩnh viễn",
+    "hardDeleting": "Đang xóa...",
+    "hardDeleteFileConfirm": "Bạn có chắc muốn xóa vĩnh viễn tệp \"{name}\"? Hành động này không thể hoàn tác.",
+    "hardDeleteFolderConfirm": "Bạn có chắc muốn xóa vĩnh viễn thư mục \"{name}\" và tất cả nội dung bên trong? Hành động này không thể hoàn tác.",
+    "hardDeleteError": "Không thể xóa vĩnh viễn tệp."
+  },
   "errors": {
     "generic": "Đã xảy ra lỗi. Vui lòng thử lại.",
     "unauthorized": "Bạn cần đăng nhập để tiếp tục.",

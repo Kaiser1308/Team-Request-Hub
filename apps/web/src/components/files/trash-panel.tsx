@@ -1,6 +1,7 @@
 "use client";
 
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { useFileMutations, useFileTree } from "@/hooks/use-files";
 import type { TeamFile } from "@/types";
@@ -24,6 +25,7 @@ function formatDate(iso: string) {
 }
 
 export function TrashPanel() {
+  const t = useTranslations("files");
   const treeQuery = useFileTree(true);
   const mutations = useFileMutations();
 
@@ -73,6 +75,23 @@ export function TrashPanel() {
               >
                 <RotateCcw className="mr-1 h-3.5 w-3.5" />
                 Khôi phục
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                disabled={mutations.hardDeleteFile.isPending}
+                onClick={() => {
+                  const message = file.is_directory
+                    ? t("hardDeleteFolderConfirm", { name: file.name })
+                    : t("hardDeleteFileConfirm", { name: file.name });
+                  if (window.confirm(message)) {
+                    void mutations.hardDeleteFile.mutateAsync(file.id);
+                  }
+                }}
+              >
+                <Trash2 className="mr-1 h-3.5 w-3.5" />
+                {t("hardDelete")}
               </Button>
             </div>
           </div>

@@ -4,7 +4,8 @@ import { useState, useRef, useCallback, useEffect, type DragEvent } from "react"
 import { useRouter, useSearchParams } from "next/navigation";
 import { FileManager } from "@cubone/react-file-manager";
 import "@cubone/react-file-manager/dist/style.css";
-import { Loader2, XCircle, Upload } from "lucide-react";
+import { Loader2, XCircle, Upload, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { ApiError } from "@/lib/api/client";
 import { FilePreviewPanel } from "@/components/files/file-preview-panel";
 import { TrashPanel } from "@/components/files/trash-panel";
@@ -38,6 +39,7 @@ function toCuboneFile(file: TeamFile): CuboneFile {
 }
 
 export function TeamFileExplorer() {
+  const t = useTranslations("files");
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentPath = searchParams.get("path") || "/";
@@ -66,6 +68,8 @@ export function TeamFileExplorer() {
   const dragCounterRef = useRef(0);
   const fileManagerRef = useRef<HTMLDivElement>(null);
   const [selectedFile, setSelectedFile] = useState<TeamFile | null>(null);
+  const [selectedItems, setSelectedItems] = useState<CuboneFile[]>([]);
+  const [hardDeleteError, setHardDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     fileManagerRef.current?.focus();
@@ -165,6 +169,21 @@ export function TeamFileExplorer() {
     window.open(response.url, "_blank", "noopener,noreferrer");
   }
 
+  async function handleHardDelete() {
+    setHardDeleteError(null);
+    for (const item of selectedItems) {
+      const message = item.isDirectory
+        ? t("hardDeleteFolderConfirm", { name: item.name })
+        : t("hardDeleteFileConfirm", { name: item.name });
+      if (!window.confirm(message)) continue;
+      try {
+        await mutations.hardDeleteFile.mutateAsync(item.id);
+      } catch {
+        setHardDeleteError(t("hardDeleteError"));
+      }
+    }
+  }
+
   if (error) {
     return (
       <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -219,6 +238,16 @@ export function TeamFileExplorer() {
               />
             </label>
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => void handleHardDelete()}
+            disabled={selectedItems.length === 0 || mutations.hardDeleteFile.isPending}
+            className="border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700"
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            {mutations.hardDeleteFile.isPending ? t("hardDeleting") : t("hardDelete")}
+          </Button>
         </div>
       </div>
 
@@ -229,6 +258,20 @@ export function TeamFileExplorer() {
           <button
             type="button"
             onClick={() => setUploadError(null)}
+            className="text-red-700 underline-offset-2 hover:underline"
+          >
+            Dismiss
+          </button>
+        </div>
+      ) : null}
+
+      {hardDeleteError ? (
+        <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <XCircle className="mt-0.5 h-4 w-4 shrink-0" />
+          <div className="flex-1">{hardDeleteError}</div>
+          <button
+            type="button"
+            onClick={() => setHardDeleteError(null)}
             className="text-red-700 underline-offset-2 hover:underline"
           >
             Dismiss
@@ -323,6 +366,9 @@ export function TeamFileExplorer() {
             }
             onDownload={(selected) =>
               selected.forEach((file) => void downloadFile(file as CuboneFile))
+            }
+            onSelectionChange={(selected) =>
+              setSelectedItems(selected as CuboneFile[])
             }
             onRefresh={() => { void filesQuery.refetch(); void treeQuery.refetch(); }}
           />

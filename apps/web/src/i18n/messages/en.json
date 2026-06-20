@@ -18,6 +18,13 @@
     "english": "English",
     "notSet": "Not set"
   },
+  "files": {
+    "hardDelete": "Delete permanently",
+    "hardDeleting": "Deleting...",
+    "hardDeleteFileConfirm": "Are you sure you want to permanently delete \"{name}\"? This action cannot be undone.",
+    "hardDeleteFolderConfirm": "Are you sure you want to permanently delete \"{name}\" and all its contents? This action cannot be undone.",
+    "hardDeleteError": "Could not delete the file permanently."
+  },
   "errors": {
     "generic": "Something went wrong. Please try again.",
     "unauthorized": "You need to sign in to continue.",
