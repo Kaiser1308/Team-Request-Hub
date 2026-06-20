@@ -12,6 +12,7 @@ FileAction = Literal[
     "delete",
     "restore",
     "purge",
+    "hard_delete",
     "download",
     "preview",
 ]

@@ -678,6 +678,7 @@ begin
       'delete',
       'restore',
       'purge',
+      'hard_delete',
       'download',
       'preview'
     );
